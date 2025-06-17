@@ -1,86 +1,91 @@
-        #map { height: 350px; }
-        .badge-animation {
-            animation: badgePop 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-        }
-        @keyframes badgePop {
-            0% { transform: scale(0) rotate(-180deg); opacity: 0; }
-            100% { transform: scale(1) rotate(0deg); opacity: 1; }
-        }
-        .progress-bar {
-            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .scanner-overlay {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            z-index: 10;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: linear-gradient(135deg, rgba(59, 130, 246, 0.8), rgba(69, 190, 255, 0.8));
-            backdrop-filter: blur(4px);
-        }
-        .scanner-frame {
-            width: 280px;
-            height: 280px;
-            border: 4px solid #ffffff;
-            border-radius: 20px;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-        }
-        .scanner-line {
-            position: absolute;
-            width: 100%;
-            height: 6px;
-            background: linear-gradient(90deg, transparent, #10B981, transparent);
-            animation: scanLine 2.5s ease-in-out infinite;
-            box-shadow: 0 0 20px #10B981;
-        }
-        @keyframes scanLine {
-            0%, 100% { top: 10px; opacity: 0; }
-            50% { top: 50%; opacity: 1; }
-            100% { top: 90%; opacity: 0; }
-        }
-        .modal-animation {
-            animation: modalSlideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-        @keyframes modalSlideUp {
-            from { opacity: 0; transform: translateY(100px) scale(0.8); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        .monument-card {
-            transition: all 0.3s ease;
-        }
-        .monument-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-        }
-        .profile-photo {
-            transition: all 0.3s ease;
-        }
-        .profile-photo:hover {
-            transform: scale(1.05);
-        }
-        .gradient-bg {
-            background: linear-gradient(135deg, #667eea 0%, #30e8fd 100%);
-        }
-        .glass-effect {
-            backdrop-filter: blur(16px);
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        .input-focus:focus {
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-            border-color: #3B82F6;
-        }
-        .btn-primary {
-            background: linear-gradient(135deg, #3B82F6, #1D4ED8);
-            transition: all 0.3s ease;
-        }
-        .btn-primary:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
-        }
+#map { height: 350px; }
+.badge-animation {
+    animation: badgePop 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+@keyframes badgePop {
+    0% { transform: scale(0) rotate(-180deg); opacity: 0; }
+    100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+.progress-bar {
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.scanner-overlay {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    z-index: 10;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(2px);
+}
+.scanner-frame {
+    width: 280px;
+    height: 280px;
+    border: 4px solid #3B82F6;
+    border-radius: 20px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 0 30px rgba(59, 130, 246, 0.5);
+    background: transparent;
+}
+.scanner-line {
+    position: absolute;
+    width: 100%;
+    height: 6px;
+    background: linear-gradient(90deg, transparent, #10B981, transparent);
+    animation: scanLine 2.5s ease-in-out infinite;
+    box-shadow: 0 0 20px #10B981;
+}
+@keyframes scanLine {
+    0%, 100% { top: 10px; opacity: 0; }
+    50% { top: 50%; opacity: 1; }
+    100% { top: 90%; opacity: 0; }
+}
+.modal-animation {
+    animation: modalSlideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes modalSlideUp {
+    from { opacity: 0; transform: translateY(100px) scale(0.8); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.monument-card {
+    transition: all 0.3s ease;
+}
+.monument-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+.profile-photo {
+    transition: all 0.3s ease;
+}
+.profile-photo:hover {
+    transform: scale(1.05);
+}
+.gradient-bg {
+    background: linear-gradient(135deg, #667eea 0%, #30e8fd 100%);
+}
+.glass-effect {
+    backdrop-filter: blur(16px);
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+.input-focus:focus {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    border-color: #3B82F6;
+}
+.btn-primary {
+    background: linear-gradient(135deg, #3B82F6, #1D4ED8);
+    transition: all 0.3s ease;
+}
+.btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
+}
+.blurred-image {
+    filter: blur(8px);
+    transition: filter 0.3s ease;
+}
