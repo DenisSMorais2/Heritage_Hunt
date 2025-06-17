@@ -219,8 +219,11 @@
 
                 <!-- Map View -->
                 <div id="mapView" class="hidden space-y-6">
-                    <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+                    <div class="bg-white rounded-2xl shadow-lg overflow-hidden relative">
                         <div id="map"></div>
+                        <button id="locateUserBtn" class="absolute bottom-4 right-4 w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white hover:bg-blue-600 transition shadow-lg z-10">
+                            <i class="fas fa-crosshairs text-lg"></i>
+                        </button>
                     </div>
                     <div class="bg-white p-6 rounded-2xl shadow-lg">
                         <h3 class="text-lg font-bold mb-4 text-gray-800">Monumentos de Mindelo</h3>
@@ -290,7 +293,72 @@
             </div>
         </div>
 
-        <!-- Monument Details Modal -->
+        <!-- Monument Photos Modal -->
+        <div id="monumentPhotosModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden overflow-y-auto">
+            <div class="bg-white rounded-2xl max-w-sm mx-4 modal-animation shadow-2xl overflow-hidden max-h-screen">
+                <div class="relative">
+                    <img id="monumentPhotosImage" src="" alt="" class="w-full h-48 object-cover">
+                    <button id="closeMonumentPhotosModal" class="absolute top-4 right-4 w-8 h-8 bg-black bg-opacity-50 rounded-full flex items-center justify-center text-white hover:bg-opacity-70 transition">
+                        <i class="fas fa-times text-sm"></i>
+                    </button>
+                </div>
+                <div class="p-6 max-h-96 overflow-y-auto">
+                    <h3 id="monumentPhotosName" class="text-xl font-bold mb-4 text-gray-800"></h3>
+                    
+                    <!-- Photo Actions -->
+                    <div class="grid grid-cols-2 gap-3 mb-6">
+                        <button id="takePhotoBtn" class="flex flex-col items-center p-4 bg-blue-50 rounded-xl hover:bg-blue-100 transition">
+                            <i class="fas fa-camera text-blue-600 text-xl mb-2"></i>
+                            <span class="text-sm font-medium text-blue-600">Tirar Foto</span>
+                        </button>
+                        <button id="uploadPhotoBtn" class="flex flex-col items-center p-4 bg-green-50 rounded-xl hover:bg-green-100 transition">
+                            <i class="fas fa-upload text-green-600 text-xl mb-2"></i>
+                            <span class="text-sm font-medium text-green-600">Carregar Foto</span>
+                        </button>
+                    </div>
+                    
+                    <!-- Note Section -->
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Sua Nota sobre este Monumento</label>
+                        <textarea id="monumentNote" class="w-full px-3 py-2 border border-gray-200 rounded-lg resize-none h-20" placeholder="Escreva suas impressões sobre este monumento..."></textarea>
+                        <button id="saveNoteBtn" class="mt-2 w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition text-sm font-medium">
+                            Salvar Nota
+                        </button>
+                    </div>
+                    
+                    <!-- User Photos Grid -->
+                    <div class="mb-4">
+                        <h4 class="text-sm font-bold text-gray-800 mb-3">Suas Fotos</h4>
+                        <div id="userPhotosGrid" class="grid grid-cols-2 gap-2">
+                            <div class="text-center text-gray-500 text-sm py-8 col-span-2">
+                                Nenhuma foto ainda.<br>Tire ou carregue fotos deste monumento!
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Camera Modal for Taking Photos -->
+        <div id="cameraModal" class="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-60 hidden">
+            <div class="bg-white rounded-2xl max-w-sm mx-4 modal-animation shadow-2xl overflow-hidden">
+                <div class="relative">
+                    <video id="cameraVideo" class="w-full h-64 object-cover" autoplay playsinline></video>
+                    <button id="closeCameraModal" class="absolute top-4 right-4 w-8 h-8 bg-black bg-opacity-50 rounded-full flex items-center justify-center text-white hover:bg-opacity-70 transition">
+                        <i class="fas fa-times text-sm"></i>
+                    </button>
+                </div>
+                <div class="p-4 text-center">
+                    <button id="capturePhotoBtn" class="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center text-white hover:bg-blue-600 transition mx-auto">
+                        <i class="fas fa-camera text-2xl"></i>
+                    </button>
+                    <p class="text-sm text-gray-600 mt-2">Clique para capturar</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hidden file input for photo upload -->
+        <input type="file" id="photoUploadInput" accept="image/*" class="hidden">
         <div id="monumentModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
             <div class="bg-white rounded-2xl max-w-sm mx-4 modal-animation shadow-2xl overflow-hidden">
                 <div class="relative">

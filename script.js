@@ -7,6 +7,9 @@ const state = {
     currentMonumentForMap: null,
     userLocation: null,
     userLocationMarker: null,
+    userLocationCircle: null,
+    currentMonumentForPhotos: null,
+    cameraStream: null,
     monuments: [
         {
             id: 1,
@@ -253,6 +256,25 @@ const monumentModalDescription = document.getElementById('monumentModalDescripti
 const monumentModalPoints = document.getElementById('monumentModalPoints');
 const closeMonumentModal = document.getElementById('closeMonumentModal');
 const monumentLocation = document.getElementById('monumentLocation');
+const locateUserBtn = document.getElementById('locateUserBtn');
+
+// Monument Photos Modal elements
+const monumentPhotosModal = document.getElementById('monumentPhotosModal');
+const monumentPhotosImage = document.getElementById('monumentPhotosImage');
+const monumentPhotosName = document.getElementById('monumentPhotosName');
+const closeMonumentPhotosModal = document.getElementById('closeMonumentPhotosModal');
+const takePhotoBtn = document.getElementById('takePhotoBtn');
+const uploadPhotoBtn = document.getElementById('uploadPhotoBtn');
+const photoUploadInput = document.getElementById('photoUploadInput');
+const monumentNote = document.getElementById('monumentNote');
+const saveNoteBtn = document.getElementById('saveNoteBtn');
+const userPhotosGrid = document.getElementById('userPhotosGrid');
+
+// Camera Modal elements
+const cameraModal = document.getElementById('cameraModal');
+const cameraVideo = document.getElementById('cameraVideo');
+const closeCameraModal = document.getElementById('closeCameraModal');
+const capturePhotoBtn = document.getElementById('capturePhotoBtn');
 
 // Initialize map
 let map;
@@ -328,6 +350,16 @@ function getUserLocation() {
                 if (state.userLocationMarker) {
                     map.removeLayer(state.userLocationMarker);
                 }
+                
+                if (state.userLocationCircle) {
+                    map.removeLayer(state.userLocationCircle);
+                }
+                
+                // Add proximity circle (50m radius)
+                state.userLocationCircle = L.circle([lat, lng], {
+                    radius: 50,
+                    className: 'user-location-circle'
+                }).addTo(map);
                 
                 state.userLocationMarker = L.marker([lat, lng])
                     .addTo(map)
@@ -415,6 +447,19 @@ function calculateDistance(lat1, lng1, lat2, lng2) {
               Math.sin(dLng/2) * Math.sin(dLng/2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
     return R * c;
+}
+
+function locateUser() {
+    if (!map) return;
+    
+    if (state.userLocation) {
+        map.setView([state.userLocation.lat, state.userLocation.lng], 17);
+        if (state.userLocationMarker) {
+            state.userLocationMarker.openPopup();
+        }
+    } else {
+        getUserLocation();
+    }
 }
 
 // Authentication functions
@@ -881,7 +926,9 @@ function updateMonumentsList() {
             <div class="flex items-center">
                 <img src="${monument.image}" 
                      alt="${monument.name}" 
-                     class="w-12 h-12 object-cover rounded-lg mr-3 ${imageClass}"
+                     class="w-12 h-12 object-cover rounded-lg mr-3 ${imageClass} cursor-pointer"
+                     data-monument-id="${monument.id}"
+                     onclick="openMonumentPhotos(${monument.id})"
                      onerror="this.src='imagens/placeholder.jpg'; this.onerror=null;">
                 <div class="flex-1">
                     <h4 class="font-semibold text-gray-800">${monument.name}</h4>
@@ -940,6 +987,167 @@ function updateProfileView() {
     updateProgress();
 }
 
+// Monument Photos Functions
+function openMonumentPhotos(monumentId) {
+    const monument = state.monuments.find(m => m.id === monumentId);
+    if (!monument) return;
+    
+    // Check if monument is scanned
+    const isScanned = state.scannedMonuments.some(m => m.id === monumentId);
+    if (!isScanned) {
+        alert('Você precisa descobrir este monumento primeiro!');
+        return;
+    }
+    
+    state.currentMonumentForPhotos = monument;
+    
+    monumentPhotosImage.src = monument.image;
+    monumentPhotosImage.alt = monument.name;
+    monumentPhotosName.textContent = monument.name;
+    
+    // Load saved note
+    const savedNote = localStorage.getItem(`monument_note_${monumentId}`);
+    monumentNote.value = savedNote || '';
+    
+    updateUserPhotosGrid();
+    monumentPhotosModal.classList.remove('hidden');
+}
+
+function closeMonumentPhotos() {
+    monumentPhotosModal.classList.add('hidden');
+    state.currentMonumentForPhotos = null;
+}
+
+function updateUserPhotosGrid() {
+    if (!state.currentMonumentForPhotos) return;
+    
+    const monumentId = state.currentMonumentForPhotos.id;
+    const savedPhotos = JSON.parse(localStorage.getItem(`monument_photos_${monumentId}`)) || [];
+    
+    if (savedPhotos.length === 0) {
+        userPhotosGrid.innerHTML = `
+            <div class="text-center text-gray-500 text-sm py-8 col-span-2">
+                Nenhuma foto ainda.<br>Tire ou carregue fotos deste monumento!
+            </div>
+        `;
+        return;
+    }
+    
+    userPhotosGrid.innerHTML = '';
+    savedPhotos.forEach((photo, index) => {
+        const photoElement = document.createElement('div');
+        photoElement.className = 'relative';
+        photoElement.innerHTML = `
+            <img src="${photo}" alt="Foto ${index + 1}" class="photo-thumbnail">
+            <button onclick="deletePhoto(${index})" class="absolute -top-2 -right-2 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center text-white text-xs hover:bg-red-600 transition">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        userPhotosGrid.appendChild(photoElement);
+    });
+}
+
+function saveNote() {
+    if (!state.currentMonumentForPhotos) return;
+    
+    const monumentId = state.currentMonumentForPhotos.id;
+    const note = monumentNote.value.trim();
+    
+    if (note) {
+        localStorage.setItem(`monument_note_${monumentId}`, note);
+        alert('Nota salva com sucesso!');
+    } else {
+        localStorage.removeItem(`monument_note_${monumentId}`);
+        alert('Nota removida!');
+    }
+}
+
+function takePhoto() {
+    navigator.mediaDevices.getUserMedia({ 
+        video: { 
+            facingMode: "environment",
+            width: { ideal: 1280 },
+            height: { ideal: 720 }
+        } 
+    }).then(stream => {
+        state.cameraStream = stream;
+        cameraVideo.srcObject = stream;
+        cameraModal.classList.remove('hidden');
+    }).catch(err => {
+        console.error("Camera error: ", err);
+        alert("Não foi possível acessar a câmera. Verifique as permissões.");
+    });
+}
+
+function closeCameraCapture() {
+    if (state.cameraStream) {
+        state.cameraStream.getTracks().forEach(track => track.stop());
+        state.cameraStream = null;
+    }
+    cameraModal.classList.add('hidden');
+}
+
+function capturePhoto() {
+    if (!state.cameraStream || !state.currentMonumentForPhotos) return;
+    
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    
+    canvas.width = cameraVideo.videoWidth;
+    canvas.height = cameraVideo.videoHeight;
+    
+    context.drawImage(cameraVideo, 0, 0);
+    
+    const photoData = canvas.toDataURL('image/jpeg', 0.8);
+    savePhoto(photoData);
+    
+    closeCameraCapture();
+}
+
+function uploadPhoto() {
+    photoUploadInput.click();
+}
+
+function handlePhotoUpload(event) {
+    const file = event.target.files[0];
+    if (!file || !state.currentMonumentForPhotos) return;
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        savePhoto(e.target.result);
+    };
+    reader.readAsDataURL(file);
+    
+    // Reset input
+    event.target.value = '';
+}
+
+function savePhoto(photoData) {
+    if (!state.currentMonumentForPhotos) return;
+    
+    const monumentId = state.currentMonumentForPhotos.id;
+    const savedPhotos = JSON.parse(localStorage.getItem(`monument_photos_${monumentId}`)) || [];
+    
+    savedPhotos.push(photoData);
+    localStorage.setItem(`monument_photos_${monumentId}`, JSON.stringify(savedPhotos));
+    
+    updateUserPhotosGrid();
+    alert('Foto salva com sucesso!');
+}
+
+function deletePhoto(index) {
+    if (!state.currentMonumentForPhotos) return;
+    
+    const monumentId = state.currentMonumentForPhotos.id;
+    const savedPhotos = JSON.parse(localStorage.getItem(`monument_photos_${monumentId}`)) || [];
+    
+    if (confirm('Tem certeza que deseja excluir esta foto?')) {
+        savedPhotos.splice(index, 1);
+        localStorage.setItem(`monument_photos_${monumentId}`, JSON.stringify(savedPhotos));
+        updateUserPhotosGrid();
+    }
+}
+
 // Event listeners
 showRegisterBtn.addEventListener('click', showRegisterForm);
 showLoginBtn.addEventListener('click', showLoginForm);
@@ -958,6 +1166,18 @@ mapBtn.addEventListener('click', showMapView);
 closeBadgeModal.addEventListener('click', closeBadge);
 closeAchievementModal.addEventListener('click', closeAchievementDetails);
 closeMonumentModal.addEventListener('click', closeMonumentDetails);
+locateUserBtn.addEventListener('click', locateUser);
+
+// Monument Photos Modal listeners
+closeMonumentPhotosModal.addEventListener('click', closeMonumentPhotos);
+takePhotoBtn.addEventListener('click', takePhoto);
+uploadPhotoBtn.addEventListener('click', uploadPhoto);
+photoUploadInput.addEventListener('change', handlePhotoUpload);
+saveNoteBtn.addEventListener('click', saveNote);
+
+// Camera Modal listeners
+closeCameraModal.addEventListener('click', closeCameraCapture);
+capturePhotoBtn.addEventListener('click', capturePhoto);
 
 changePhotoBtn.addEventListener('click', changePhoto);
 photoInput.addEventListener('change', handlePhotoChange);
@@ -992,3 +1212,7 @@ function initApp() {
 
 // Start the app
 initApp();
+
+// Global functions for HTML onclick
+window.openMonumentPhotos = openMonumentPhotos;
+window.deletePhoto = deletePhoto;
