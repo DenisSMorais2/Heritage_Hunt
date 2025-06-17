@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heritage Hunt CV - Scanner de Monumentos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/qr-scanner@1.4.2/qr-scanner.umd.min.js"></script>
+     <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 font-sans">
+    <div class="container mx-auto max-w-md bg-white min-h-screen shadow-2xl relative">
+        
+        <!-- Login/Register Screen -->
+        <div id="authScreen" class="min-h-screen flex flex-col">
+            <div class="gradient-bg text-white p-8 rounded-b-3xl">
+                <div class="text-center">
+                    <div class="w-20 h-20 mx-auto mb-4 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                        <i class="fas fa-landmark text-3xl"></i>
+                    </div>
+                    <h1 class="text-3xl font-bold mb-2">Heritage Hunt CV</h1>
+                    <p class="text-blue-100">Descubra os tesouros de Mindelo</p>
+                </div>
+            </div>
+            
+            <div class="flex-1 p-6">
+                <!-- Login Form -->
+                <div id="loginForm" class="space-y-6">
+                    <div class="text-center mb-8">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-2">Bem-vindo de volta!</h2>
+                        <p class="text-gray-600">Continue sua jornada de descoberta</p>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                        <input id="loginEmail" type="email" class="w-full px-4 py-3 border border-gray-200 rounded-xl input-focus transition-all" placeholder="seu@email.com">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Senha</label>
+                        <input id="loginPassword" type="password" class="w-full px-4 py-3 border border-gray-200 rounded-xl input-focus transition-all" placeholder="••••••••">
+                    </div>
+                    
+                    <button id="loginBtn" class="w-full btn-primary text-white py-3 rounded-xl font-semibold">
+                        Entrar
+                    </button>
+                    
+                    <div class="text-center">
+                        <button id="showRegisterBtn" class="text-blue-600 hover:text-blue-700 font-medium">
+                            Não tem conta? Criar conta
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Register Form -->
+                <div id="registerForm" class="space-y-6 hidden">
+                    <div class="text-center mb-8">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-2">Criar Conta</h2>
+                        <p class="text-gray-600">Junte-se à aventura histórica</p>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Nome Completo</label>
+                        <input id="registerName" type="text" class="w-full px-4 py-3 border border-gray-200 rounded-xl input-focus transition-all" placeholder="João Silva">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                        <input id="registerEmail" type="email" class="w-full px-4 py-3 border border-gray-200 rounded-xl input-focus transition-all" placeholder="seu@email.com">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Senha</label>
+                        <input id="registerPassword" type="password" class="w-full px-4 py-3 border border-gray-200 rounded-xl input-focus transition-all" placeholder="••••••••">
+                    </div>
+                    
+                    <button id="registerBtn" class="w-full btn-primary text-white py-3 rounded-xl font-semibold">
+                        Criar Conta
+                    </button>
+                    
+                    <div class="text-center">
+                        <button id="showLoginBtn" class="text-blue-600 hover:text-blue-700 font-medium">
+                            Já tem conta? Fazer login
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main App -->
+        <div id="mainApp" class="hidden min-h-screen pb-20">
+            <!-- Header -->
+            <header class="gradient-bg text-white p-4 rounded-b-2xl shadow-lg">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h1 class="text-2xl font-bold">Heritage Hunt CV</h1>
+                        <p class="text-sm opacity-90">Olá, <span id="userName">Explorador</span>!</p>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button id="profileBtn" class="p-3 rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 transition">
+                            <i class="fas fa-trophy text-lg"></i>
+                        </button>
+                        <button id="mapBtn" class="p-3 rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 transition">
+                            <i class="fas fa-map text-lg"></i>
+                        </button>
+                        <button id="logoutBtn" class="p-3 rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 transition">
+                            <i class="fas fa-sign-out-alt text-lg"></i>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Main Content Area -->
+            <main class="p-4">
+                <!-- Scanner View (default) -->
+                <div id="scannerView">
+                    <div class="bg-gray-900 rounded-2xl overflow-hidden relative shadow-2xl" style="height: 450px;">
+                        <video id="scannerVideo" class="w-full h-full object-cover" autoplay playsinline></video>
+                        <div id="scannerOverlay" class="scanner-overlay hidden">
+                            <div class="text-center">
+                                <div class="scanner-frame mb-6">
+                                    <div class="scanner-line"></div>
+                                </div>
+                                <p class="text-white text-lg font-semibold">Procurando por QR Code...</p>
+                            </div>
+                        </div>
+                        <div id="scannerResult" class="scanner-overlay hidden">
+                            <div class="bg-white p-6 rounded-2xl max-w-xs mx-4 text-center modal-animation shadow-2xl">
+                                <div class="mb-4">
+                                    <img id="monumentImage" src="" alt="" class="w-full h-32 object-cover rounded-lg mb-3">
+                                </div>
+                                <h3 class="text-xl font-bold mb-2" id="scannedMonumentName"></h3>
+                                <p class="text-gray-600 mb-4 text-sm" id="scannedMonumentDesc"></p>
+                                <div class="bg-green-50 p-3 rounded-lg mb-4">
+                                    <p class="text-green-600 font-bold text-lg">+<span id="pointsEarned">0</span> pontos!</p>
+                                </div>
+                                <button id="closeResultBtn" class="btn-primary text-white px-6 py-2 rounded-xl hover:bg-blue-700 transition">Continuar Explorando</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6 text-center">
+                        <button id="startScannerBtn" class="btn-primary text-white px-8 py-4 rounded-2xl font-bold text-lg shadow-lg flex items-center mx-auto">
+                            <i class="fas fa-qrcode mr-3 text-xl"></i> Escanear QR Code
+                        </button>
+                        <p class="text-sm text-gray-500 mt-3">Aponte a câmera para um QR Code de monumento</p>
+                    </div>
+                    
+                    <div class="mt-8 bg-white p-6 rounded-2xl shadow-lg">
+                        <div class="flex items-center justify-between mb-4">
+                            <h2 class="text-xl font-bold text-gray-800">Seu Progresso</h2>
+                            <div class="flex items-center text-blue-600">
+                                <i class="fas fa-star mr-1"></i>
+                                <span id="totalPointsHeader" class="font-bold">0</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center mb-4">
+                            <div class="w-full bg-gray-200 rounded-full h-3">
+                                <div id="progressBar" class="progress-bar bg-gradient-to-r from-blue-500 to-purple-500 h-3 rounded-full" style="width: 0%"></div>
+                            </div>
+                            <span id="progressPercent" class="ml-3 text-sm font-bold text-gray-700">0%</span>
+                        </div>
+                        <div id="badgesContainer" class="grid grid-cols-4 gap-3">
+                            <!-- Badges will be added here dynamically -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Profile View -->
+                <div id="profileView" class="hidden space-y-6">
+                    <div class="bg-white p-6 rounded-2xl shadow-lg">
+                        <div class="flex items-center mb-6">
+                            <div class="relative">
+                                <div id="profilePhotoContainer" class="w-20 h-20 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center profile-photo cursor-pointer">
+                                    <img id="profilePhoto" src="" alt="" class="w-20 h-20 rounded-full object-cover hidden">
+                                    <i id="profileIcon" class="fas fa-user text-white text-2xl"></i>
+                                </div>
+                                <input type="file" id="photoInput" accept="image/*" class="hidden">
+                                <button id="changePhotoBtn" class="absolute -bottom-1 -right-1 w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white hover:bg-blue-600 transition">
+                                    <i class="fas fa-camera text-xs"></i>
+                                </button>
+                            </div>
+                            <div class="ml-4">
+                                <h2 class="text-2xl font-bold text-gray-800" id="profileUserName">Explorador</h2>
+                                <p class="text-gray-600">Nível: <span id="userLevel" class="font-semibold text-blue-600">1</span></p>
+                                <p class="text-sm text-gray-500" id="userEmail">email@exemplo.com</p>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-3 gap-4">
+                            <div class="bg-blue-50 p-4 rounded-xl text-center">
+                                <div class="text-2xl font-bold text-blue-600"><span id="monumentsScanned">0</span>/<span id="totalMonuments">12</span></div>
+                                <p class="text-xs text-gray-600 mt-1">Monumentos</p>
+                            </div>
+                            <div class="bg-green-50 p-4 rounded-xl text-center">
+                                <div class="text-2xl font-bold text-green-600"><span id="totalPoints">0</span></div>
+                                <p class="text-xs text-gray-600 mt-1">Pontos</p>
+                            </div>
+                            <div class="bg-purple-50 p-4 rounded-xl text-center">
+                                <div class="text-2xl font-bold text-purple-600"><span id="badgesEarned">0</span>/4</div>
+                                <p class="text-xs text-gray-600 mt-1">Conquistas</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-2xl shadow-lg">
+                        <h3 class="text-lg font-bold mb-4 text-gray-800">Monumentos Descobertos</h3>
+                        <div id="discoveredMonumentsList" class="space-y-3">
+                            <p class="text-gray-500 text-center py-8">Ainda não descobriu nenhum monumento</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Map View -->
+                <div id="mapView" class="hidden space-y-6">
+                    <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+                        <div id="map"></div>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-lg">
+                        <h3 class="text-lg font-bold mb-4 text-gray-800">Monumentos de Mindelo</h3>
+                        <div id="monumentsList" class="space-y-3">
+                            <!-- Monument list will be added here -->
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            <!-- Navigation -->
+            <nav class="fixed bottom-0 w-full max-w-md bg-white border-t border-gray-100 shadow-lg">
+                <div class="flex justify-around p-2">
+                    <button id="navScanner" class="p-4 text-blue-600 flex flex-col items-center transition-all">
+                        <i class="fas fa-qrcode text-xl"></i>
+                        <span class="text-xs mt-1 font-medium">Scanner</span>
+                    </button>
+                    <button id="navProfile" class="p-4 text-gray-400 flex flex-col items-center transition-all">
+                        <i class="fas fa-trophy text-xl"></i>
+                        <span class="text-xs mt-1 font-medium">Perfil</span>
+                    </button>
+                    <button id="navMap" class="p-4 text-gray-400 flex flex-col items-center transition-all">
+                        <i class="fas fa-map-marked-alt text-xl"></i>
+                        <span class="text-xs mt-1 font-medium">Mapa</span>
+                    </button>
+                </div>
+            </nav>
+        </div>
+
+        <!-- Badge Modal -->
+        <div id="badgeModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+            <div class="bg-white p-8 rounded-2xl max-w-sm mx-4 modal-animation shadow-2xl">
+                <div class="text-center">
+                    <div id="badgeIcon" class="w-24 h-24 mx-auto rounded-full flex items-center justify-center mb-6 badge-animation">
+                        <i class="fas text-4xl"></i>
+                    </div>
+                    <h3 id="badgeTitle" class="text-2xl font-bold mb-3 text-gray-800"></h3>
+                    <p id="badgeDescription" class="text-gray-600 mb-4"></p>
+                    <div class="bg-blue-50 p-4 rounded-lg mb-6">
+                        <p id="badgeMessage" class="italic text-blue-600 font-medium"></p>
+                    </div>
+                    <button id="closeBadgeModal" class="btn-primary text-white px-6 py-3 rounded-xl font-semibold">Fantástico!</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Achievement Details Modal -->
+        <div id="achievementModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+            <div class="bg-white p-8 rounded-2xl max-w-sm mx-4 modal-animation shadow-2xl">
+                <div class="text-center">
+                    <div id="achievementIcon" class="w-20 h-20 mx-auto rounded-full flex items-center justify-center mb-4">
+                        <i class="fas text-3xl"></i>
+                    </div>
+                    <h3 id="achievementTitle" class="text-xl font-bold mb-3 text-gray-800"></h3>
+                    <p id="achievementDescription" class="text-gray-600 mb-4"></p>
+                    <div class="bg-blue-50 p-4 rounded-lg mb-6">
+                        <p id="achievementMessage" class="italic text-blue-600 font-medium"></p>
+                    </div>
+                    <div id="achievementStatus" class="mb-6">
+                        <span class="inline-block px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
+                            <i class="fas fa-check mr-1"></i>
+                            Conquistado!
+                        </span>
+                    </div>
+                    <button id="closeAchievementModal" class="btn-primary text-white px-6 py-3 rounded-xl font-semibold">Fechar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Monument Details Modal -->
+        <div id="monumentModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+            <div class="bg-white rounded-2xl max-w-sm mx-4 modal-animation shadow-2xl overflow-hidden">
+                <div class="relative">
+                    <img id="monumentModalImage" src="" alt="" class="w-full h-48 object-cover">
+                    <button id="closeMonumentModal" class="absolute top-4 right-4 w-8 h-8 bg-black bg-opacity-50 rounded-full flex items-center justify-center text-white hover:bg-opacity-70 transition">
+                        <i class="fas fa-times text-sm"></i>
+                    </button>
+                </div>
+                <div class="p-6">
+                    <h3 id="monumentModalName" class="text-xl font-bold mb-3 text-gray-800"></h3>
+                    <p id="monumentModalDescription" class="text-gray-600 mb-4 text-sm leading-relaxed"></p>
+                    
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div class="bg-blue-50 p-3 rounded-lg text-center">
+                            <div class="text-lg font-bold text-blue-600" id="monumentModalPoints">+0</div>
+                            <p class="text-xs text-gray-600">Pontos</p>
+                        </div>
+                        <div class="bg-green-50 p-3 rounded-lg text-center">
+                            <div class="text-lg font-bold text-green-600">
+                                <i class="fas fa-map-marker-alt"></i>
+                            </div>
+                            <p class="text-xs text-gray-600">Localização</p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-green-50 border border-green-200 p-3 rounded-lg">
+                        <div class="flex items-center text-green-700">
+                            <i class="fas fa-check-circle mr-2"></i>
+                            <span class="font-semibold">Monumento Descoberto!</span>
+                        </div>
+                        <p class="text-xs text-green-600 mt-1" id="monumentDiscoveryDate">Descoberto em sua jornada</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+<script src="script.js"></script>
+</body>
+</html>
