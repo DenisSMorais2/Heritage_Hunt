@@ -5,6 +5,8 @@ const state = {
     scannedMonuments: [],
     qrScanner: null,
     currentMonumentForMap: null,
+    userLocation: null,
+    userLocationMarker: null,
     monuments: [
         {
             id: 1,
@@ -191,6 +193,7 @@ const scannerView = document.getElementById('scannerView');
 const profileView = document.getElementById('profileView');
 const mapView = document.getElementById('mapView');
 const startScannerBtn = document.getElementById('startScannerBtn');
+const closeScannerBtn = document.getElementById('closeScannerBtn');
 const scannerVideo = document.getElementById('scannerVideo');
 const scannerOverlay = document.getElementById('scannerOverlay');
 const scannerResult = document.getElementById('scannerResult');
@@ -263,6 +266,9 @@ function initMap() {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
     
+    // Get user location
+    getUserLocation();
+    
     // Add markers for all monuments
     state.monuments.forEach(monument => {
         const isScanned = state.scannedMonuments.some(m => m.id === monument.id);
@@ -307,6 +313,108 @@ function initMap() {
         // Reset the state
         state.currentMonumentForMap = null;
     }
+}
+
+function getUserLocation() {
+    if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(
+            function(position) {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+                
+                state.userLocation = { lat, lng };
+                
+                // Add user location marker
+                if (state.userLocationMarker) {
+                    map.removeLayer(state.userLocationMarker);
+                }
+                
+                state.userLocationMarker = L.marker([lat, lng])
+                    .addTo(map)
+                    .bindPopup(createUserLocationPopup())
+                    .setIcon(L.icon({
+                        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
+                        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                        iconSize: [25, 41],
+                        iconAnchor: [12, 41],
+                        popupAnchor: [1, -34],
+                        shadowSize: [41, 41]
+                    }));
+            },
+            function(error) {
+                console.log("Erro ao obter localização:", error);
+                // Use default location (Mindelo center) if geolocation fails
+                state.userLocation = { lat: 16.8907, lng: -24.9874 };
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 300000
+            }
+        );
+    } else {
+        // Use default location if geolocation not supported
+        state.userLocation = { lat: 16.8907, lng: -24.9874 };
+    }
+}
+
+function createUserLocationPopup() {
+    if (!state.userLocation) return "Sua localização atual";
+    
+    const nearestMonument = findNearestMonument();
+    if (!nearestMonument) return "Sua localização atual";
+    
+    const distance = calculateDistance(
+        state.userLocation.lat, 
+        state.userLocation.lng, 
+        nearestMonument.monument.lat, 
+        nearestMonument.monument.lng
+    );
+    
+    return `
+        <div class="text-center">
+            <b>📍 Sua Localização</b><br>
+            <div class="mt-2 p-2 bg-blue-50 rounded">
+                <div class="text-sm font-semibold text-blue-800">Monumento mais próximo:</div>
+                <div class="text-sm font-bold">${nearestMonument.monument.name}</div>
+                <div class="text-xs text-blue-600">${distance.toFixed(0)}m de distância</div>
+            </div>
+        </div>
+    `;
+}
+
+function findNearestMonument() {
+    if (!state.userLocation || !state.monuments.length) return null;
+    
+    let nearest = null;
+    let minDistance = Infinity;
+    
+    state.monuments.forEach(monument => {
+        const distance = calculateDistance(
+            state.userLocation.lat,
+            state.userLocation.lng,
+            monument.lat,
+            monument.lng
+        );
+        
+        if (distance < minDistance) {
+            minDistance = distance;
+            nearest = { monument, distance };
+        }
+    });
+    
+    return nearest;
+}
+
+function calculateDistance(lat1, lng1, lat2, lng2) {
+    const R = 6371000; // Earth's radius in meters
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLng = (lng2 - lng1) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+              Math.sin(dLng/2) * Math.sin(dLng/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
 }
 
 // Authentication functions
@@ -514,6 +622,7 @@ function startScanner() {
     }).then(stream => {
         scannerVideo.srcObject = stream;
         scannerOverlay.classList.remove('hidden');
+        closeScannerBtn.classList.remove('hidden');
         startScannerBtn.innerHTML = '<i class="fas fa-search mr-3"></i> Escaneando...';
         
         // Initialize QR Scanner
@@ -532,6 +641,11 @@ function startScanner() {
         alert("Não foi possível acessar a câmera. Verifique as permissões.");
         resetScanner();
     });
+}
+
+function closeScanner() {
+    stopScanner();
+    resetScanner();
 }
 
 function handleQRResult(qrData) {
@@ -592,6 +706,7 @@ function resetScanner() {
     startScannerBtn.innerHTML = '<i class="fas fa-qrcode mr-3"></i> Escanear QR Code';
     startScannerBtn.disabled = false;
     scannerOverlay.classList.add('hidden');
+    closeScannerBtn.classList.add('hidden');
     stopScanner();
 }
 
@@ -790,6 +905,11 @@ function updateMonumentsList() {
 function updateMapMarkers() {
     if (!map) return;
     
+    // Update user location popup if it exists
+    if (state.userLocationMarker) {
+        state.userLocationMarker.setPopupContent(createUserLocationPopup());
+    }
+    
     markers.forEach(({ marker, monument }) => {
         const isScanned = state.scannedMonuments.some(m => m.id === monument.id);
         
@@ -828,6 +948,7 @@ registerBtn.addEventListener('click', register);
 logoutBtn.addEventListener('click', logout);
 
 startScannerBtn.addEventListener('click', startScanner);
+closeScannerBtn.addEventListener('click', closeScanner);
 closeResultBtn.addEventListener('click', closeResult);
 navScanner.addEventListener('click', showScannerView);
 navProfile.addEventListener('click', showProfileView);
