@@ -219,9 +219,9 @@
 
                 <!-- Map View -->
                 <div id="mapView" class="hidden space-y-6">
-                    <div class="bg-white rounded-2xl shadow-lg overflow-hidden relative">
-                        <div id="map"></div>
-                        <button id="locateUserBtn" class="absolute bottom-4 right-4 w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white hover:bg-blue-600 transition shadow-lg z-10">
+                    <div class="bg-white rounded-2xl shadow-lg overflow-hidden relative" style="position: relative; z-index: 1;">
+                        <div id="map" style="position: relative; z-index: 1;"></div>
+                        <button id="locateUserBtn" class="absolute bottom-4 right-4 w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white hover:bg-blue-600 transition shadow-lg" style="z-index: 1000;">
                             <i class="fas fa-crosshairs text-lg"></i>
                         </button>
                     </div>

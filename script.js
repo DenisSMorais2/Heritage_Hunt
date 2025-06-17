@@ -283,10 +283,21 @@ let markers = [];
 function initMap() {
     if (map) return;
     
-    map = L.map('map').setView([16.8907, -24.9874], 15);
+    map = L.map('map', {
+        zoomControl: true,
+        attributionControl: true
+    }).setView([16.8907, -24.9874], 15);
+    
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
+    
+    // Force map container to have proper z-index
+    const mapContainer = document.getElementById('map');
+    if (mapContainer) {
+        mapContainer.style.zIndex = '1';
+        mapContainer.style.position = 'relative';
+    }
     
     // Get user location
     getUserLocation();

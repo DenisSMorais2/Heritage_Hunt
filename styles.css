@@ -1,4 +1,11 @@
-#map { height: 350px; }
+#map { 
+    height: 350px; 
+    z-index: 1;
+    position: relative;
+}
+#locateUserBtn {
+    z-index: 1000;
+}
 .badge-animation {
     animation: badgePop 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
@@ -112,4 +119,13 @@
 }
 .z-60 {
     z-index: 60;
+}
+.leaflet-pane {
+    z-index: 1 !important;
+}
+.leaflet-map-pane {
+    z-index: 1 !important;
+}
+.leaflet-control-container {
+    z-index: 1000 !important;
 }
