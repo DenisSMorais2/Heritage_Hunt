@@ -1877,3 +1877,357 @@ nav.hh-nav button:hover {
         font-size: 16px;
     }
 }
+
+/* ==========================================================
+   Heritage — variante do tema claro
+   (o bloco acima e o tema escuro; aqui so se ajustam as cores)
+   ========================================================== */
+html:not(.dark) {
+    --hh-line: rgba(18, 41, 74, 0.12);
+    --hh-gold: #A8813F;
+    --hh-gold-soft: #C29A55;
+    --hh-cream: #12294A;
+    --hh-muted: #5D6E86;
+}
+
+/* --- Fundo das paginas --- */
+html:not(.dark) .hh-page {
+    background: linear-gradient(180deg, #FBF8F2 0%, #F4F1E9 55%, #EFEBE1 100%);
+}
+html:not(.dark) body.hh-dark-bg .container {
+    background-color: #FBF8F2 !important;
+    background-image: linear-gradient(180deg, #FBF8F2, #EFEBE1) !important;
+}
+
+/* --- Cabecalho --- */
+html:not(.dark) .hh-header {
+    background: linear-gradient(160deg, #FFFFFF 0%, #FAF5EA 55%, #F4EEE0 100%);
+    color: #12294A;
+    box-shadow: 0 8px 20px rgba(24, 40, 66, 0.12);
+}
+html:not(.dark) .hh-brand-title {
+    color: #12294A;
+}
+html:not(.dark) .hh-icon-btn {
+    background: rgba(168, 129, 63, 0.1);
+    border-color: rgba(168, 129, 63, 0.4);
+    color: #8A6A2F;
+}
+html:not(.dark) .hh-icon-btn:hover {
+    background: rgba(168, 129, 63, 0.22);
+    border-color: rgba(168, 129, 63, 0.7);
+}
+html:not(.dark) .hh-icon-btn.is-active {
+    background: rgba(168, 129, 63, 0.26);
+    border-color: #A8813F;
+    color: #6E5322;
+    box-shadow: 0 0 0 1px rgba(168, 129, 63, 0.35), 0 4px 12px rgba(24, 40, 66, 0.18);
+}
+html:not(.dark) .hh-tagline {
+    color: #8A6A2F;
+}
+html:not(.dark) .hh-tagline em {
+    color: rgba(138, 106, 47, 0.55);
+}
+
+/* --- Cartoes --- */
+html:not(.dark) .hh-card {
+    background: #FFFFFF;
+    border-color: #E8E2D5;
+    box-shadow: 0 10px 24px rgba(24, 40, 66, 0.08);
+}
+html:not(.dark) .hh-section-title,
+html:not(.dark) .hh-set-title,
+html:not(.dark) .hh-id-name,
+html:not(.dark) .hh-mon-name,
+html:not(.dark) .hh-bar-percent,
+html:not(.dark) .hh-points {
+    color: #12294A;
+}
+
+/* --- Scanner: progresso e medalhas --- */
+html:not(.dark) .hh-bar-track {
+    background: #EDE8DC;
+    border-color: rgba(18, 41, 74, 0.06);
+}
+html:not(.dark) .hh-badge + .hh-badge::before {
+    background: rgba(18, 41, 74, 0.16);
+}
+html:not(.dark) .hh-badge-pct {
+    color: #46586F;
+}
+html:not(.dark) .hh-badge-name {
+    background: #FAF7F0;
+    border-color: #E8E2D5;
+}
+html:not(.dark) .hh-badge.is-unlocked .hh-badge-ring {
+    box-shadow: 0 4px 12px rgba(24, 40, 66, 0.18), 0 0 0 2px rgba(168, 129, 63, 0.45);
+}
+html:not(.dark) .hh-cam {
+    border-color: rgba(18, 41, 74, 0.18);
+    box-shadow: 0 14px 30px rgba(24, 40, 66, 0.22);
+}
+
+/* --- Perfil --- */
+html:not(.dark) .hh-id-bg {
+    opacity: 0.1;
+    filter: grayscale(0.2) brightness(1.1);
+}
+html:not(.dark) .hh-avatar {
+    background: linear-gradient(160deg, #FDFBF6, #F1EBDD);
+}
+html:not(.dark) .hh-avatar-btn {
+    background: #FFFFFF;
+    color: #12294A;
+    border-color: rgba(168, 129, 63, 0.6);
+    box-shadow: 0 3px 10px rgba(24, 40, 66, 0.2);
+}
+html:not(.dark) .hh-avatar-btn:hover {
+    background: #A8813F;
+    color: #FFFFFF;
+}
+html:not(.dark) .hh-id-level {
+    color: #2563EB;
+}
+html:not(.dark) .hh-stat-blue {
+    background: #EFF5FF;
+    border-color: #CBDFFB;
+}
+html:not(.dark) .hh-stat-blue .hh-stat-value {
+    color: #2563EB;
+}
+html:not(.dark) .hh-stat-green {
+    background: #ECFAF3;
+    border-color: #BCE9D3;
+}
+html:not(.dark) .hh-stat-green .hh-stat-value,
+html:not(.dark) .hh-stat-green .hh-stat-icon {
+    color: #0F9D6B;
+}
+html:not(.dark) .hh-stat-purple {
+    background: #F6F0FE;
+    border-color: #DECCF8;
+}
+html:not(.dark) .hh-stat-purple .hh-stat-value,
+html:not(.dark) .hh-stat-purple .hh-stat-icon {
+    color: #7C3AED;
+}
+html:not(.dark) .hh-stat-label {
+    color: #5D6E86;
+}
+
+/* --- Listas de monumentos --- */
+html:not(.dark) .hh-mon-card {
+    background: #FBFAF6;
+    border-color: #E8E2D5;
+}
+html:not(.dark) .hh-mon-card:hover {
+    border-color: rgba(168, 129, 63, 0.55);
+    box-shadow: 0 10px 20px rgba(24, 40, 66, 0.12);
+}
+html:not(.dark) .hh-mon-thumb {
+    border-color: rgba(18, 41, 74, 0.1);
+}
+html:not(.dark) .hh-mon-pts,
+html:not(.dark) .hh-state-pts,
+html:not(.dark) .hh-mon-status.is-ok {
+    color: #0F9D6B;
+}
+html:not(.dark) .hh-mon-status.is-off {
+    color: #DC2626;
+}
+html:not(.dark) .hh-state-badge.is-ok {
+    color: #0F9D6B;
+    background: #E7F8F0;
+    border-color: rgba(15, 157, 107, 0.4);
+}
+html:not(.dark) .hh-state-badge.is-off {
+    color: #7B8798;
+    background: #F2F0EA;
+    border-color: rgba(18, 41, 74, 0.14);
+}
+
+/* --- Mapa --- */
+html:not(.dark) .hh-legend-pill {
+    color: #22344E;
+    background: #F6F3EB;
+    border-color: #E4DED1;
+}
+html:not(.dark) .hh-legend-found i {
+    color: #0F9D6B;
+}
+html:not(.dark) .hh-legend-todo i {
+    color: #2563EB;
+}
+html:not(.dark) .hh-map-wrap {
+    border-color: rgba(18, 41, 74, 0.14);
+    box-shadow: none;
+}
+html:not(.dark) .hh-map-wrap .leaflet-container {
+    background: #E9E6DE;
+}
+html:not(.dark) .hh-map-wrap .leaflet-tile-pane {
+    filter: none;
+}
+html:not(.dark) .hh-map-wrap .leaflet-control-zoom {
+    border-color: rgba(18, 41, 74, 0.16);
+    box-shadow: 0 4px 12px rgba(24, 40, 66, 0.16);
+}
+html:not(.dark) .hh-map-wrap .leaflet-control-zoom a,
+html:not(.dark) .hh-map-wrap .leaflet-bar a {
+    background-color: #FFFFFF;
+    color: #22344E;
+    border-color: rgba(18, 41, 74, 0.12);
+}
+html:not(.dark) .hh-map-wrap .leaflet-control-zoom a:hover,
+html:not(.dark) .hh-map-wrap .leaflet-bar a:hover {
+    background-color: #F2EEE4;
+    color: #12294A;
+}
+html:not(.dark) .hh-map-wrap .leaflet-popup-content-wrapper,
+html:not(.dark) .hh-map-wrap .leaflet-popup-tip {
+    background: #FFFFFF;
+    color: #22344E;
+    box-shadow: 0 8px 22px rgba(24, 40, 66, 0.2);
+}
+html:not(.dark) .hh-map-wrap .leaflet-popup-content b {
+    color: #12294A;
+}
+html:not(.dark) .hh-map-wrap .leaflet-popup-close-button {
+    color: #7B8798 !important;
+}
+html:not(.dark) .hh-map-wrap .leaflet-control-attribution {
+    background: rgba(255, 255, 255, 0.85) !important;
+    color: #5D6E86;
+}
+html:not(.dark) .hh-map-wrap .leaflet-control-attribution a {
+    color: #2563EB;
+}
+html:not(.dark) .hh-locate {
+    background: rgba(255, 255, 255, 0.94);
+    color: #12294A;
+    border-color: rgba(168, 129, 63, 0.75);
+    box-shadow: 0 6px 16px rgba(24, 40, 66, 0.22);
+}
+html:not(.dark) .hh-locate:hover {
+    background: #A8813F;
+    color: #FFFFFF;
+}
+
+/* --- Definicoes --- */
+html:not(.dark) .hh-settings-title i {
+    color: #7B8798;
+}
+html:not(.dark) .hh-settings-panel {
+    background: #FAF8F2;
+    border-color: #E8E2D5;
+}
+html:not(.dark) .hh-set-divider {
+    background: #EAE4D7;
+}
+html:not(.dark) .hh-set-icon-blue {
+    color: #2563EB;
+    background: #EFF5FF;
+    border-color: #CBDFFB;
+}
+html:not(.dark) .hh-set-icon-green {
+    color: #0F9D6B;
+    background: #ECFAF3;
+    border-color: #BCE9D3;
+}
+html:not(.dark) .hh-set-icon-purple {
+    color: #7C3AED;
+    background: #F6F0FE;
+    border-color: #DECCF8;
+}
+html:not(.dark) .hh-theme-grid {
+    background: #F1EDE3;
+    border-color: #E4DED1;
+}
+html:not(.dark) #settingsView .theme-option {
+    color: #5D6E86;
+}
+html:not(.dark) #settingsView .theme-option:hover {
+    color: #2563EB;
+    background: rgba(37, 99, 235, 0.06);
+}
+html:not(.dark) #settingsView .theme-option.active {
+    color: #2563EB;
+    background: #FFFFFF;
+    border-color: rgba(37, 99, 235, 0.55);
+    box-shadow: 0 2px 8px rgba(24, 40, 66, 0.12);
+}
+html:not(.dark) #settingsView .lang-option {
+    color: #22344E;
+    background: #FFFFFF;
+    border-color: #E4DED1;
+}
+html:not(.dark) #settingsView .lang-option:hover {
+    border-color: rgba(37, 99, 235, 0.45);
+    background: rgba(37, 99, 235, 0.05);
+}
+html:not(.dark) #settingsView .lang-option.active {
+    color: #1D4ED8;
+    border-color: rgba(37, 99, 235, 0.7);
+    background: rgba(37, 99, 235, 0.09);
+}
+html:not(.dark) #settingsView .lang-option .flag {
+    box-shadow: 0 0 0 1px rgba(18, 41, 74, 0.18);
+}
+html:not(.dark) #settingsView .lang-option .lang-check {
+    color: #2563EB;
+}
+html:not(.dark) #settingsView .switch-slider {
+    background: #CBD5E1;
+}
+html:not(.dark) .hh-logout-btn {
+    color: #DC2626;
+    background: rgba(220, 38, 38, 0.04);
+    border-color: rgba(220, 38, 38, 0.45);
+}
+html:not(.dark) .hh-logout-btn:hover {
+    background: rgba(220, 38, 38, 0.1);
+    border-color: rgba(220, 38, 38, 0.75);
+}
+html:not(.dark) .hh-version {
+    color: #8A93A3;
+}
+
+/* --- Navegacao inferior --- */
+html:not(.dark) nav.hh-nav {
+    background: #FFFFFF;
+    border-top-color: #E8E2D5;
+    box-shadow: 0 -6px 18px rgba(24, 40, 66, 0.08);
+}
+html:not(.dark) nav.hh-nav button.text-gray-400 {
+    color: #94A3B8;
+}
+html:not(.dark) nav.hh-nav button.text-blue-600 {
+    color: #2563EB;
+}
+html:not(.dark) nav.hh-nav button.text-blue-600::after {
+    background: #2563EB;
+}
+html:not(.dark) nav.hh-nav button:hover {
+    color: #475569;
+}
+
+/* Filetes dourados: tom mais escuro para contrastarem sobre fundo claro */
+html:not(.dark) .hh-header::after {
+    background: linear-gradient(90deg, transparent, rgba(168, 129, 63, 0.55), transparent);
+}
+html:not(.dark) .hh-section-title.hh-underlined::after {
+    background: linear-gradient(90deg, #A8813F, rgba(168, 129, 63, 0));
+}
+html:not(.dark) .hh-rule {
+    background: linear-gradient(90deg, transparent, rgba(168, 129, 63, 0.75));
+}
+html:not(.dark) .hh-quote .hh-rule:last-child {
+    background: linear-gradient(90deg, rgba(168, 129, 63, 0.75), transparent);
+}
+html:not(.dark) .hh-motto-rule {
+    background: linear-gradient(90deg, transparent, rgba(168, 129, 63, 0.85));
+}
+html:not(.dark) .hh-badge.is-unlocked .hh-badge-name {
+    border-color: rgba(168, 129, 63, 0.5);
+}
