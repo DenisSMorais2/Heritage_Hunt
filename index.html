@@ -10,6 +10,18 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/qr-scanner@1.4.2/qr-scanner.umd.min.js"></script>
      <link rel="stylesheet" href="styles.css">
+    <script>
+        // Aplica o tema guardado antes da renderizacao para evitar "flash" de cor
+        (function () {
+            try {
+                var s = JSON.parse(localStorage.getItem('heritageSettings') || '{}');
+                var t = s.theme || 'system';
+                var dark = t === 'dark' || (t === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                document.documentElement.classList.toggle('dark', dark);
+                document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
+            } catch (e) {}
+        })();
+    </script>
 </head>
 <body class="bg-gradient-to-br from-blue-50 to-indigo-100 font-sans">
     <div class="container mx-auto max-w-md bg-white min-h-screen shadow-2xl relative">
@@ -22,7 +34,7 @@
                         <i class="fas fa-landmark text-3xl"></i>
                     </div>
                     <h1 class="text-3xl font-bold mb-2">Heritage Hunt CV</h1>
-                    <p class="text-blue-100">Descubra os tesouros de Mindelo</p>
+                    <p class="text-blue-100" data-i18n="tagline">Descubra os tesouros de Mindelo</p>
                 </div>
             </div>
             
@@ -30,26 +42,26 @@
                 <!-- Login Form -->
                 <div id="loginForm" class="space-y-6">
                     <div class="text-center mb-8">
-                        <h2 class="text-2xl font-bold text-gray-800 mb-2">Bem-vindo de volta!</h2>
-                        <p class="text-gray-600">Continue sua jornada de descoberta</p>
+                        <h2 class="text-2xl font-bold text-gray-800 mb-2" data-i18n="welcomeBack">Bem-vindo de volta!</h2>
+                        <p class="text-gray-600" data-i18n="welcomeBackSub">Continue sua jornada de descoberta</p>
                     </div>
                     
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2" data-i18n="email">Email</label>
                         <input id="loginEmail" type="email" class="w-full px-4 py-3 border border-gray-200 rounded-xl input-focus transition-all" placeholder="seu@email.com">
                     </div>
                     
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Senha</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2" data-i18n="password">Senha</label>
                         <input id="loginPassword" type="password" class="w-full px-4 py-3 border border-gray-200 rounded-xl input-focus transition-all" placeholder="••••••••">
                     </div>
                     
-                    <button id="loginBtn" class="w-full btn-primary text-white py-3 rounded-xl font-semibold">
+                    <button id="loginBtn" class="w-full btn-primary text-white py-3 rounded-xl font-semibold" data-i18n="login">
                         Entrar
                     </button>
                     
                     <div class="text-center">
-                        <button id="showRegisterBtn" class="text-blue-600 hover:text-blue-700 font-medium">
+                        <button id="showRegisterBtn" class="text-blue-600 hover:text-blue-700 font-medium" data-i18n="noAccount">
                             Não tem conta? Criar conta
                         </button>
                     </div>
@@ -58,31 +70,31 @@
                 <!-- Register Form -->
                 <div id="registerForm" class="space-y-6 hidden">
                     <div class="text-center mb-8">
-                        <h2 class="text-2xl font-bold text-gray-800 mb-2">Criar Conta</h2>
-                        <p class="text-gray-600">Junte-se à aventura histórica</p>
+                        <h2 class="text-2xl font-bold text-gray-800 mb-2" data-i18n="createAccount">Criar Conta</h2>
+                        <p class="text-gray-600" data-i18n="createAccountSub">Junte-se à aventura histórica</p>
                     </div>
                     
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Nome Completo</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2" data-i18n="fullName">Nome Completo</label>
                         <input id="registerName" type="text" class="w-full px-4 py-3 border border-gray-200 rounded-xl input-focus transition-all" placeholder="João Silva">
                     </div>
                     
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2" data-i18n="email">Email</label>
                         <input id="registerEmail" type="email" class="w-full px-4 py-3 border border-gray-200 rounded-xl input-focus transition-all" placeholder="seu@email.com">
                     </div>
                     
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Senha</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2" data-i18n="password">Senha</label>
                         <input id="registerPassword" type="password" class="w-full px-4 py-3 border border-gray-200 rounded-xl input-focus transition-all" placeholder="••••••••">
                     </div>
                     
-                    <button id="registerBtn" class="w-full btn-primary text-white py-3 rounded-xl font-semibold">
+                    <button id="registerBtn" class="w-full btn-primary text-white py-3 rounded-xl font-semibold" data-i18n="createAccount">
                         Criar Conta
                     </button>
                     
                     <div class="text-center">
-                        <button id="showLoginBtn" class="text-blue-600 hover:text-blue-700 font-medium">
+                        <button id="showLoginBtn" class="text-blue-600 hover:text-blue-700 font-medium" data-i18n="haveAccount">
                             Já tem conta? Fazer login
                         </button>
                     </div>
@@ -95,19 +107,22 @@
             <!-- Header -->
             <header class="gradient-bg text-white p-4 rounded-b-2xl shadow-lg">
                 <div class="flex justify-between items-center">
-                    <div>
-                        <h1 class="text-2xl font-bold">Heritage Hunt CV</h1>
-                        <p class="text-sm opacity-90">Olá, <span id="userName">Explorador</span>!</p>
+                    <div class="min-w-0">
+                        <h1 class="text-xl font-bold truncate">Heritage Hunt CV</h1>
+                        <p class="text-sm opacity-90 truncate"><span data-i18n="greeting">Olá</span>, <span id="userName">Explorador</span>!</p>
                     </div>
-                    <div class="flex space-x-2">
-                        <button id="profileBtn" class="p-3 rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 transition">
-                            <i class="fas fa-trophy text-lg"></i>
+                    <div class="flex space-x-1.5 flex-shrink-0">
+                        <button id="profileBtn" data-i18n-title="tipProfile" title="Perfil" class="w-10 h-10 flex items-center justify-center rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 transition">
+                            <i class="fas fa-trophy"></i>
                         </button>
-                        <button id="mapBtn" class="p-3 rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 transition">
-                            <i class="fas fa-map text-lg"></i>
+                        <button id="mapBtn" data-i18n-title="tipMap" title="Mapa" class="w-10 h-10 flex items-center justify-center rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 transition">
+                            <i class="fas fa-map"></i>
                         </button>
-                        <button id="logoutBtn" class="p-3 rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 transition">
-                            <i class="fas fa-sign-out-alt text-lg"></i>
+                        <button id="settingsBtn" data-i18n-title="tipSettings" title="Definições" class="w-10 h-10 flex items-center justify-center rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 transition">
+                            <i class="fas fa-sliders-h"></i>
+                        </button>
+                        <button id="logoutBtn" data-i18n-title="tipLogout" title="Sair" class="w-10 h-10 flex items-center justify-center rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 transition">
+                            <i class="fas fa-sign-out-alt"></i>
                         </button>
                     </div>
                 </div>
@@ -127,7 +142,7 @@
                                 <div class="scanner-frame mb-6">
                                     <div class="scanner-line"></div>
                                 </div>
-                                <p class="text-white text-lg font-semibold">Procurando por QR Code...</p>
+                                <p class="text-white text-lg font-semibold" data-i18n="searchingQr">Procurando por QR Code...</p>
                             </div>
                         </div>
                         <div id="scannerResult" class="scanner-overlay hidden">
@@ -138,23 +153,23 @@
                                 <h3 class="text-xl font-bold mb-2" id="scannedMonumentName"></h3>
                                 <p class="text-gray-600 mb-4 text-sm" id="scannedMonumentDesc"></p>
                                 <div class="bg-green-50 p-3 rounded-lg mb-4">
-                                    <p class="text-green-600 font-bold text-lg">+<span id="pointsEarned">0</span> pontos!</p>
+                                    <p class="text-green-600 font-bold text-lg">+<span id="pointsEarned">0</span> <span data-i18n="pointsExclaim">pontos!</span></p>
                                 </div>
-                                <button id="closeResultBtn" class="btn-primary text-white px-6 py-2 rounded-xl hover:bg-blue-700 transition">Continuar Explorando</button>
+                                <button id="closeResultBtn" class="btn-primary text-white px-6 py-2 rounded-xl hover:bg-blue-700 transition" data-i18n="keepExploring">Continuar Explorando</button>
                             </div>
                         </div>
                     </div>
                     
                     <div class="mt-6 text-center">
                         <button id="startScannerBtn" class="btn-primary text-white px-8 py-4 rounded-2xl font-bold text-lg shadow-lg flex items-center mx-auto">
-                            <i class="fas fa-qrcode mr-3 text-xl"></i> Escanear QR Code
+                            <i class="fas fa-qrcode mr-3 text-xl"></i> <span data-i18n="scanQr">Escanear QR Code</span>
                         </button>
-                        <p class="text-sm text-gray-500 mt-3">Aponte a câmera para um QR Code de monumento</p>
+                        <p class="text-sm text-gray-500 mt-3" data-i18n="scanHint">Aponte a câmera para um QR Code de monumento</p>
                     </div>
                     
                     <div class="mt-8 bg-white p-6 rounded-2xl shadow-lg">
                         <div class="flex items-center justify-between mb-4">
-                            <h2 class="text-xl font-bold text-gray-800">Seu Progresso</h2>
+                            <h2 class="text-xl font-bold text-gray-800" data-i18n="yourProgress">Seu Progresso</h2>
                             <div class="flex items-center text-blue-600">
                                 <i class="fas fa-star mr-1"></i>
                                 <span id="totalPointsHeader" class="font-bold">0</span>
@@ -188,7 +203,7 @@
                             </div>
                             <div class="ml-4">
                                 <h2 class="text-2xl font-bold text-gray-800" id="profileUserName">Explorador</h2>
-                                <p class="text-gray-600">Nível: <span id="userLevel" class="font-semibold text-blue-600">1</span></p>
+                                <p class="text-gray-600"><span data-i18n="level">Nível</span>: <span id="userLevel" class="font-semibold text-blue-600">1</span></p>
                                 <p class="text-sm text-gray-500" id="userEmail">email@exemplo.com</p>
                             </div>
                         </div>
@@ -196,23 +211,139 @@
                         <div class="grid grid-cols-3 gap-4">
                             <div class="bg-blue-50 p-4 rounded-xl text-center">
                                 <div class="text-2xl font-bold text-blue-600"><span id="monumentsScanned">0</span>/<span id="totalMonuments">12</span></div>
-                                <p class="text-xs text-gray-600 mt-1">Monumentos</p>
+                                <p class="text-xs text-gray-600 mt-1" data-i18n="monumentsLabel">Monumentos</p>
                             </div>
                             <div class="bg-green-50 p-4 rounded-xl text-center">
                                 <div class="text-2xl font-bold text-green-600"><span id="totalPoints">0</span></div>
-                                <p class="text-xs text-gray-600 mt-1">Pontos</p>
+                                <p class="text-xs text-gray-600 mt-1" data-i18n="pointsLabel">Pontos</p>
                             </div>
                             <div class="bg-purple-50 p-4 rounded-xl text-center">
                                 <div class="text-2xl font-bold text-purple-600"><span id="badgesEarned">0</span>/4</div>
-                                <p class="text-xs text-gray-600 mt-1">Conquistas</p>
+                                <p class="text-xs text-gray-600 mt-1" data-i18n="achievementsLabel">Conquistas</p>
                             </div>
                         </div>
                     </div>
                     
                     <div class="bg-white p-6 rounded-2xl shadow-lg">
-                        <h3 class="text-lg font-bold mb-4 text-gray-800">Monumentos Descobertos</h3>
+                        <h3 class="text-lg font-bold mb-4 text-gray-800" data-i18n="discoveredMonuments">Monumentos Descobertos</h3>
                         <div id="discoveredMonumentsList" class="space-y-3">
-                            <p class="text-gray-500 text-center py-8">Ainda não descobriu nenhum monumento</p>
+                            <p class="text-gray-500 text-center py-8" data-i18n="noMonumentsYet">Ainda não descobriu nenhum monumento</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settings View -->
+                <div id="settingsView" class="hidden space-y-6">
+                    <div class="bg-white p-6 rounded-2xl shadow-lg">
+                        <h3 class="text-lg font-bold mb-2 text-gray-800 flex items-center">
+                            <i class="fas fa-sliders-h text-blue-600 mr-2"></i> <span data-i18n="settings">Definições</span>
+                        </h3>
+
+                        <!-- Aparência / Tema -->
+                        <div class="py-4 border-b border-gray-100">
+                            <div class="flex items-center mb-3">
+                                <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center mr-3">
+                                    <i class="fas fa-adjust text-blue-600"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-semibold text-gray-800" data-i18n="appearance">Aparência</p>
+                                    <p class="text-xs text-gray-500" data-i18n="appearanceSub">Escolha entre o tema claro e escuro</p>
+                                </div>
+                            </div>
+                            <div id="themeSelector" class="grid grid-cols-3 gap-2 bg-gray-50 p-1 rounded-xl">
+                                <button type="button" class="theme-option" data-theme="light">
+                                    <i class="fas fa-sun"></i>
+                                    <span data-i18n="themeLight">Claro</span>
+                                </button>
+                                <button type="button" class="theme-option" data-theme="dark">
+                                    <i class="fas fa-moon"></i>
+                                    <span data-i18n="themeDark">Escuro</span>
+                                </button>
+                                <button type="button" class="theme-option" data-theme="system">
+                                    <i class="fas fa-desktop"></i>
+                                    <span data-i18n="themeSystem">Sistema</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Idioma -->
+                        <div class="py-4 border-b border-gray-100">
+                            <div class="flex items-center mb-3">
+                                <div class="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center mr-3">
+                                    <i class="fas fa-globe text-green-600"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-semibold text-gray-800" data-i18n="language">Idioma</p>
+                                    <p class="text-xs text-gray-500" data-i18n="languageSub">Escolha o idioma da aplicação</p>
+                                </div>
+                            </div>
+                            <div id="languageSelector" class="space-y-2">
+                                <button type="button" class="lang-option" data-lang="pt">
+                                    <span class="flag">
+                                        <svg viewBox="0 0 600 400" aria-hidden="true">
+                                            <rect width="600" height="400" fill="#DA291C"/>
+                                            <rect width="240" height="400" fill="#006600"/>
+                                            <circle cx="240" cy="200" r="76" fill="#FFE800"/>
+                                            <circle cx="240" cy="200" r="58" fill="#DA291C"/>
+                                            <ellipse cx="240" cy="200" rx="26" ry="58" fill="none" stroke="#FFE800" stroke-width="10"/>
+                                            <path d="M182 200 h116" stroke="#FFE800" stroke-width="10"/>
+                                            <rect x="212" y="168" width="56" height="64" rx="6" fill="#fff" stroke="#DA291C" stroke-width="10"/>
+                                        </svg>
+                                    </span>
+                                    <span class="lang-name">Português</span>
+                                    <i class="fas fa-check lang-check"></i>
+                                </button>
+                                <button type="button" class="lang-option" data-lang="en">
+                                    <span class="flag">
+                                        <svg viewBox="0 0 60 30" aria-hidden="true">
+                                            <clipPath id="ukClip"><path d="M30,15 h30 v15 z v15 h-30 z h-30 v-15 z v-15 h30 z"/></clipPath>
+                                            <rect width="60" height="30" fill="#012169"/>
+                                            <path d="M0,0 L60,30 M60,0 L0,30" stroke="#fff" stroke-width="6"/>
+                                            <path d="M0,0 L60,30 M60,0 L0,30" clip-path="url(#ukClip)" stroke="#C8102E" stroke-width="4"/>
+                                            <path d="M30,0 v30 M0,15 h60" stroke="#fff" stroke-width="10"/>
+                                            <path d="M30,0 v30 M0,15 h60" stroke="#C8102E" stroke-width="6"/>
+                                        </svg>
+                                    </span>
+                                    <span class="lang-name">English</span>
+                                    <i class="fas fa-check lang-check"></i>
+                                </button>
+                                <button type="button" class="lang-option" data-lang="fr">
+                                    <span class="flag">
+                                        <svg viewBox="0 0 3 2" aria-hidden="true">
+                                            <rect width="3" height="2" fill="#fff"/>
+                                            <rect width="1" height="2" fill="#002654"/>
+                                            <rect x="2" width="1" height="2" fill="#ED2939"/>
+                                        </svg>
+                                    </span>
+                                    <span class="lang-name">Français</span>
+                                    <i class="fas fa-check lang-check"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Notificações de conquistas -->
+                        <div class="py-4 border-b border-gray-100 flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center mr-3">
+                                    <i class="fas fa-medal text-purple-600"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-semibold text-gray-800" data-i18n="achievementAlerts">Alertas de conquistas</p>
+                                    <p class="text-xs text-gray-500" data-i18n="achievementAlertsSub">Mostrar janela ao desbloquear uma medalha</p>
+                                </div>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="achievementAlertsToggle">
+                                <span class="switch-slider"></span>
+                            </label>
+                        </div>
+
+                        <!-- Conta -->
+                        <div class="pt-4">
+                            <button id="settingsLogoutBtn" class="w-full flex items-center justify-center text-red-600 font-semibold py-3 rounded-xl border border-red-200 hover:bg-red-50 transition">
+                                <i class="fas fa-sign-out-alt mr-2"></i> <span data-i18n="logoutAction">Terminar sessão</span>
+                            </button>
+                            <p class="text-xs text-gray-400 text-center mt-4" data-i18n="version">Heritage Hunt CV • versão 1.0</p>
                         </div>
                     </div>
                 </div>
@@ -226,7 +357,7 @@
                         </button>
                     </div>
                     <div class="bg-white p-6 rounded-2xl shadow-lg">
-                        <h3 class="text-lg font-bold mb-4 text-gray-800">Monumentos de Mindelo</h3>
+                        <h3 class="text-lg font-bold mb-4 text-gray-800" data-i18n="mindeloMonuments">Monumentos de Mindelo</h3>
                         <div id="monumentsList" class="space-y-3">
                             <!-- Monument list will be added here -->
                         </div>
@@ -239,15 +370,15 @@
                 <div class="flex justify-around p-2">
                     <button id="navScanner" class="p-4 text-blue-600 flex flex-col items-center transition-all">
                         <i class="fas fa-qrcode text-xl"></i>
-                        <span class="text-xs mt-1 font-medium">Scanner</span>
+                        <span class="text-xs mt-1 font-medium" data-i18n="navScanner">Scanner</span>
                     </button>
                     <button id="navProfile" class="p-4 text-gray-400 flex flex-col items-center transition-all">
                         <i class="fas fa-trophy text-xl"></i>
-                        <span class="text-xs mt-1 font-medium">Perfil</span>
+                        <span class="text-xs mt-1 font-medium" data-i18n="navProfile">Perfil</span>
                     </button>
                     <button id="navMap" class="p-4 text-gray-400 flex flex-col items-center transition-all">
                         <i class="fas fa-map-marked-alt text-xl"></i>
-                        <span class="text-xs mt-1 font-medium">Mapa</span>
+                        <span class="text-xs mt-1 font-medium" data-i18n="navMap">Mapa</span>
                     </button>
                 </div>
             </nav>
@@ -265,7 +396,7 @@
                     <div class="bg-blue-50 p-4 rounded-lg mb-6">
                         <p id="badgeMessage" class="italic text-blue-600 font-medium"></p>
                     </div>
-                    <button id="closeBadgeModal" class="btn-primary text-white px-6 py-3 rounded-xl font-semibold">Fantástico!</button>
+                    <button id="closeBadgeModal" class="btn-primary text-white px-6 py-3 rounded-xl font-semibold" data-i18n="fantastic">Fantástico!</button>
                 </div>
             </div>
         </div>
@@ -285,10 +416,10 @@
                     <div id="achievementStatus" class="mb-6">
                         <span class="inline-block px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
                             <i class="fas fa-check mr-1"></i>
-                            Conquistado!
+                            <span data-i18n="achieved">Conquistado!</span>
                         </span>
                     </div>
-                    <button id="closeAchievementModal" class="btn-primary text-white px-6 py-3 rounded-xl font-semibold">Fechar</button>
+                    <button id="closeAchievementModal" class="btn-primary text-white px-6 py-3 rounded-xl font-semibold" data-i18n="close">Fechar</button>
                 </div>
             </div>
         </div>
@@ -309,28 +440,28 @@
                     <div class="grid grid-cols-2 gap-3 mb-6">
                         <button id="takePhotoBtn" class="flex flex-col items-center p-4 bg-blue-50 rounded-xl hover:bg-blue-100 transition">
                             <i class="fas fa-camera text-blue-600 text-xl mb-2"></i>
-                            <span class="text-sm font-medium text-blue-600">Tirar Foto</span>
+                            <span class="text-sm font-medium text-blue-600" data-i18n="takePhoto">Tirar Foto</span>
                         </button>
                         <button id="uploadPhotoBtn" class="flex flex-col items-center p-4 bg-green-50 rounded-xl hover:bg-green-100 transition">
                             <i class="fas fa-upload text-green-600 text-xl mb-2"></i>
-                            <span class="text-sm font-medium text-green-600">Carregar Foto</span>
+                            <span class="text-sm font-medium text-green-600" data-i18n="uploadPhoto">Carregar Foto</span>
                         </button>
                     </div>
                     
                     <!-- Note Section -->
                     <div class="mb-6">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Sua Nota sobre este Monumento</label>
-                        <textarea id="monumentNote" class="w-full px-3 py-2 border border-gray-200 rounded-lg resize-none h-20" placeholder="Escreva suas impressões sobre este monumento..."></textarea>
-                        <button id="saveNoteBtn" class="mt-2 w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition text-sm font-medium">
+                        <label class="block text-sm font-medium text-gray-700 mb-2" data-i18n="yourNote">Sua Nota sobre este Monumento</label>
+                        <textarea id="monumentNote" class="w-full px-3 py-2 border border-gray-200 rounded-lg resize-none h-20" data-i18n-placeholder="notePlaceholder" placeholder="Escreva suas impressões sobre este monumento..."></textarea>
+                        <button id="saveNoteBtn" class="mt-2 w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition text-sm font-medium" data-i18n="saveNote">
                             Salvar Nota
                         </button>
                     </div>
                     
                     <!-- User Photos Grid -->
                     <div class="mb-4">
-                        <h4 class="text-sm font-bold text-gray-800 mb-3">Suas Fotos</h4>
+                        <h4 class="text-sm font-bold text-gray-800 mb-3" data-i18n="yourPhotos">Suas Fotos</h4>
                         <div id="userPhotosGrid" class="grid grid-cols-2 gap-2">
-                            <div class="text-center text-gray-500 text-sm py-8 col-span-2">
+                            <div class="text-center text-gray-500 text-sm py-8 col-span-2" data-i18n-html="noPhotos">
                                 Nenhuma foto ainda.<br>Tire ou carregue fotos deste monumento!
                             </div>
                         </div>
@@ -352,7 +483,7 @@
                     <button id="capturePhotoBtn" class="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center text-white hover:bg-blue-600 transition mx-auto">
                         <i class="fas fa-camera text-2xl"></i>
                     </button>
-                    <p class="text-sm text-gray-600 mt-2">Clique para capturar</p>
+                    <p class="text-sm text-gray-600 mt-2" data-i18n="clickToCapture">Clique para capturar</p>
                 </div>
             </div>
         </div>
@@ -374,27 +505,28 @@
                     <div class="grid grid-cols-2 gap-4 mb-4">
                         <div class="bg-blue-50 p-3 rounded-lg text-center">
                             <div class="text-lg font-bold text-blue-600" id="monumentModalPoints">+0</div>
-                            <p class="text-xs text-gray-600">Pontos</p>
+                            <p class="text-xs text-gray-600" data-i18n="pointsLabel">Pontos</p>
                         </div>
                         <div class="bg-green-50 p-3 rounded-lg text-center cursor-pointer hover:bg-green-100 transition" id="monumentLocation">
                             <div class="text-lg font-bold text-green-600">
                                 <i class="fas fa-map-marker-alt"></i>
                             </div>
-                            <p class="text-xs text-gray-600">Localização</p>
+                            <p class="text-xs text-gray-600" data-i18n="locationLabel">Localização</p>
                         </div>
                     </div>
                     
                     <div class="bg-green-50 border border-green-200 p-3 rounded-lg">
                         <div class="flex items-center text-green-700">
                             <i class="fas fa-check-circle mr-2"></i>
-                            <span class="font-semibold">Monumento Descoberto!</span>
+                            <span class="font-semibold" data-i18n="monumentDiscovered">Monumento Descoberto!</span>
                         </div>
-                        <p class="text-xs text-green-600 mt-1" id="monumentDiscoveryDate">Descoberto em sua jornada</p>
+                        <p class="text-xs text-green-600 mt-1" id="monumentDiscoveryDate" data-i18n="discoveredOnJourney">Descoberto em sua jornada</p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+<script src="i18n.js"></script>
 <script src="script.js"></script>
 </body>
 </html>

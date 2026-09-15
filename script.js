@@ -10,6 +10,7 @@ const state = {
     userLocationCircle: null,
     currentMonumentForPhotos: null,
     cameraStream: null,
+    settings: null,
     monuments: [
         {
             id: 1,
@@ -195,6 +196,7 @@ const logoutBtn = document.getElementById('logoutBtn');
 const scannerView = document.getElementById('scannerView');
 const profileView = document.getElementById('profileView');
 const mapView = document.getElementById('mapView');
+const settingsView = document.getElementById('settingsView');
 const startScannerBtn = document.getElementById('startScannerBtn');
 const closeScannerBtn = document.getElementById('closeScannerBtn');
 const scannerVideo = document.getElementById('scannerVideo');
@@ -219,6 +221,7 @@ const navProfile = document.getElementById('navProfile');
 const navMap = document.getElementById('navMap');
 const profileBtn = document.getElementById('profileBtn');
 const mapBtn = document.getElementById('mapBtn');
+const settingsBtn = document.getElementById('settingsBtn');
 const userLevel = document.getElementById('userLevel');
 const userName = document.getElementById('userName');
 const profileUserName = document.getElementById('profileUserName');
@@ -231,6 +234,13 @@ const profilePhoto = document.getElementById('profilePhoto');
 const profileIcon = document.getElementById('profileIcon');
 const changePhotoBtn = document.getElementById('changePhotoBtn');
 const photoInput = document.getElementById('photoInput');
+
+// Settings elements
+const themeSelector = document.getElementById('themeSelector');
+const themeOptions = document.querySelectorAll('.theme-option');
+const languageOptions = document.querySelectorAll('.lang-option');
+const achievementAlertsToggle = document.getElementById('achievementAlertsToggle');
+const settingsLogoutBtn = document.getElementById('settingsLogoutBtn');
 
 // Badge modal elements
 const badgeModal = document.getElementById('badgeModal');
@@ -313,8 +323,8 @@ function initMap() {
                     <img src="${monument.image}" alt="${monument.name}" class="w-full h-24 object-cover rounded mb-2">
                     <b>${monument.name}</b><br>
                     <span class="text-sm">${monument.description}</span><br>
-                    <span class="text-blue-600 font-bold">${monument.points} pontos</span>
-                    ${isScanned ? '<br><span class="text-green-600">✓ Descoberto</span>' : ''}
+                    <span class="text-blue-600 font-bold">${monument.points} ${t('pointsWord')}</span>
+                    ${isScanned ? `<br><span class="text-green-600">${t('discoveredCheck')}</span>` : ''}
                 </div>
             `);
         
@@ -402,10 +412,10 @@ function getUserLocation() {
 }
 
 function createUserLocationPopup() {
-    if (!state.userLocation) return "Sua localização atual";
+    if (!state.userLocation) return t('currentLocation');
     
     const nearestMonument = findNearestMonument();
-    if (!nearestMonument) return "Sua localização atual";
+    if (!nearestMonument) return t('currentLocation');
     
     const distance = calculateDistance(
         state.userLocation.lat, 
@@ -416,11 +426,11 @@ function createUserLocationPopup() {
     
     return `
         <div class="text-center">
-            <b>📍 Sua Localização</b><br>
+            <b>📍 ${t('myLocation')}</b><br>
             <div class="mt-2 p-2 bg-blue-50 rounded">
-                <div class="text-sm font-semibold text-blue-800">Monumento mais próximo:</div>
+                <div class="text-sm font-semibold text-blue-800">${t('nearestMonument')}</div>
                 <div class="text-sm font-bold">${nearestMonument.monument.name}</div>
-                <div class="text-xs text-blue-600">${distance.toFixed(0)}m de distância</div>
+                <div class="text-xs text-blue-600">${t('distanceAway', { d: distance.toFixed(0) })}</div>
             </div>
         </div>
     `;
@@ -489,7 +499,7 @@ function login() {
     const password = document.getElementById('loginPassword').value;
     
     if (!email || !password) {
-        alert('Por favor, preencha todos os campos');
+        alert(t('fillAllFields'));
         return;
     }
     
@@ -505,7 +515,7 @@ function login() {
         }
     }
     
-    alert('Email ou senha incorretos');
+    alert(t('wrongCredentials'));
 }
 
 function register() {
@@ -514,12 +524,12 @@ function register() {
     const password = document.getElementById('registerPassword').value;
     
     if (!name || !email || !password) {
-        alert('Por favor, preencha todos os campos');
+        alert(t('fillAllFields'));
         return;
     }
     
     if (password.length < 6) {
-        alert('A senha deve ter pelo menos 6 caracteres');
+        alert(t('passwordTooShort'));
         return;
     }
     
@@ -541,7 +551,7 @@ function register() {
 }
 
 function logout() {
-    if (confirm('Tem certeza que deseja sair?')) {
+    if (confirm(t('confirmLogout'))) {
         saveUserData();
         state.user = null;
         state.points = 0;
@@ -569,6 +579,9 @@ function loadUserData() {
         state.badges.forEach(badge => {
             badge.unlocked = progress >= badge.threshold;
         });
+
+        // Os monumentos guardados podem ter sido gravados noutro idioma
+        applyContentLanguage();
     }
 }
 
@@ -619,11 +632,145 @@ function handlePhotoChange(event) {
     }
 }
 
+// Settings functions
+const SETTINGS_KEY = 'heritageSettings';
+const defaultSettings = {
+    theme: 'system',          // 'light' | 'dark' | 'system'
+    lang: detectBrowserLanguage(),
+    achievementAlerts: true
+};
+const darkModeQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+// Idioma inicial sugerido pelo browser (pt por omissão)
+function detectBrowserLanguage() {
+    const browserLang = (navigator.language || 'pt').slice(0, 2).toLowerCase();
+    return AVAILABLE_LANGUAGES.indexOf(browserLang) !== -1 ? browserLang : 'pt';
+}
+
+function loadSettings() {
+    try {
+        const saved = JSON.parse(localStorage.getItem(SETTINGS_KEY)) || {};
+        state.settings = Object.assign({}, defaultSettings, saved);
+    } catch (e) {
+        state.settings = Object.assign({}, defaultSettings);
+    }
+}
+
+function saveSettings() {
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(state.settings));
+}
+
+function resolveTheme(theme) {
+    if (theme === 'system') {
+        return darkModeQuery.matches ? 'dark' : 'light';
+    }
+    return theme;
+}
+
+function applyTheme() {
+    const effective = resolveTheme(state.settings.theme);
+    document.documentElement.classList.toggle('dark', effective === 'dark');
+    document.documentElement.style.colorScheme = effective;
+    updateThemeSelector();
+}
+
+function setTheme(theme) {
+    state.settings.theme = theme;
+    saveSettings();
+    applyTheme();
+}
+
+function updateThemeSelector() {
+    themeOptions.forEach(option => {
+        option.classList.toggle('active', option.dataset.theme === state.settings.theme);
+    });
+}
+
+function toggleAchievementAlerts(enabled) {
+    state.settings.achievementAlerts = enabled;
+    saveSettings();
+}
+
+// Traduz os elementos estáticos marcados com data-i18n no HTML
+function applyTranslations() {
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        el.textContent = t(el.dataset.i18n);
+    });
+    document.querySelectorAll('[data-i18n-html]').forEach(el => {
+        el.innerHTML = t(el.dataset.i18nHtml);
+    });
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        el.placeholder = t(el.dataset.i18nPlaceholder);
+    });
+    document.querySelectorAll('[data-i18n-title]').forEach(el => {
+        el.title = t(el.dataset.i18nTitle);
+    });
+}
+
+// Traduz os conteúdos dos dados (descrições de monumentos e textos das medalhas)
+function applyContentLanguage() {
+    state.monuments.forEach(monument => {
+        monument.description = monumentDescription(monument.id);
+    });
+    state.scannedMonuments.forEach(monument => {
+        monument.description = monumentDescription(monument.id);
+    });
+    state.badges.forEach(badge => {
+        badge.name = badgeText(badge.id, 'name');
+        badge.description = badgeText(badge.id, 'description');
+        badge.message = badgeText(badge.id, 'message');
+    });
+}
+
+function updateLanguageSelector() {
+    languageOptions.forEach(option => {
+        option.classList.toggle('active', option.dataset.lang === state.settings.lang);
+    });
+}
+
+function applyLanguage() {
+    setCurrentLanguage(state.settings.lang);
+    document.documentElement.lang = state.settings.lang;
+
+    applyTranslations();
+    applyContentLanguage();
+    updateLanguageSelector();
+
+    // Botão do scanner (só quando está em repouso, para não interromper uma leitura)
+    if (!state.qrScanner) {
+        startScannerBtn.innerHTML = `<i class="fas fa-qrcode mr-3 text-xl"></i> <span data-i18n="scanQr">${t('scanQr')}</span>`;
+    }
+}
+
+function setLanguage(lang) {
+    if (state.settings.lang === lang) return;
+    state.settings.lang = lang;
+    saveSettings();
+    applyLanguage();
+
+    // Volta a desenhar tudo o que é gerado por JS
+    renderBadges();
+    updateProgress();
+}
+
+function initSettings() {
+    loadSettings();
+    applyTheme();
+    applyLanguage();
+    achievementAlertsToggle.checked = state.settings.achievementAlerts;
+
+    // Segue o tema do sistema apenas quando a opção 'Sistema' está activa
+    darkModeQuery.addEventListener('change', () => {
+        if (state.settings.theme === 'system') applyTheme();
+    });
+}
+
 // Navigation functions
 function showScannerView() {
     scannerView.classList.remove('hidden');
     profileView.classList.add('hidden');
     mapView.classList.add('hidden');
+    settingsView.classList.add('hidden');
     updateNavButtons('scanner');
 }
 
@@ -631,13 +778,27 @@ function showProfileView() {
     scannerView.classList.add('hidden');
     profileView.classList.remove('hidden');
     mapView.classList.add('hidden');
+    settingsView.classList.add('hidden');
     updateProfileView();
     updateNavButtons('profile');
+}
+
+function showSettingsView() {
+    scannerView.classList.add('hidden');
+    profileView.classList.add('hidden');
+    mapView.classList.add('hidden');
+    settingsView.classList.remove('hidden');
+    updateThemeSelector();
+    updateLanguageSelector();
+    achievementAlertsToggle.checked = state.settings.achievementAlerts;
+    updateNavButtons('settings');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function showMapView() {
     scannerView.classList.add('hidden');
     profileView.classList.add('hidden');
+    settingsView.classList.add('hidden');
     mapView.classList.remove('hidden');
     initMap();
     updateNavButtons('map');
@@ -666,7 +827,7 @@ function updateNavButtons(activeView) {
 
 // QR Scanner functions
 function startScanner() {
-    startScannerBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-3"></i> Iniciando...';
+    startScannerBtn.innerHTML = `<i class="fas fa-spinner fa-spin mr-3"></i> ${t('starting')}`;
     startScannerBtn.disabled = true;
     
     navigator.mediaDevices.getUserMedia({
@@ -679,7 +840,7 @@ function startScanner() {
         scannerVideo.srcObject = stream;
         scannerOverlay.classList.remove('hidden');
         closeScannerBtn.classList.remove('hidden');
-        startScannerBtn.innerHTML = '<i class="fas fa-search mr-3"></i> Escaneando...';
+        startScannerBtn.innerHTML = `<i class="fas fa-search mr-3"></i> ${t('scanning')}`;
         
         // Initialize QR Scanner
         state.qrScanner = new QrScanner(scannerVideo, result => {
@@ -694,7 +855,7 @@ function startScanner() {
         
     }).catch(err => {
         console.error("Camera error: ", err);
-        alert("Não foi possível acessar a câmera. Verifique as permissões.");
+        alert(t('cameraError'));
         resetScanner();
     });
 }
@@ -709,14 +870,14 @@ function handleQRResult(qrData) {
     const monument = state.monuments.find(m => m.qrCode === qrData);
     
     if (!monument) {
-        alert("QR Code não reconhecido. Certifique-se de escanear um QR Code de monumento válido.");
+        alert(t('qrNotRecognized'));
         return;
     }
     
     // Check if already scanned
     const alreadyScanned = state.scannedMonuments.some(m => m.id === monument.id);
     if (alreadyScanned) {
-        alert("Você já descobriu este monumento!");
+        alert(t('alreadyDiscovered'));
         return;
     }
     
@@ -759,7 +920,7 @@ function stopScanner() {
 }
 
 function resetScanner() {
-    startScannerBtn.innerHTML = '<i class="fas fa-qrcode mr-3"></i> Escanear QR Code';
+    startScannerBtn.innerHTML = `<i class="fas fa-qrcode mr-3 text-xl"></i> <span data-i18n="scanQr">${t('scanQr')}</span>`;
     startScannerBtn.disabled = false;
     scannerOverlay.classList.add('hidden');
     closeScannerBtn.classList.add('hidden');
@@ -803,7 +964,9 @@ function checkForBadges() {
     state.badges.forEach(badge => {
         if (!badge.unlocked && progress >= badge.threshold) {
             badge.unlocked = true;
-            setTimeout(() => showBadge(badge), 1000);
+            if (!state.settings || state.settings.achievementAlerts) {
+                setTimeout(() => showBadge(badge), 1000);
+            }
         }
     });
     
@@ -890,7 +1053,7 @@ function renderBadges() {
 // List functions
 function updateDiscoveredMonumentsList() {
     if (state.scannedMonuments.length === 0) {
-        discoveredMonumentsList.innerHTML = '<p class="text-gray-500 text-center py-8">Ainda não descobriu nenhum monumento</p>';
+        discoveredMonumentsList.innerHTML = `<p class="text-gray-500 text-center py-8" data-i18n="noMonumentsYet">${t('noMonumentsYet')}</p>`;
         return;
     }
     
@@ -912,7 +1075,7 @@ function updateDiscoveredMonumentsList() {
                 </div>
                 <div class="text-center">
                     <div class="text-green-600 font-bold text-lg">+${monument.points}</div>
-                    <div class="text-xs text-gray-500">pontos</div>
+                    <div class="text-xs text-gray-500">${t('pointsWord')}</div>
                     <i class="fas fa-chevron-right text-gray-400 text-xs mt-1"></i>
                 </div>
             </div>
@@ -929,9 +1092,9 @@ function updateMonumentsList() {
         monumentElement.className = `monument-card ${isScanned ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'} p-4 rounded-xl border`;
         
         const imageClass = isScanned ? '' : 'blurred-image';
-        const statusText = isScanned ? 'Desbloqueado' : 'Bloqueado';
+        const statusText = isScanned ? t('statusUnlocked') : t('statusLocked');
         const statusColor = isScanned ? 'text-green-600' : 'text-red-600';
-        const descriptionText = isScanned ? monument.description : 'Escaneie o QR Code para descobrir este monumento';
+        const descriptionText = isScanned ? monument.description : t('scanToDiscover');
         
         monumentElement.innerHTML = `
             <div class="flex items-center">
@@ -951,7 +1114,7 @@ function updateMonumentsList() {
                         <i class="fas ${isScanned ? 'fa-check text-green-600' : 'fa-lock text-gray-500'} text-sm"></i>
                     </div>
                     <div class="text-xs mt-1 font-bold ${isScanned ? 'text-green-600' : 'text-gray-400'}">
-                        ${isScanned ? monument.points + ' pts' : '?'}
+                        ${isScanned ? monument.points + ' ' + t('pts') : '?'}
                     </div>
                 </div>
             </div>
@@ -987,8 +1150,8 @@ function updateMapMarkers() {
                 <img src="${monument.image}" alt="${monument.name}" class="w-full h-24 object-cover rounded mb-2">
                 <b>${monument.name}</b><br>
                 <span class="text-sm">${monument.description}</span><br>
-                <span class="text-blue-600 font-bold">${monument.points} pontos</span>
-                ${isScanned ? '<br><span class="text-green-600">✓ Descoberto</span>' : ''}
+                <span class="text-blue-600 font-bold">${monument.points} ${t('pointsWord')}</span>
+                ${isScanned ? `<br><span class="text-green-600">${t('discoveredCheck')}</span>` : ''}
             </div>
         `);
     });
@@ -1006,7 +1169,7 @@ function openMonumentPhotos(monumentId) {
     // Check if monument is scanned
     const isScanned = state.scannedMonuments.some(m => m.id === monumentId);
     if (!isScanned) {
-        alert('Você precisa descobrir este monumento primeiro!');
+        alert(t('mustDiscoverFirst'));
         return;
     }
     
@@ -1037,8 +1200,8 @@ function updateUserPhotosGrid() {
     
     if (savedPhotos.length === 0) {
         userPhotosGrid.innerHTML = `
-            <div class="text-center text-gray-500 text-sm py-8 col-span-2">
-                Nenhuma foto ainda.<br>Tire ou carregue fotos deste monumento!
+            <div class="text-center text-gray-500 text-sm py-8 col-span-2" data-i18n-html="noPhotos">
+                ${t('noPhotos')}
             </div>
         `;
         return;
@@ -1049,7 +1212,7 @@ function updateUserPhotosGrid() {
         const photoElement = document.createElement('div');
         photoElement.className = 'relative';
         photoElement.innerHTML = `
-            <img src="${photo}" alt="Foto ${index + 1}" class="photo-thumbnail">
+            <img src="${photo}" alt="${t('photoAlt')} ${index + 1}" class="photo-thumbnail">
             <button onclick="deletePhoto(${index})" class="absolute -top-2 -right-2 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center text-white text-xs hover:bg-red-600 transition">
                 <i class="fas fa-times"></i>
             </button>
@@ -1066,10 +1229,10 @@ function saveNote() {
     
     if (note) {
         localStorage.setItem(`monument_note_${monumentId}`, note);
-        alert('Nota salva com sucesso!');
+        alert(t('noteSaved'));
     } else {
         localStorage.removeItem(`monument_note_${monumentId}`);
-        alert('Nota removida!');
+        alert(t('noteRemoved'));
     }
 }
 
@@ -1143,7 +1306,7 @@ function savePhoto(photoData) {
     localStorage.setItem(`monument_photos_${monumentId}`, JSON.stringify(savedPhotos));
     
     updateUserPhotosGrid();
-    alert('Foto salva com sucesso!');
+    alert(t('photoSaved'));
 }
 
 function deletePhoto(index) {
@@ -1152,7 +1315,7 @@ function deletePhoto(index) {
     const monumentId = state.currentMonumentForPhotos.id;
     const savedPhotos = JSON.parse(localStorage.getItem(`monument_photos_${monumentId}`)) || [];
     
-    if (confirm('Tem certeza que deseja excluir esta foto?')) {
+    if (confirm(t('confirmDeletePhoto'))) {
         savedPhotos.splice(index, 1);
         localStorage.setItem(`monument_photos_${monumentId}`, JSON.stringify(savedPhotos));
         updateUserPhotosGrid();
@@ -1174,6 +1337,7 @@ navProfile.addEventListener('click', showProfileView);
 navMap.addEventListener('click', showMapView);
 profileBtn.addEventListener('click', showProfileView);
 mapBtn.addEventListener('click', showMapView);
+settingsBtn.addEventListener('click', showSettingsView);
 closeBadgeModal.addEventListener('click', closeBadge);
 closeAchievementModal.addEventListener('click', closeAchievementDetails);
 closeMonumentModal.addEventListener('click', closeMonumentDetails);
@@ -1193,6 +1357,16 @@ capturePhotoBtn.addEventListener('click', capturePhoto);
 changePhotoBtn.addEventListener('click', changePhoto);
 photoInput.addEventListener('change', handlePhotoChange);
 
+// Settings listeners
+themeOptions.forEach(option => {
+    option.addEventListener('click', () => setTheme(option.dataset.theme));
+});
+languageOptions.forEach(option => {
+    option.addEventListener('click', () => setLanguage(option.dataset.lang));
+});
+achievementAlertsToggle.addEventListener('change', (e) => toggleAchievementAlerts(e.target.checked));
+settingsLogoutBtn.addEventListener('click', logout);
+
 // Handle form submissions
 document.getElementById('loginEmail').addEventListener('keypress', function(e) {
     if (e.key === 'Enter') login();
@@ -1206,6 +1380,8 @@ document.getElementById('registerPassword').addEventListener('keypress', functio
 
 // Initialize app
 function initApp() {
+    initSettings();
+
     const savedUser = localStorage.getItem('heritageUser');
     if (savedUser) {
         state.user = JSON.parse(savedUser);

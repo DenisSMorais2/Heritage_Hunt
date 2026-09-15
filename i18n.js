@@ -1,0 +1,403 @@
+// ============================================================
+// Heritage Hunt CV — traduções da interface (pt / en / fr)
+// ============================================================
+
+const AVAILABLE_LANGUAGES = ['pt', 'en', 'fr'];
+let currentLanguage = 'pt';
+
+const translations = {
+    "pt": {
+        "tagline": "Descubra os tesouros de Mindelo",
+        "welcomeBack": "Bem-vindo de volta!",
+        "welcomeBackSub": "Continue sua jornada de descoberta",
+        "email": "Email",
+        "password": "Senha",
+        "login": "Entrar",
+        "noAccount": "Não tem conta? Criar conta",
+        "createAccount": "Criar Conta",
+        "createAccountSub": "Junte-se à aventura histórica",
+        "fullName": "Nome Completo",
+        "haveAccount": "Já tem conta? Fazer login",
+        "greeting": "Olá",
+        "tipProfile": "Perfil",
+        "tipMap": "Mapa",
+        "tipSettings": "Definições",
+        "tipLogout": "Sair",
+        "navScanner": "Scanner",
+        "navProfile": "Perfil",
+        "navMap": "Mapa",
+        "searchingQr": "Procurando por QR Code...",
+        "pointsExclaim": "pontos!",
+        "keepExploring": "Continuar Explorando",
+        "scanQr": "Escanear QR Code",
+        "scanHint": "Aponte a câmera para um QR Code de monumento",
+        "starting": "Iniciando...",
+        "scanning": "Escaneando...",
+        "yourProgress": "Seu Progresso",
+        "level": "Nível",
+        "monumentsLabel": "Monumentos",
+        "pointsLabel": "Pontos",
+        "achievementsLabel": "Conquistas",
+        "discoveredMonuments": "Monumentos Descobertos",
+        "noMonumentsYet": "Ainda não descobriu nenhum monumento",
+        "settings": "Definições",
+        "appearance": "Aparência",
+        "appearanceSub": "Escolha entre o tema claro e escuro",
+        "themeLight": "Claro",
+        "themeDark": "Escuro",
+        "themeSystem": "Sistema",
+        "language": "Idioma",
+        "languageSub": "Escolha o idioma da aplicação",
+        "achievementAlerts": "Alertas de conquistas",
+        "achievementAlertsSub": "Mostrar janela ao desbloquear uma medalha",
+        "logoutAction": "Terminar sessão",
+        "version": "Heritage Hunt CV • versão 1.0",
+        "mindeloMonuments": "Monumentos de Mindelo",
+        "myLocation": "Sua Localização",
+        "currentLocation": "Sua localização atual",
+        "nearestMonument": "Monumento mais próximo:",
+        "distanceAway": "{d}m de distância",
+        "pointsWord": "pontos",
+        "discoveredCheck": "✓ Descoberto",
+        "statusUnlocked": "Desbloqueado",
+        "statusLocked": "Bloqueado",
+        "scanToDiscover": "Escaneie o QR Code para descobrir este monumento",
+        "pts": "pts",
+        "fantastic": "Fantástico!",
+        "achieved": "Conquistado!",
+        "close": "Fechar",
+        "takePhoto": "Tirar Foto",
+        "uploadPhoto": "Carregar Foto",
+        "yourNote": "Sua Nota sobre este Monumento",
+        "notePlaceholder": "Escreva suas impressões sobre este monumento...",
+        "saveNote": "Salvar Nota",
+        "yourPhotos": "Suas Fotos",
+        "noPhotos": "Nenhuma foto ainda.<br>Tire ou carregue fotos deste monumento!",
+        "photoAlt": "Foto",
+        "clickToCapture": "Clique para capturar",
+        "locationLabel": "Localização",
+        "monumentDiscovered": "Monumento Descoberto!",
+        "discoveredOnJourney": "Descoberto em sua jornada",
+        "fillAllFields": "Por favor, preencha todos os campos",
+        "wrongCredentials": "Email ou senha incorretos",
+        "passwordTooShort": "A senha deve ter pelo menos 6 caracteres",
+        "confirmLogout": "Tem certeza que deseja sair?",
+        "cameraError": "Não foi possível acessar a câmera. Verifique as permissões.",
+        "qrNotRecognized": "QR Code não reconhecido. Certifique-se de escanear um QR Code de monumento válido.",
+        "alreadyDiscovered": "Você já descobriu este monumento!",
+        "mustDiscoverFirst": "Você precisa descobrir este monumento primeiro!",
+        "photoSaved": "Foto salva com sucesso!",
+        "confirmDeletePhoto": "Tem certeza que deseja excluir esta foto?",
+        "noteSaved": "Nota salva com sucesso!",
+        "noteRemoved": "Nota removida!",
+        "monuments": {
+            "1": "Antigo palácio do governo colonial, construído em 1874, hoje serve como centro cultural e um dos símbolos mais importantes da história de Cabo Verde.",
+            "2": "Farol histórico construído em 1886, oferece uma vista panorâmica deslumbrante da cidade e do porto de Mindelo.",
+            "3": "Centro de comércio tradicional com arquitetura única, onde se encontra desde frutas tropicais até artesanato local.",
+            "4": "Igreja histórica no centro da cidade, construída no século XIX, com fachada em estilo colonial português.",
+            "5": "Pequena réplica do famoso monumento de Lisboa, símbolo da ligação histórica entre Cabo Verde e Portugal.",
+            "6": "Antigo edifício da alfândega com arquitetura colonial, testemunha do importante passado comercial de Mindelo.",
+            "7": "Museu dedicado à morna, música tradicional de Cabo Verde, onde se homenageia Cesária Évora e outros artistas.",
+            "8": "Principal praça da cidade com coreto histórico, local de encontro e eventos culturais ao ar livre.",
+            "9": "Exposição do melhor artesanato cabo-verdiano, desde cerâmica a tecidos coloridos com técnicas tradicionais.",
+            "10": "Importante centro cultural de Mindelo que promove exposições, concertos e eventos literários durante todo o ano.",
+            "11": "Porto histórico que foi crucial para o desenvolvimento da cidade, ponto de parada de navios transatlânticos no século XIX.",
+            "12": "Antigo forte que protegia a baía de Mindelo, construído no século XVIII, hoje oferece vistas espetaculares do oceano."
+        },
+        "badges": {
+            "1": {
+                "name": "Explorador Iniciante",
+                "description": "Descobriu 25% dos monumentos!",
+                "message": "Você está no caminho certo, pequeno explorador! Mindelo está começando a revelar seus segredos para você! 🌟"
+            },
+            "2": {
+                "name": "Aventureiro Intermediário",
+                "description": "Descobriu 50% dos monumentos!",
+                "message": "Metade do caminho percorrido! Você já conhece Mindelo melhor que muitos turistas! 🗺️"
+            },
+            "3": {
+                "name": "Mestre Explorador",
+                "description": "Descobriu 75% dos monumentos!",
+                "message": "Uau! Você quase conhece Mindelo melhor que os locais! Só mais um esforço para se tornar uma lenda! 🏆"
+            },
+            "4": {
+                "name": "Lenda de Mindelo",
+                "description": "Descobriu todos os monumentos!",
+                "message": "Parabéns! Você conquistou Mindelo como um verdadeiro herói cultural! Agora você é um embaixador da história desta bela cidade! 👑"
+            }
+        }
+    },
+    "en": {
+        "tagline": "Discover the treasures of Mindelo",
+        "welcomeBack": "Welcome back!",
+        "welcomeBackSub": "Continue your journey of discovery",
+        "email": "Email",
+        "password": "Password",
+        "login": "Sign in",
+        "noAccount": "No account? Create one",
+        "createAccount": "Create Account",
+        "createAccountSub": "Join the historical adventure",
+        "fullName": "Full Name",
+        "haveAccount": "Already have an account? Sign in",
+        "greeting": "Hello",
+        "tipProfile": "Profile",
+        "tipMap": "Map",
+        "tipSettings": "Settings",
+        "tipLogout": "Log out",
+        "navScanner": "Scanner",
+        "navProfile": "Profile",
+        "navMap": "Map",
+        "searchingQr": "Looking for a QR Code...",
+        "pointsExclaim": "points!",
+        "keepExploring": "Keep Exploring",
+        "scanQr": "Scan QR Code",
+        "scanHint": "Point the camera at a monument QR Code",
+        "starting": "Starting...",
+        "scanning": "Scanning...",
+        "yourProgress": "Your Progress",
+        "level": "Level",
+        "monumentsLabel": "Monuments",
+        "pointsLabel": "Points",
+        "achievementsLabel": "Achievements",
+        "discoveredMonuments": "Discovered Monuments",
+        "noMonumentsYet": "You haven't discovered any monuments yet",
+        "settings": "Settings",
+        "appearance": "Appearance",
+        "appearanceSub": "Choose between the light and dark theme",
+        "themeLight": "Light",
+        "themeDark": "Dark",
+        "themeSystem": "System",
+        "language": "Language",
+        "languageSub": "Choose the app language",
+        "achievementAlerts": "Achievement alerts",
+        "achievementAlertsSub": "Show a popup when a badge is unlocked",
+        "logoutAction": "Log out",
+        "version": "Heritage Hunt CV • version 1.0",
+        "mindeloMonuments": "Monuments of Mindelo",
+        "myLocation": "Your Location",
+        "currentLocation": "Your current location",
+        "nearestMonument": "Nearest monument:",
+        "distanceAway": "{d}m away",
+        "pointsWord": "points",
+        "discoveredCheck": "✓ Discovered",
+        "statusUnlocked": "Unlocked",
+        "statusLocked": "Locked",
+        "scanToDiscover": "Scan the QR Code to discover this monument",
+        "pts": "pts",
+        "fantastic": "Fantastic!",
+        "achieved": "Unlocked!",
+        "close": "Close",
+        "takePhoto": "Take Photo",
+        "uploadPhoto": "Upload Photo",
+        "yourNote": "Your Note about this Monument",
+        "notePlaceholder": "Write your impressions about this monument...",
+        "saveNote": "Save Note",
+        "yourPhotos": "Your Photos",
+        "noPhotos": "No photos yet.<br>Take or upload photos of this monument!",
+        "photoAlt": "Photo",
+        "clickToCapture": "Tap to capture",
+        "locationLabel": "Location",
+        "monumentDiscovered": "Monument Discovered!",
+        "discoveredOnJourney": "Discovered on your journey",
+        "fillAllFields": "Please fill in all fields",
+        "wrongCredentials": "Incorrect email or password",
+        "passwordTooShort": "The password must be at least 6 characters long",
+        "confirmLogout": "Are you sure you want to log out?",
+        "cameraError": "Could not access the camera. Please check your permissions.",
+        "qrNotRecognized": "QR Code not recognised. Make sure you scan a valid monument QR Code.",
+        "alreadyDiscovered": "You have already discovered this monument!",
+        "mustDiscoverFirst": "You need to discover this monument first!",
+        "photoSaved": "Photo saved successfully!",
+        "confirmDeletePhoto": "Are you sure you want to delete this photo?",
+        "noteSaved": "Note saved successfully!",
+        "noteRemoved": "Note removed!",
+        "monuments": {
+            "1": "Former colonial government palace, built in 1874, today a cultural centre and one of the most important symbols of Cape Verde's history.",
+            "2": "Historic lighthouse built in 1886, offering a stunning panoramic view of the city and the port of Mindelo.",
+            "3": "A traditional trading hub with unique architecture, offering everything from tropical fruit to local handicrafts.",
+            "4": "Historic church in the city centre, built in the 19th century, with a Portuguese colonial-style façade.",
+            "5": "A small replica of the famous Lisbon monument, a symbol of the historical link between Cape Verde and Portugal.",
+            "6": "Former customs building with colonial architecture, a witness to Mindelo's important commercial past.",
+            "7": "Museum dedicated to the morna, Cape Verde's traditional music, honouring Cesária Évora and other artists.",
+            "8": "The city's main square with its historic bandstand, a meeting place for open-air cultural events.",
+            "9": "An exhibition of the finest Cape Verdean crafts, from ceramics to colourful fabrics made with traditional techniques.",
+            "10": "An important cultural centre in Mindelo hosting exhibitions, concerts and literary events all year round.",
+            "11": "Historic port that was crucial to the city's development, a stopover for transatlantic ships in the 19th century.",
+            "12": "Old fort that protected Mindelo bay, built in the 18th century, today offering spectacular ocean views."
+        },
+        "badges": {
+            "1": {
+                "name": "Beginner Explorer",
+                "description": "You discovered 25% of the monuments!",
+                "message": "You're on the right track, little explorer! Mindelo is starting to reveal its secrets to you! 🌟"
+            },
+            "2": {
+                "name": "Intermediate Adventurer",
+                "description": "You discovered 50% of the monuments!",
+                "message": "Halfway there! You already know Mindelo better than many tourists! 🗺️"
+            },
+            "3": {
+                "name": "Master Explorer",
+                "description": "You discovered 75% of the monuments!",
+                "message": "Wow! You almost know Mindelo better than the locals! One more push to become a legend! 🏆"
+            },
+            "4": {
+                "name": "Legend of Mindelo",
+                "description": "You discovered every monument!",
+                "message": "Congratulations! You conquered Mindelo like a true cultural hero! You are now an ambassador of this beautiful city's history! 👑"
+            }
+        }
+    },
+    "fr": {
+        "tagline": "Découvrez les trésors de Mindelo",
+        "welcomeBack": "Bon retour !",
+        "welcomeBackSub": "Poursuivez votre voyage de découverte",
+        "email": "E-mail",
+        "password": "Mot de passe",
+        "login": "Se connecter",
+        "noAccount": "Pas de compte ? Créer un compte",
+        "createAccount": "Créer un compte",
+        "createAccountSub": "Rejoignez l'aventure historique",
+        "fullName": "Nom complet",
+        "haveAccount": "Déjà un compte ? Se connecter",
+        "greeting": "Bonjour",
+        "tipProfile": "Profil",
+        "tipMap": "Carte",
+        "tipSettings": "Paramètres",
+        "tipLogout": "Déconnexion",
+        "navScanner": "Scanner",
+        "navProfile": "Profil",
+        "navMap": "Carte",
+        "searchingQr": "Recherche d'un QR Code...",
+        "pointsExclaim": "points !",
+        "keepExploring": "Continuer l'exploration",
+        "scanQr": "Scanner le QR Code",
+        "scanHint": "Pointez la caméra vers un QR Code de monument",
+        "starting": "Démarrage...",
+        "scanning": "Analyse...",
+        "yourProgress": "Votre progression",
+        "level": "Niveau",
+        "monumentsLabel": "Monuments",
+        "pointsLabel": "Points",
+        "achievementsLabel": "Succès",
+        "discoveredMonuments": "Monuments découverts",
+        "noMonumentsYet": "Vous n'avez encore découvert aucun monument",
+        "settings": "Paramètres",
+        "appearance": "Apparence",
+        "appearanceSub": "Choisissez entre le thème clair et sombre",
+        "themeLight": "Clair",
+        "themeDark": "Sombre",
+        "themeSystem": "Système",
+        "language": "Langue",
+        "languageSub": "Choisissez la langue de l'application",
+        "achievementAlerts": "Alertes de succès",
+        "achievementAlertsSub": "Afficher une fenêtre lors du déblocage d'une médaille",
+        "logoutAction": "Se déconnecter",
+        "version": "Heritage Hunt CV • version 1.0",
+        "mindeloMonuments": "Monuments de Mindelo",
+        "myLocation": "Votre position",
+        "currentLocation": "Votre position actuelle",
+        "nearestMonument": "Monument le plus proche :",
+        "distanceAway": "à {d} m",
+        "pointsWord": "points",
+        "discoveredCheck": "✓ Découvert",
+        "statusUnlocked": "Débloqué",
+        "statusLocked": "Verrouillé",
+        "scanToDiscover": "Scannez le QR Code pour découvrir ce monument",
+        "pts": "pts",
+        "fantastic": "Fantastique !",
+        "achieved": "Débloqué !",
+        "close": "Fermer",
+        "takePhoto": "Prendre une photo",
+        "uploadPhoto": "Importer une photo",
+        "yourNote": "Votre note sur ce monument",
+        "notePlaceholder": "Écrivez vos impressions sur ce monument...",
+        "saveNote": "Enregistrer la note",
+        "yourPhotos": "Vos photos",
+        "noPhotos": "Aucune photo pour l'instant.<br>Prenez ou importez des photos de ce monument !",
+        "photoAlt": "Photo",
+        "clickToCapture": "Cliquez pour capturer",
+        "locationLabel": "Localisation",
+        "monumentDiscovered": "Monument découvert !",
+        "discoveredOnJourney": "Découvert lors de votre parcours",
+        "fillAllFields": "Veuillez remplir tous les champs",
+        "wrongCredentials": "E-mail ou mot de passe incorrect",
+        "passwordTooShort": "Le mot de passe doit contenir au moins 6 caractères",
+        "confirmLogout": "Voulez-vous vraiment vous déconnecter ?",
+        "cameraError": "Impossible d'accéder à la caméra. Vérifiez les autorisations.",
+        "qrNotRecognized": "QR Code non reconnu. Assurez-vous de scanner un QR Code de monument valide.",
+        "alreadyDiscovered": "Vous avez déjà découvert ce monument !",
+        "mustDiscoverFirst": "Vous devez d'abord découvrir ce monument !",
+        "photoSaved": "Photo enregistrée avec succès !",
+        "confirmDeletePhoto": "Voulez-vous vraiment supprimer cette photo ?",
+        "noteSaved": "Note enregistrée avec succès !",
+        "noteRemoved": "Note supprimée !",
+        "monuments": {
+            "1": "Ancien palais du gouvernement colonial, construit en 1874, aujourd'hui centre culturel et l'un des symboles les plus importants de l'histoire du Cap-Vert.",
+            "2": "Phare historique construit en 1886, il offre une vue panoramique époustouflante sur la ville et le port de Mindelo.",
+            "3": "Centre de commerce traditionnel à l'architecture unique, où l'on trouve aussi bien des fruits tropicaux que de l'artisanat local.",
+            "4": "Église historique au centre-ville, construite au XIXe siècle, avec une façade de style colonial portugais.",
+            "5": "Petite réplique du célèbre monument de Lisbonne, symbole du lien historique entre le Cap-Vert et le Portugal.",
+            "6": "Ancien bâtiment des douanes à l'architecture coloniale, témoin du riche passé commercial de Mindelo.",
+            "7": "Musée dédié à la morna, la musique traditionnelle du Cap-Vert, qui rend hommage à Cesária Évora et à d'autres artistes.",
+            "8": "Place principale de la ville avec son kiosque à musique historique, lieu de rencontre et d'événements culturels en plein air.",
+            "9": "Exposition du meilleur artisanat cap-verdien, de la céramique aux tissus colorés réalisés selon des techniques traditionnelles.",
+            "10": "Important centre culturel de Mindelo qui accueille expositions, concerts et événements littéraires tout au long de l'année.",
+            "11": "Port historique qui fut crucial pour le développement de la ville, escale des navires transatlantiques au XIXe siècle.",
+            "12": "Ancien fort qui protégeait la baie de Mindelo, construit au XVIIIe siècle, il offre aujourd'hui des vues spectaculaires sur l'océan."
+        },
+        "badges": {
+            "1": {
+                "name": "Explorateur débutant",
+                "description": "Vous avez découvert 25 % des monuments !",
+                "message": "Vous êtes sur la bonne voie, petit explorateur ! Mindelo commence à vous révéler ses secrets ! 🌟"
+            },
+            "2": {
+                "name": "Aventurier intermédiaire",
+                "description": "Vous avez découvert 50 % des monuments !",
+                "message": "À mi-chemin ! Vous connaissez déjà Mindelo mieux que bien des touristes ! 🗺️"
+            },
+            "3": {
+                "name": "Maître explorateur",
+                "description": "Vous avez découvert 75 % des monuments !",
+                "message": "Waouh ! Vous connaissez presque Mindelo mieux que les habitants ! Encore un effort pour devenir une légende ! 🏆"
+            },
+            "4": {
+                "name": "Légende de Mindelo",
+                "description": "Vous avez découvert tous les monuments !",
+                "message": "Félicitations ! Vous avez conquis Mindelo en véritable héros culturel ! Vous êtes désormais un ambassadeur de l'histoire de cette belle ville ! 👑"
+            }
+        }
+    }
+};
+
+function setCurrentLanguage(lang) {
+    currentLanguage = AVAILABLE_LANGUAGES.indexOf(lang) !== -1 ? lang : 'pt';
+    return currentLanguage;
+}
+
+// Devolve a tradução da chave no idioma activo.
+// `vars` substitui marcadores do tipo {nome}.
+function t(key, vars) {
+    const dict = translations[currentLanguage] || translations.pt;
+    let text = dict[key];
+    if (text === undefined) text = translations.pt[key];
+    if (text === undefined) return key;
+    if (vars) {
+        Object.keys(vars).forEach(name => {
+            text = text.split('{' + name + '}').join(vars[name]);
+        });
+    }
+    return text;
+}
+
+function monumentDescription(id) {
+    const dict = translations[currentLanguage] || translations.pt;
+    return (dict.monuments && dict.monuments[id]) || translations.pt.monuments[id];
+}
+
+function badgeText(id, field) {
+    const dict = translations[currentLanguage] || translations.pt;
+    const entry = (dict.badges && dict.badges[id]) || translations.pt.badges[id];
+    return entry ? entry[field] : '';
+}
