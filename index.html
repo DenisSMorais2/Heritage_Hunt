@@ -6,6 +6,9 @@
     <title>Heritage Hunt CV - Scanner de Monumentos</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Cormorant+Garamond:ital,wght@1,500;1,600&display=swap">
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/qr-scanner@1.4.2/qr-scanner.umd.min.js"></script>
@@ -105,25 +108,56 @@
         <!-- Main App -->
         <div id="mainApp" class="hidden min-h-screen pb-20">
             <!-- Header -->
-            <header class="gradient-bg text-white p-4 rounded-b-2xl shadow-lg">
-                <div class="flex justify-between items-center">
-                    <div class="min-w-0">
-                        <h1 class="text-xl font-bold truncate">Heritage Hunt CV</h1>
-                        <p class="text-sm opacity-90 truncate"><span data-i18n="greeting">Olá</span>, <span id="userName">Explorador</span>!</p>
+            <header class="hh-header">
+                <div class="hh-header-top">
+                    <div class="hh-brand">
+                        <svg class="hh-logo" viewBox="0 0 120 92" aria-hidden="true">
+                            <g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <!-- cruz -->
+                                <path d="M74 12v-9M70.5 6.5h7"/>
+                                <!-- torre sineira -->
+                                <path d="M62 30l12-18 12 18"/>
+                                <path d="M64.5 30v44M83.5 30v44"/>
+                                <path d="M69 40a5 5 0 0 1 10 0v9h-10z"/>
+                                <path d="M69 58a5 5 0 0 1 10 0v9h-10z"/>
+                                <!-- corpo da igreja -->
+                                <path d="M40 46h24v28H40z"/>
+                                <path d="M84 52h16v22H84z"/>
+                                <path d="M48 60a4 4 0 0 1 8 0v14h-8z"/>
+                                <path d="M90 62a3.5 3.5 0 0 1 7 0v12h-7z"/>
+                                <!-- palmeira -->
+                                <path d="M22 74c0-14 3-24 6-30"/>
+                                <path d="M28 44c-6-7-14-9-20-6M28 44c-2-9-8-14-15-14M28 44c5-8 13-10 20-7M28 44c1-8 6-13 13-14"/>
+                                <!-- linha de agua -->
+                                <path d="M8 82c6-4 12-4 18 0s12 4 18 0 12-4 18 0 12 4 18 0 12-4 18 0" opacity=".85"/>
+                                <path d="M14 74h18" opacity=".6"/>
+                            </g>
+                        </svg>
+                        <div class="hh-brand-text">
+                            <h1 class="hh-brand-title">Heritage Hunt CV</h1>
+                            <p class="hh-brand-greet"><span data-i18n="greeting">Olá</span>, <span id="userName">Explorador</span>!</p>
+                        </div>
                     </div>
-                    <div class="flex space-x-1.5 flex-shrink-0">
-                        <button id="profileBtn" data-i18n-title="tipProfile" title="Perfil" class="w-10 h-10 flex items-center justify-center rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 transition">
-                            <i class="fas fa-trophy"></i>
-                        </button>
-                        <button id="mapBtn" data-i18n-title="tipMap" title="Mapa" class="w-10 h-10 flex items-center justify-center rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 transition">
-                            <i class="fas fa-map"></i>
-                        </button>
-                        <button id="settingsBtn" data-i18n-title="tipSettings" title="Definições" class="w-10 h-10 flex items-center justify-center rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 transition">
+                    <div class="hh-actions">
+                        <button id="settingsBtn" data-i18n-title="tipSettings" title="Definições" class="hh-icon-btn">
                             <i class="fas fa-sliders-h"></i>
                         </button>
-                        <button id="logoutBtn" data-i18n-title="tipLogout" title="Sair" class="w-10 h-10 flex items-center justify-center rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 transition">
+                        <button id="logoutBtn" data-i18n-title="tipLogout" title="Sair" class="hh-icon-btn">
                             <i class="fas fa-sign-out-alt"></i>
                         </button>
+                    </div>
+                </div>
+                <div class="hh-header-bottom">
+                    <p class="hh-tagline">
+                        <span data-i18n="tagDiscover">Descubra</span>
+                        <em>&bull;</em>
+                        <span data-i18n="tagExplore">Explore</span>
+                        <em>&bull;</em>
+                        <span data-i18n="tagPreserve">Preserve</span>
+                    </p>
+                    <div class="hh-seal">
+                        <span class="hh-seal-script">São Vicente</span>
+                        <span class="hh-seal-sub" data-i18n-html="sealSub">Nossa história<br>vive aqui</span>
                     </div>
                 </div>
             </header>
@@ -132,241 +166,372 @@
             <main class="p-4">
                 <!-- Scanner View (default) -->
                 <div id="scannerView">
-                    <div class="bg-gray-900 rounded-2xl overflow-hidden relative shadow-2xl" style="height: 450px;">
-                        <video id="scannerVideo" class="w-full h-full object-cover" autoplay playsinline></video>
-                        <button id="closeScannerBtn" class="absolute top-4 right-4 w-10 h-10 bg-red-500 rounded-full flex items-center justify-center text-white hover:bg-red-600 transition z-20 hidden">
-                            <i class="fas fa-times text-lg"></i>
-                        </button>
+                  <div class="hh-page">
+                    <div class="hh-cam">
+                        <video id="scannerVideo" class="hh-cam-video" autoplay playsinline></video>
                         <div id="scannerOverlay" class="scanner-overlay hidden">
                             <div class="text-center">
                                 <div class="scanner-frame mb-6">
                                     <div class="scanner-line"></div>
                                 </div>
-                                <p class="text-white text-lg font-semibold" data-i18n="searchingQr">Procurando por QR Code...</p>
+                                <p class="hh-scanning-label" data-i18n="searchingQr">Procurando por QR Code...</p>
                             </div>
                         </div>
                         <div id="scannerResult" class="scanner-overlay hidden">
-                            <div class="bg-white p-6 rounded-2xl max-w-xs mx-4 text-center modal-animation shadow-2xl">
+                            <div class="hh-result-card modal-animation">
                                 <div class="mb-4">
                                     <img id="monumentImage" src="" alt="" class="w-full h-32 object-cover rounded-lg mb-3">
                                 </div>
-                                <h3 class="text-xl font-bold mb-2" id="scannedMonumentName"></h3>
-                                <p class="text-gray-600 mb-4 text-sm" id="scannedMonumentDesc"></p>
-                                <div class="bg-green-50 p-3 rounded-lg mb-4">
-                                    <p class="text-green-600 font-bold text-lg">+<span id="pointsEarned">0</span> <span data-i18n="pointsExclaim">pontos!</span></p>
+                                <h3 class="hh-result-title" id="scannedMonumentName"></h3>
+                                <p class="hh-result-desc" id="scannedMonumentDesc"></p>
+                                <div class="hh-result-points">
+                                    <p>+<span id="pointsEarned">0</span> <span data-i18n="pointsExclaim">pontos!</span></p>
                                 </div>
-                                <button id="closeResultBtn" class="btn-primary text-white px-6 py-2 rounded-xl hover:bg-blue-700 transition" data-i18n="keepExploring">Continuar Explorando</button>
+                                <button id="closeResultBtn" class="hh-gold-btn hh-gold-btn-sm" data-i18n="keepExploring">Continuar Explorando</button>
                             </div>
                         </div>
-                    </div>
-                    
-                    <div class="mt-6 text-center">
-                        <button id="startScannerBtn" class="btn-primary text-white px-8 py-4 rounded-2xl font-bold text-lg shadow-lg flex items-center mx-auto">
-                            <i class="fas fa-qrcode mr-3 text-xl"></i> <span data-i18n="scanQr">Escanear QR Code</span>
+                        <img class="hh-cam-idle" src="imagens/igreja_nossa_senhora_luz.jpg" alt="" aria-hidden="true">
+                        <div class="hh-cam-shade"></div>
+                        <div class="hh-brackets" aria-hidden="true">
+                            <span class="hh-bracket hh-bracket-tl"></span>
+                            <span class="hh-bracket hh-bracket-tr"></span>
+                            <span class="hh-bracket hh-bracket-bl"></span>
+                            <span class="hh-bracket hh-bracket-br"></span>
+                            <i class="fas fa-qrcode hh-qr-glyph"></i>
+                        </div>
+                        <button id="closeScannerBtn" class="hh-cam-close hidden">
+                            <i class="fas fa-times"></i>
                         </button>
-                        <p class="text-sm text-gray-500 mt-3" data-i18n="scanHint">Aponte a câmera para um QR Code de monumento</p>
+                        <button id="torchBtn" class="hh-torch hidden" data-i18n-title="torch" title="Luz">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 2h8l-1 4H9L8 2zm1 5h6l-.6 3H9.6L9 7zm.7 4h4.6l-.5 3.2a1 1 0 0 1-1 .8h-1.6a1 1 0 0 1-1-.8L9.7 11zm1.3 5h2v6h-2v-6z" fill="currentColor"/></svg>
+                            <span data-i18n="torch">Luz</span>
+                        </button>
+                        <div class="hh-cam-foot">
+                            <p class="hh-cam-hint" data-i18n="scanHint">Aponte a câmera para um QR Code de monumento</p>
+                            <button id="startScannerBtn" class="hh-gold-btn">
+                                <i class="fas fa-qrcode mr-3 text-xl"></i> <span data-i18n="scanQr">Escanear QR Code</span>
+                            </button>
+                        </div>
                     </div>
-                    
-                    <div class="mt-8 bg-white p-6 rounded-2xl shadow-lg">
-                        <div class="flex items-center justify-between mb-4">
-                            <h2 class="text-xl font-bold text-gray-800" data-i18n="yourProgress">Seu Progresso</h2>
-                            <div class="flex items-center text-blue-600">
-                                <i class="fas fa-star mr-1"></i>
-                                <span id="totalPointsHeader" class="font-bold">0</span>
+
+                    <div class="hh-card hh-progress">
+                        <div class="hh-progress-head">
+                            <h2 class="hh-section-title" data-i18n="yourProgress">Seu Progresso</h2>
+                            <div class="hh-points">
+                                <i class="fas fa-star"></i>
+                                <span id="totalPointsHeader">0</span>
+                                <span class="hh-points-word" data-i18n="pointsWord">pontos</span>
                             </div>
                         </div>
-                        <div class="flex items-center mb-4">
-                            <div class="w-full bg-gray-200 rounded-full h-3">
-                                <div id="progressBar" class="progress-bar bg-gradient-to-r from-blue-500 to-purple-500 h-3 rounded-full" style="width: 0%"></div>
+                        <div class="hh-bar-row">
+                            <div class="hh-bar-track">
+                                <div id="progressBar" class="progress-bar hh-bar-fill" style="width: 0%"></div>
                             </div>
-                            <span id="progressPercent" class="ml-3 text-sm font-bold text-gray-700">0%</span>
+                            <span id="progressPercent" class="hh-bar-percent">0%</span>
                         </div>
-                        <div id="badgesContainer" class="grid grid-cols-4 gap-3">
+                        <div id="badgesContainer" class="hh-badges">
                             <!-- Badges will be added here dynamically -->
                         </div>
+                        <div class="hh-quote">
+                            <span class="hh-rule"></span>
+                            <p data-i18n-html="heritageQuote">Cada monumento conta uma história.<br>Continue explorando!</p>
+                            <span class="hh-rule"></span>
+                        </div>
                     </div>
+                  </div>
                 </div>
 
                 <!-- Profile View -->
-                <div id="profileView" class="hidden space-y-6">
-                    <div class="bg-white p-6 rounded-2xl shadow-lg">
-                        <div class="flex items-center mb-6">
-                            <div class="relative">
-                                <div id="profilePhotoContainer" class="w-20 h-20 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center profile-photo cursor-pointer">
-                                    <img id="profilePhoto" src="" alt="" class="w-20 h-20 rounded-full object-cover hidden">
-                                    <i id="profileIcon" class="fas fa-user text-white text-2xl"></i>
+                <div id="profileView" class="hidden">
+                  <div class="hh-page">
+                    <div class="hh-card hh-id-card">
+                        <div class="hh-id-bg" aria-hidden="true"></div>
+                        <div class="hh-id-main">
+                            <div class="hh-avatar-wrap">
+                                <div id="profilePhotoContainer" class="hh-avatar profile-photo cursor-pointer">
+                                    <img id="profilePhoto" src="" alt="" class="hh-avatar-img hidden">
+                                    <i id="profileIcon" class="fas fa-user"></i>
                                 </div>
                                 <input type="file" id="photoInput" accept="image/*" class="hidden">
-                                <button id="changePhotoBtn" class="absolute -bottom-1 -right-1 w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white hover:bg-blue-600 transition">
-                                    <i class="fas fa-camera text-xs"></i>
+                                <button id="changePhotoBtn" class="hh-avatar-btn">
+                                    <i class="fas fa-camera"></i>
                                 </button>
                             </div>
-                            <div class="ml-4">
-                                <h2 class="text-2xl font-bold text-gray-800" id="profileUserName">Explorador</h2>
-                                <p class="text-gray-600"><span data-i18n="level">Nível</span>: <span id="userLevel" class="font-semibold text-blue-600">1</span></p>
-                                <p class="text-sm text-gray-500" id="userEmail">email@exemplo.com</p>
+                            <div class="hh-id-text">
+                                <h2 class="hh-id-name" id="profileUserName">Explorador</h2>
+                                <p class="hh-id-level"><span data-i18n="level">Nível</span>: <span id="userLevel">1</span></p>
+                                <p class="hh-id-email" id="userEmail">email@exemplo.com</p>
+                            </div>
+                            <div class="hh-id-motto">
+                                <span class="hh-motto-script" data-i18n-html="cultureConnects">Cultura<br>nos conecta</span>
+                                <span class="hh-motto-rule"></span>
                             </div>
                         </div>
-                        
-                        <div class="grid grid-cols-3 gap-4">
-                            <div class="bg-blue-50 p-4 rounded-xl text-center">
-                                <div class="text-2xl font-bold text-blue-600"><span id="monumentsScanned">0</span>/<span id="totalMonuments">12</span></div>
-                                <p class="text-xs text-gray-600 mt-1" data-i18n="monumentsLabel">Monumentos</p>
+
+                        <div class="hh-stats">
+                            <div class="hh-stat hh-stat-blue">
+                                <span class="hh-stat-icon"><i class="fas fa-landmark"></i></span>
+                                <div class="hh-stat-body">
+                                    <div class="hh-stat-value"><span id="monumentsScanned">0</span>/<span id="totalMonuments">12</span></div>
+                                    <p class="hh-stat-label" data-i18n="monumentsLabel">Monumentos</p>
+                                </div>
                             </div>
-                            <div class="bg-green-50 p-4 rounded-xl text-center">
-                                <div class="text-2xl font-bold text-green-600"><span id="totalPoints">0</span></div>
-                                <p class="text-xs text-gray-600 mt-1" data-i18n="pointsLabel">Pontos</p>
+                            <div class="hh-stat hh-stat-green">
+                                <span class="hh-stat-icon"><i class="fas fa-star"></i></span>
+                                <div class="hh-stat-body">
+                                    <div class="hh-stat-value"><span id="totalPoints">0</span></div>
+                                    <p class="hh-stat-label" data-i18n="pointsLabel">Pontos</p>
+                                </div>
                             </div>
-                            <div class="bg-purple-50 p-4 rounded-xl text-center">
-                                <div class="text-2xl font-bold text-purple-600"><span id="badgesEarned">0</span>/4</div>
-                                <p class="text-xs text-gray-600 mt-1" data-i18n="achievementsLabel">Conquistas</p>
+                            <div class="hh-stat hh-stat-purple">
+                                <span class="hh-stat-icon"><i class="fas fa-trophy"></i></span>
+                                <div class="hh-stat-body">
+                                    <div class="hh-stat-value"><span id="badgesEarned">0</span>/4</div>
+                                    <p class="hh-stat-label" data-i18n="achievementsLabel">Conquistas</p>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    
-                    <div class="bg-white p-6 rounded-2xl shadow-lg">
-                        <h3 class="text-lg font-bold mb-4 text-gray-800" data-i18n="discoveredMonuments">Monumentos Descobertos</h3>
-                        <div id="discoveredMonumentsList" class="space-y-3">
-                            <p class="text-gray-500 text-center py-8" data-i18n="noMonumentsYet">Ainda não descobriu nenhum monumento</p>
+
+                    <div class="hh-card hh-discover">
+                        <div class="hh-discover-head">
+                            <h3 class="hh-section-title hh-underlined" data-i18n="discoveredMonuments">Monumentos Descobertos</h3>
+                            <div class="hh-compass">
+                                <svg viewBox="0 0 64 64" aria-hidden="true">
+                                    <g fill="none" stroke="currentColor" stroke-width="1.4">
+                                        <circle cx="32" cy="32" r="26" opacity=".55"/>
+                                        <circle cx="32" cy="32" r="20" opacity=".35"/>
+                                        <circle cx="32" cy="32" r="4.5" opacity=".8"/>
+                                    </g>
+                                    <g fill="currentColor">
+                                        <path d="M32 4l4.2 24.2L32 32l-4.2-3.8z" opacity=".95"/>
+                                        <path d="M32 60l-4.2-24.2L32 32l4.2 3.8z" opacity=".55"/>
+                                        <path d="M60 32l-24.2 4.2L32 32l3.8-4.2z" opacity=".75"/>
+                                        <path d="M4 32l24.2-4.2L32 32l-3.8 4.2z" opacity=".75"/>
+                                        <path d="M49 15l-11.6 9.6L32 32l7.4-5.4z" opacity=".45"/>
+                                        <path d="M15 49l11.6-9.6L32 32l-7.4 5.4z" opacity=".45"/>
+                                        <path d="M49 49l-9.6-11.6L32 32l5.4 7.4z" opacity=".45"/>
+                                        <path d="M15 15l9.6 11.6L32 32l-5.4-7.4z" opacity=".45"/>
+                                    </g>
+                                </svg>
+                                <span class="hh-compass-text" data-i18n-html="placeStory">Cada lugar<br>conta uma<br>história</span>
+                            </div>
+                        </div>
+                        <div id="discoveredMonumentsList" class="hh-mon-list">
+                            <p class="hh-empty" data-i18n="noMonumentsYet">Ainda não descobriu nenhum monumento</p>
                         </div>
                     </div>
+                  </div>
                 </div>
 
                 <!-- Settings View -->
-                <div id="settingsView" class="hidden space-y-6">
-                    <div class="bg-white p-6 rounded-2xl shadow-lg">
-                        <h3 class="text-lg font-bold mb-2 text-gray-800 flex items-center">
-                            <i class="fas fa-sliders-h text-blue-600 mr-2"></i> <span data-i18n="settings">Definições</span>
-                        </h3>
-
-                        <!-- Aparência / Tema -->
-                        <div class="py-4 border-b border-gray-100">
-                            <div class="flex items-center mb-3">
-                                <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center mr-3">
-                                    <i class="fas fa-adjust text-blue-600"></i>
-                                </div>
-                                <div>
-                                    <p class="text-sm font-semibold text-gray-800" data-i18n="appearance">Aparência</p>
-                                    <p class="text-xs text-gray-500" data-i18n="appearanceSub">Escolha entre o tema claro e escuro</p>
-                                </div>
-                            </div>
-                            <div id="themeSelector" class="grid grid-cols-3 gap-2 bg-gray-50 p-1 rounded-xl">
-                                <button type="button" class="theme-option" data-theme="light">
-                                    <i class="fas fa-sun"></i>
-                                    <span data-i18n="themeLight">Claro</span>
-                                </button>
-                                <button type="button" class="theme-option" data-theme="dark">
-                                    <i class="fas fa-moon"></i>
-                                    <span data-i18n="themeDark">Escuro</span>
-                                </button>
-                                <button type="button" class="theme-option" data-theme="system">
-                                    <i class="fas fa-desktop"></i>
-                                    <span data-i18n="themeSystem">Sistema</span>
-                                </button>
+                <div id="settingsView" class="hidden">
+                  <div class="hh-page">
+                    <div class="hh-card hh-settings">
+                        <div class="hh-discover-head">
+                            <h3 class="hh-section-title hh-underlined hh-settings-title">
+                                <i class="fas fa-cog"></i>
+                                <span data-i18n="settings">Definições</span>
+                            </h3>
+                            <div class="hh-compass">
+                                <svg viewBox="0 0 64 64" aria-hidden="true">
+                                    <g fill="none" stroke="currentColor" stroke-width="1.4">
+                                        <circle cx="32" cy="32" r="26" opacity=".55"/>
+                                        <circle cx="32" cy="32" r="20" opacity=".35"/>
+                                        <circle cx="32" cy="32" r="4.5" opacity=".8"/>
+                                    </g>
+                                    <g fill="currentColor">
+                                        <path d="M32 4l4.2 24.2L32 32l-4.2-3.8z" opacity=".95"/>
+                                        <path d="M32 60l-4.2-24.2L32 32l4.2 3.8z" opacity=".55"/>
+                                        <path d="M60 32l-24.2 4.2L32 32l3.8-4.2z" opacity=".75"/>
+                                        <path d="M4 32l24.2-4.2L32 32l-3.8 4.2z" opacity=".75"/>
+                                        <path d="M49 15l-11.6 9.6L32 32l7.4-5.4z" opacity=".45"/>
+                                        <path d="M15 49l11.6-9.6L32 32l-7.4 5.4z" opacity=".45"/>
+                                        <path d="M49 49l-9.6-11.6L32 32l5.4 7.4z" opacity=".45"/>
+                                        <path d="M15 15l9.6 11.6L32 32l-5.4-7.4z" opacity=".45"/>
+                                    </g>
+                                </svg>
+                                <span class="hh-compass-text" data-i18n-html="placeStory">Cada lugar<br>conta uma<br>história</span>
                             </div>
                         </div>
 
-                        <!-- Idioma -->
-                        <div class="py-4 border-b border-gray-100">
-                            <div class="flex items-center mb-3">
-                                <div class="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center mr-3">
-                                    <i class="fas fa-globe text-green-600"></i>
+                        <div class="hh-settings-panel">
+                            <!-- Aparência / Tema -->
+                            <div class="hh-set-section">
+                                <div class="hh-set-head">
+                                    <span class="hh-set-icon hh-set-icon-blue"><i class="fas fa-adjust"></i></span>
+                                    <div class="hh-set-head-text">
+                                        <p class="hh-set-title" data-i18n="appearance">Aparência</p>
+                                        <p class="hh-set-sub" data-i18n="appearanceSub">Escolha entre o tema claro, escuro ou do sistema.</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <p class="text-sm font-semibold text-gray-800" data-i18n="language">Idioma</p>
-                                    <p class="text-xs text-gray-500" data-i18n="languageSub">Escolha o idioma da aplicação</p>
+                                <div id="themeSelector" class="hh-theme-grid">
+                                    <button type="button" class="theme-option" data-theme="light">
+                                        <i class="fas fa-sun"></i>
+                                        <span data-i18n="themeLight">Claro</span>
+                                    </button>
+                                    <button type="button" class="theme-option" data-theme="dark">
+                                        <i class="fas fa-moon"></i>
+                                        <span data-i18n="themeDark">Escuro</span>
+                                    </button>
+                                    <button type="button" class="theme-option" data-theme="system">
+                                        <i class="fas fa-desktop"></i>
+                                        <span data-i18n="themeSystem">Sistema</span>
+                                    </button>
                                 </div>
                             </div>
-                            <div id="languageSelector" class="space-y-2">
-                                <button type="button" class="lang-option" data-lang="pt">
-                                    <span class="flag">
-                                        <svg viewBox="0 0 600 400" aria-hidden="true">
-                                            <rect width="600" height="400" fill="#DA291C"/>
-                                            <rect width="240" height="400" fill="#006600"/>
-                                            <circle cx="240" cy="200" r="76" fill="#FFE800"/>
-                                            <circle cx="240" cy="200" r="58" fill="#DA291C"/>
-                                            <ellipse cx="240" cy="200" rx="26" ry="58" fill="none" stroke="#FFE800" stroke-width="10"/>
-                                            <path d="M182 200 h116" stroke="#FFE800" stroke-width="10"/>
-                                            <rect x="212" y="168" width="56" height="64" rx="6" fill="#fff" stroke="#DA291C" stroke-width="10"/>
-                                        </svg>
-                                    </span>
-                                    <span class="lang-name">Português</span>
-                                    <i class="fas fa-check lang-check"></i>
-                                </button>
-                                <button type="button" class="lang-option" data-lang="en">
-                                    <span class="flag">
-                                        <svg viewBox="0 0 60 30" aria-hidden="true">
-                                            <clipPath id="ukClip"><path d="M30,15 h30 v15 z v15 h-30 z h-30 v-15 z v-15 h30 z"/></clipPath>
-                                            <rect width="60" height="30" fill="#012169"/>
-                                            <path d="M0,0 L60,30 M60,0 L0,30" stroke="#fff" stroke-width="6"/>
-                                            <path d="M0,0 L60,30 M60,0 L0,30" clip-path="url(#ukClip)" stroke="#C8102E" stroke-width="4"/>
-                                            <path d="M30,0 v30 M0,15 h60" stroke="#fff" stroke-width="10"/>
-                                            <path d="M30,0 v30 M0,15 h60" stroke="#C8102E" stroke-width="6"/>
-                                        </svg>
-                                    </span>
-                                    <span class="lang-name">English</span>
-                                    <i class="fas fa-check lang-check"></i>
-                                </button>
-                                <button type="button" class="lang-option" data-lang="fr">
-                                    <span class="flag">
-                                        <svg viewBox="0 0 3 2" aria-hidden="true">
-                                            <rect width="3" height="2" fill="#fff"/>
-                                            <rect width="1" height="2" fill="#002654"/>
-                                            <rect x="2" width="1" height="2" fill="#ED2939"/>
-                                        </svg>
-                                    </span>
-                                    <span class="lang-name">Français</span>
-                                    <i class="fas fa-check lang-check"></i>
-                                </button>
-                            </div>
-                        </div>
 
-                        <!-- Notificações de conquistas -->
-                        <div class="py-4 border-b border-gray-100 flex items-center justify-between">
-                            <div class="flex items-center">
-                                <div class="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center mr-3">
-                                    <i class="fas fa-medal text-purple-600"></i>
+                            <div class="hh-set-divider"></div>
+
+                            <!-- Idioma -->
+                            <div class="hh-set-section">
+                                <div class="hh-set-head">
+                                    <span class="hh-set-icon hh-set-icon-green"><i class="fas fa-globe"></i></span>
+                                    <div class="hh-set-head-text">
+                                        <p class="hh-set-title" data-i18n="language">Idioma</p>
+                                        <p class="hh-set-sub" data-i18n="languageSub">Escolha o idioma da aplicação.</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <p class="text-sm font-semibold text-gray-800" data-i18n="achievementAlerts">Alertas de conquistas</p>
-                                    <p class="text-xs text-gray-500" data-i18n="achievementAlertsSub">Mostrar janela ao desbloquear uma medalha</p>
+                                <div id="languageSelector" class="hh-lang-list">
+                                    <button type="button" class="lang-option" data-lang="pt">
+                                        <span class="flag">
+                                            <svg viewBox="0 0 600 400" aria-hidden="true">
+                                                <rect width="600" height="400" fill="#DA291C"/>
+                                                <rect width="240" height="400" fill="#006600"/>
+                                                <circle cx="240" cy="200" r="76" fill="#FFE800"/>
+                                                <circle cx="240" cy="200" r="58" fill="#DA291C"/>
+                                                <ellipse cx="240" cy="200" rx="26" ry="58" fill="none" stroke="#FFE800" stroke-width="10"/>
+                                                <path d="M182 200 h116" stroke="#FFE800" stroke-width="10"/>
+                                                <rect x="212" y="168" width="56" height="64" rx="6" fill="#fff" stroke="#DA291C" stroke-width="10"/>
+                                            </svg>
+                                        </span>
+                                        <span class="lang-name">Português</span>
+                                        <i class="fas fa-check lang-check"></i>
+                                    </button>
+                                    <button type="button" class="lang-option" data-lang="en">
+                                        <span class="flag">
+                                            <svg viewBox="0 0 60 30" aria-hidden="true">
+                                                <clipPath id="ukClip"><path d="M30,15 h30 v15 z v15 h-30 z h-30 v-15 z v-15 h30 z"/></clipPath>
+                                                <rect width="60" height="30" fill="#012169"/>
+                                                <path d="M0,0 L60,30 M60,0 L0,30" stroke="#fff" stroke-width="6"/>
+                                                <path d="M0,0 L60,30 M60,0 L0,30" clip-path="url(#ukClip)" stroke="#C8102E" stroke-width="4"/>
+                                                <path d="M30,0 v30 M0,15 h60" stroke="#fff" stroke-width="10"/>
+                                                <path d="M30,0 v30 M0,15 h60" stroke="#C8102E" stroke-width="6"/>
+                                            </svg>
+                                        </span>
+                                        <span class="lang-name">English</span>
+                                        <i class="fas fa-check lang-check"></i>
+                                    </button>
+                                    <button type="button" class="lang-option" data-lang="fr">
+                                        <span class="flag">
+                                            <svg viewBox="0 0 3 2" aria-hidden="true">
+                                                <rect width="3" height="2" fill="#fff"/>
+                                                <rect width="1" height="2" fill="#002654"/>
+                                                <rect x="2" width="1" height="2" fill="#ED2939"/>
+                                            </svg>
+                                        </span>
+                                        <span class="lang-name">Français</span>
+                                        <i class="fas fa-check lang-check"></i>
+                                    </button>
                                 </div>
                             </div>
-                            <label class="switch">
-                                <input type="checkbox" id="achievementAlertsToggle">
-                                <span class="switch-slider"></span>
-                            </label>
-                        </div>
 
-                        <!-- Conta -->
-                        <div class="pt-4">
-                            <button id="settingsLogoutBtn" class="w-full flex items-center justify-center text-red-600 font-semibold py-3 rounded-xl border border-red-200 hover:bg-red-50 transition">
-                                <i class="fas fa-sign-out-alt mr-2"></i> <span data-i18n="logoutAction">Terminar sessão</span>
-                            </button>
-                            <p class="text-xs text-gray-400 text-center mt-4" data-i18n="version">Heritage Hunt CV • versão 1.0</p>
+                            <div class="hh-set-divider"></div>
+
+                            <!-- Notificações de conquistas -->
+                            <div class="hh-set-section hh-set-row">
+                                <div class="hh-set-head">
+                                    <span class="hh-set-icon hh-set-icon-purple"><i class="fas fa-medal"></i></span>
+                                    <div class="hh-set-head-text">
+                                        <p class="hh-set-title" data-i18n="achievementAlerts">Alertas de conquistas</p>
+                                        <p class="hh-set-sub" data-i18n="achievementAlertsSub">Mostrar um popup quando uma medalha é desbloqueada.</p>
+                                    </div>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="achievementAlertsToggle">
+                                    <span class="switch-slider"></span>
+                                </label>
+                            </div>
+
+                            <div class="hh-set-divider"></div>
+
+                            <!-- Conta -->
+                            <div class="hh-set-foot">
+                                <button id="settingsLogoutBtn" class="hh-logout-btn">
+                                    <i class="fas fa-sign-out-alt"></i> <span data-i18n="logoutAction">Terminar sessão</span>
+                                </button>
+                                <p class="hh-version" data-i18n="version">Heritage Hunt CV • versão 1.0</p>
+                            </div>
                         </div>
                     </div>
+                  </div>
                 </div>
 
                 <!-- Map View -->
-                <div id="mapView" class="hidden space-y-6">
-                    <div class="bg-white rounded-2xl shadow-lg overflow-hidden relative" style="position: relative; z-index: 1;">
-                        <div id="map" style="position: relative; z-index: 1;"></div>
-                        <button id="locateUserBtn" class="absolute bottom-4 right-4 w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white hover:bg-blue-600 transition shadow-lg" style="z-index: 1000;">
-                            <i class="fas fa-crosshairs text-lg"></i>
-                        </button>
+                <div id="mapView" class="hidden">
+                  <div class="hh-page">
+                    <div class="hh-card hh-map-card">
+                        <div class="hh-map-head">
+                            <div class="hh-map-title">
+                                <i class="fas fa-map-marker-alt hh-map-pin"></i>
+                                <div class="hh-map-title-text">
+                                    <h3 class="hh-section-title" data-i18n="mapTitle">Mapa de Mindelo</h3>
+                                    <p class="hh-map-sub" data-i18n="mapSubtitle">Explore a cidade e descubra os seus monumentos.</p>
+                                </div>
+                            </div>
+                            <div class="hh-legend">
+                                <span class="hh-legend-pill hh-legend-found">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <span data-i18n="legendFound">Descoberto</span>
+                                </span>
+                                <span class="hh-legend-pill hh-legend-todo">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <span data-i18n="legendTodo">Por descobrir</span>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="hh-map-wrap">
+                            <div id="map" style="position: relative; z-index: 1;"></div>
+                            <button id="locateUserBtn" class="hh-locate" data-i18n-title="myLocation" title="Sua Localização" style="z-index: 1000;">
+                                <i class="fas fa-crosshairs"></i>
+                            </button>
+                        </div>
                     </div>
-                    <div class="bg-white p-6 rounded-2xl shadow-lg">
-                        <h3 class="text-lg font-bold mb-4 text-gray-800" data-i18n="mindeloMonuments">Monumentos de Mindelo</h3>
-                        <div id="monumentsList" class="space-y-3">
+
+                    <div class="hh-card hh-discover">
+                        <div class="hh-discover-head">
+                            <h3 class="hh-section-title hh-underlined" data-i18n="mindeloMonuments">Monumentos de Mindelo</h3>
+                            <div class="hh-compass">
+                                <svg viewBox="0 0 64 64" aria-hidden="true">
+                                    <g fill="none" stroke="currentColor" stroke-width="1.4">
+                                        <circle cx="32" cy="32" r="26" opacity=".55"/>
+                                        <circle cx="32" cy="32" r="20" opacity=".35"/>
+                                        <circle cx="32" cy="32" r="4.5" opacity=".8"/>
+                                    </g>
+                                    <g fill="currentColor">
+                                        <path d="M32 4l4.2 24.2L32 32l-4.2-3.8z" opacity=".95"/>
+                                        <path d="M32 60l-4.2-24.2L32 32l4.2 3.8z" opacity=".55"/>
+                                        <path d="M60 32l-24.2 4.2L32 32l3.8-4.2z" opacity=".75"/>
+                                        <path d="M4 32l24.2-4.2L32 32l-3.8 4.2z" opacity=".75"/>
+                                        <path d="M49 15l-11.6 9.6L32 32l7.4-5.4z" opacity=".45"/>
+                                        <path d="M15 49l11.6-9.6L32 32l-7.4 5.4z" opacity=".45"/>
+                                        <path d="M49 49l-9.6-11.6L32 32l5.4 7.4z" opacity=".45"/>
+                                        <path d="M15 15l9.6 11.6L32 32l-5.4-7.4z" opacity=".45"/>
+                                    </g>
+                                </svg>
+                                <span class="hh-compass-text" data-i18n-html="placeStory">Cada lugar<br>conta uma<br>história</span>
+                            </div>
+                        </div>
+                        <div id="monumentsList" class="hh-mon-list">
                             <!-- Monument list will be added here -->
                         </div>
                     </div>
+                  </div>
                 </div>
             </main>
 
             <!-- Navigation -->
-            <nav class="fixed bottom-0 w-full max-w-md bg-white border-t border-gray-100 shadow-lg">
+            <nav class="hh-nav fixed bottom-0 w-full max-w-md">
                 <div class="flex justify-around p-2">
                     <button id="navScanner" class="p-4 text-blue-600 flex flex-col items-center transition-all">
                         <i class="fas fa-qrcode text-xl"></i>

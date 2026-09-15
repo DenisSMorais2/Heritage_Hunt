@@ -199,6 +199,7 @@ const mapView = document.getElementById('mapView');
 const settingsView = document.getElementById('settingsView');
 const startScannerBtn = document.getElementById('startScannerBtn');
 const closeScannerBtn = document.getElementById('closeScannerBtn');
+const torchBtn = document.getElementById('torchBtn');
 const scannerVideo = document.getElementById('scannerVideo');
 const scannerOverlay = document.getElementById('scannerOverlay');
 const scannerResult = document.getElementById('scannerResult');
@@ -219,8 +220,6 @@ const monumentsList = document.getElementById('monumentsList');
 const navScanner = document.getElementById('navScanner');
 const navProfile = document.getElementById('navProfile');
 const navMap = document.getElementById('navMap');
-const profileBtn = document.getElementById('profileBtn');
-const mapBtn = document.getElementById('mapBtn');
 const settingsBtn = document.getElementById('settingsBtn');
 const userLevel = document.getElementById('userLevel');
 const userName = document.getElementById('userName');
@@ -556,6 +555,7 @@ function logout() {
         state.user = null;
         state.points = 0;
         state.scannedMonuments = [];
+        document.body.classList.remove('hh-dark-bg');
         authScreen.classList.remove('hidden');
         mainApp.classList.add('hidden');
         stopScanner();
@@ -767,6 +767,7 @@ function initSettings() {
 
 // Navigation functions
 function showScannerView() {
+    document.body.classList.add('hh-dark-bg');
     scannerView.classList.remove('hidden');
     profileView.classList.add('hidden');
     mapView.classList.add('hidden');
@@ -775,6 +776,7 @@ function showScannerView() {
 }
 
 function showProfileView() {
+    document.body.classList.add('hh-dark-bg');
     scannerView.classList.add('hidden');
     profileView.classList.remove('hidden');
     mapView.classList.add('hidden');
@@ -784,6 +786,7 @@ function showProfileView() {
 }
 
 function showSettingsView() {
+    document.body.classList.add('hh-dark-bg');
     scannerView.classList.add('hidden');
     profileView.classList.add('hidden');
     mapView.classList.add('hidden');
@@ -796,6 +799,7 @@ function showSettingsView() {
 }
 
 function showMapView() {
+    document.body.classList.add('hh-dark-bg');
     scannerView.classList.add('hidden');
     profileView.classList.add('hidden');
     settingsView.classList.add('hidden');
@@ -808,6 +812,8 @@ function showMapView() {
 }
 
 function updateNavButtons(activeView) {
+    if (settingsBtn) settingsBtn.classList.toggle('is-active', activeView === 'settings');
+
     const buttons = [
         { element: navScanner, view: 'scanner' },
         { element: navProfile, view: 'profile' },
@@ -851,13 +857,42 @@ function startScanner() {
             highlightCodeOutline: true,
         });
         
-        state.qrScanner.start();
+        state.qrScanner.start().then(() => setupTorch()).catch(err => console.error('Scanner start error:', err));
         
     }).catch(err => {
         console.error("Camera error: ", err);
         alert(t('cameraError'));
         resetScanner();
     });
+}
+
+// Lanterna: mostra o botao apenas se a camara actual suportar flash
+function setupTorch() {
+    if (!torchBtn) return;
+    hideTorch();
+    if (!state.qrScanner || typeof state.qrScanner.hasFlash !== 'function') return;
+    Promise.resolve(state.qrScanner.hasFlash())
+        .then(hasFlash => {
+            if (hasFlash && state.qrScanner) torchBtn.classList.remove('hidden');
+        })
+        .catch(() => {});
+}
+
+function hideTorch() {
+    if (!torchBtn) return;
+    torchBtn.classList.add('hidden');
+    torchBtn.classList.remove('hh-torch-on');
+    state.torchOn = false;
+}
+
+function toggleTorch() {
+    if (!state.qrScanner || typeof state.qrScanner.toggleFlash !== 'function') return;
+    Promise.resolve(state.qrScanner.toggleFlash())
+        .then(() => {
+            state.torchOn = !state.torchOn;
+            torchBtn.classList.toggle('hh-torch-on', state.torchOn);
+        })
+        .catch(err => console.error('Torch error:', err));
 }
 
 function closeScanner() {
@@ -908,6 +943,8 @@ function handleQRResult(qrData) {
 }
 
 function stopScanner() {
+    hideTorch();
+
     if (state.qrScanner) {
         state.qrScanner.stop();
         state.qrScanner = null;
@@ -1034,17 +1071,19 @@ function renderBadges() {
     
     state.badges.forEach(badge => {
         const badgeElement = document.createElement('div');
-        badgeElement.className = `flex flex-col items-center ${badge.unlocked ? 'cursor-pointer' : 'opacity-40'}`;
+        badgeElement.className = `hh-badge ${badge.unlocked ? 'is-unlocked' : 'is-locked'}`;
+        badgeElement.dataset.threshold = badge.threshold;
         
         if (badge.unlocked) {
             badgeElement.addEventListener('click', () => showAchievementDetails(badge));
         }
         
         badgeElement.innerHTML = `
-            <div class="w-14 h-14 ${badge.color} rounded-full flex items-center justify-center mb-2 ${badge.unlocked ? 'badge-animation shadow-lg hover:scale-105 transition-transform' : ''}">
-                <i class="${badge.icon} ${badge.iconColor} text-xl"></i>
+            <div class="hh-badge-ring ${badge.unlocked ? 'badge-animation' : ''}">
+                <i class="${badge.icon}"></i>
             </div>
-            <span class="text-xs text-center font-medium text-gray-600">${badge.threshold}%</span>
+            <span class="hh-badge-pct">${badge.threshold}%</span>
+            <span class="hh-badge-name" title="${badge.name}">${badgeText(badge.id, 'short') || badge.name}</span>
         `;
         badgesContainer.appendChild(badgeElement);
     });
@@ -1053,31 +1092,28 @@ function renderBadges() {
 // List functions
 function updateDiscoveredMonumentsList() {
     if (state.scannedMonuments.length === 0) {
-        discoveredMonumentsList.innerHTML = `<p class="text-gray-500 text-center py-8" data-i18n="noMonumentsYet">${t('noMonumentsYet')}</p>`;
+        discoveredMonumentsList.innerHTML = `<p class="hh-empty" data-i18n="noMonumentsYet">${t('noMonumentsYet')}</p>`;
         return;
     }
     
     discoveredMonumentsList.innerHTML = '';
     state.scannedMonuments.forEach(monument => {
         const monumentElement = document.createElement('div');
-        monumentElement.className = 'monument-card bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-xl shadow-sm border border-blue-100 cursor-pointer hover:shadow-md transition-all';
+        monumentElement.className = 'hh-mon-card';
         
         monumentElement.addEventListener('click', () => showMonumentDetails(monument));
         
         monumentElement.innerHTML = `
-            <div class="flex items-center">
-                <img src="${monument.image}" alt="${monument.name}" 
-                     class="w-16 h-16 object-cover rounded-lg mr-4"
-                     onerror="this.src='imagens/placeholder.jpg'; this.onerror=null;">
-                <div class="flex-1">
-                    <h4 class="font-bold text-gray-800">${monument.name}</h4>
-                    <p class="text-xs text-gray-600 mt-1 line-clamp-2">${monument.description.substring(0, 80)}...</p>
-                </div>
-                <div class="text-center">
-                    <div class="text-green-600 font-bold text-lg">+${monument.points}</div>
-                    <div class="text-xs text-gray-500">${t('pointsWord')}</div>
-                    <i class="fas fa-chevron-right text-gray-400 text-xs mt-1"></i>
-                </div>
+            <img src="${monument.image}" alt="${monument.name}" class="hh-mon-thumb"
+                 onerror="this.src='imagens/placeholder.jpg'; this.onerror=null;">
+            <div class="hh-mon-info">
+                <h4 class="hh-mon-name">${monument.name}</h4>
+                <p class="hh-mon-desc">${monument.description.substring(0, 80)}...</p>
+            </div>
+            <div class="hh-mon-points">
+                <div class="hh-mon-pts">+${monument.points}</div>
+                <div class="hh-mon-pts-label">${t('pointsWord')}</div>
+                <i class="fas fa-chevron-right"></i>
             </div>
         `;
         discoveredMonumentsList.appendChild(monumentElement);
@@ -1089,34 +1125,31 @@ function updateMonumentsList() {
     state.monuments.forEach(monument => {
         const isScanned = state.scannedMonuments.some(m => m.id === monument.id);
         const monumentElement = document.createElement('div');
-        monumentElement.className = `monument-card ${isScanned ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'} p-4 rounded-xl border`;
+        monumentElement.className = `hh-mon-card hh-map-mon ${isScanned ? 'is-unlocked' : 'is-locked'}`;
+        monumentElement.addEventListener('click', () => openMonumentPhotos(monument.id));
         
         const imageClass = isScanned ? '' : 'blurred-image';
         const statusText = isScanned ? t('statusUnlocked') : t('statusLocked');
-        const statusColor = isScanned ? 'text-green-600' : 'text-red-600';
+        const statusColor = isScanned ? 'is-ok' : 'is-off';
         const descriptionText = isScanned ? monument.description : t('scanToDiscover');
         
         monumentElement.innerHTML = `
-            <div class="flex items-center">
-                <img src="${monument.image}" 
-                     alt="${monument.name}" 
-                     class="w-12 h-12 object-cover rounded-lg mr-3 ${imageClass} cursor-pointer"
-                     data-monument-id="${monument.id}"
-                     onclick="openMonumentPhotos(${monument.id})"
-                     onerror="this.src='imagens/placeholder.jpg'; this.onerror=null;">
-                <div class="flex-1">
-                    <h4 class="font-semibold text-gray-800">${monument.name}</h4>
-                    <p class="text-xs text-gray-600 mt-1">${descriptionText}</p>
-                    <p class="text-xs font-semibold ${statusColor} mt-1">${statusText}</p>
-                </div>
-                <div class="text-center">
-                    <div class="w-8 h-8 ${isScanned ? 'bg-green-100' : 'bg-gray-200'} rounded-full flex items-center justify-center">
-                        <i class="fas ${isScanned ? 'fa-check text-green-600' : 'fa-lock text-gray-500'} text-sm"></i>
-                    </div>
-                    <div class="text-xs mt-1 font-bold ${isScanned ? 'text-green-600' : 'text-gray-400'}">
-                        ${isScanned ? monument.points + ' ' + t('pts') : '?'}
-                    </div>
-                </div>
+            <img src="${monument.image}" 
+                 alt="${monument.name}" 
+                 class="hh-mon-thumb ${imageClass} cursor-pointer"
+                 data-monument-id="${monument.id}"
+                 onerror="this.src='imagens/placeholder.jpg'; this.onerror=null;">
+            <div class="hh-mon-info">
+                <h4 class="hh-mon-name">${monument.name}</h4>
+                <p class="hh-mon-desc">${descriptionText}</p>
+                <p class="hh-mon-status ${statusColor}">${statusText}</p>
+            </div>
+            <div class="hh-mon-state">
+                <span class="hh-state-badge ${isScanned ? 'is-ok' : 'is-off'}">
+                    <i class="fas ${isScanned ? 'fa-check' : 'fa-lock'}"></i>
+                </span>
+                ${isScanned ? `<span class="hh-state-pts">${monument.points} ${t('pts')}</span>` : ''}
+                <i class="fas fa-chevron-right hh-state-chevron"></i>
             </div>
         `;
         monumentsList.appendChild(monumentElement);
@@ -1331,12 +1364,11 @@ logoutBtn.addEventListener('click', logout);
 
 startScannerBtn.addEventListener('click', startScanner);
 closeScannerBtn.addEventListener('click', closeScanner);
+if (torchBtn) torchBtn.addEventListener('click', toggleTorch);
 closeResultBtn.addEventListener('click', closeResult);
 navScanner.addEventListener('click', showScannerView);
 navProfile.addEventListener('click', showProfileView);
 navMap.addEventListener('click', showMapView);
-profileBtn.addEventListener('click', showProfileView);
-mapBtn.addEventListener('click', showMapView);
 settingsBtn.addEventListener('click', showSettingsView);
 closeBadgeModal.addEventListener('click', closeBadge);
 closeAchievementModal.addEventListener('click', closeAchievementDetails);

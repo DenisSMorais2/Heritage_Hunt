@@ -3,6 +3,9 @@
     z-index: 1;
     position: relative;
 }
+.hh-map-wrap #map {
+    height: 330px;
+}
 #locateUserBtn {
     z-index: 1000;
 }
@@ -444,4 +447,1433 @@ html.dark .leaflet-control-attribution {
 }
 html.dark .leaflet-control-attribution a {
     color: #60A5FA;
+}
+
+/* ==========================================================
+   Heritage — identidade visual (cabecalho, scanner, navegacao)
+   ========================================================== */
+:root {
+    --hh-navy-900: #0A1729;
+    --hh-navy-800: #0E2039;
+    --hh-navy-700: #13294A;
+    --hh-navy-600: #17325A;
+    --hh-line: rgba(200, 220, 255, 0.12);
+    --hh-gold: #D6B274;
+    --hh-gold-soft: #E7CE9A;
+    --hh-cream: #E9F0F9;
+    --hh-muted: #9DB0C8;
+}
+
+/* --- Cabecalho --- */
+.hh-header {
+    background: linear-gradient(160deg, #0E2039 0%, #122A4C 55%, #0C1C33 100%);
+    color: var(--hh-cream);
+    padding: 16px 18px 14px;
+    border-bottom-left-radius: 18px;
+    border-bottom-right-radius: 18px;
+    box-shadow: 0 12px 28px rgba(5, 14, 28, 0.45);
+    position: relative;
+}
+.hh-header::after {
+    content: "";
+    position: absolute;
+    left: 18px;
+    right: 18px;
+    bottom: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(214, 178, 116, 0.5), transparent);
+}
+.hh-header-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+}
+.hh-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+.hh-logo {
+    width: 66px;
+    height: 52px;
+    flex-shrink: 0;
+    color: var(--hh-gold);
+    opacity: 0.95;
+}
+.hh-brand-text {
+    min-width: 0;
+}
+.hh-brand-title {
+    font-family: "Playfair Display", Georgia, "Times New Roman", serif;
+    font-size: 21px;
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: 0.2px;
+    color: #F2F6FC;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.hh-brand-greet {
+    margin-top: 2px;
+    font-size: 13px;
+    color: var(--hh-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.hh-actions {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+}
+.hh-icon-btn {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(214, 178, 116, 0.28);
+    color: var(--hh-gold-soft);
+    font-size: 14px;
+    transition: all 0.25s ease;
+}
+.hh-icon-btn:hover {
+    background: rgba(214, 178, 116, 0.18);
+    border-color: rgba(214, 178, 116, 0.55);
+    transform: translateY(-1px);
+}
+.hh-header-bottom {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 8px;
+}
+.hh-tagline {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 2.4px;
+    text-transform: uppercase;
+    color: rgba(214, 178, 116, 0.85);
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    flex-wrap: wrap;
+}
+.hh-tagline em {
+    font-style: normal;
+    color: rgba(214, 178, 116, 0.55);
+}
+.hh-seal {
+    text-align: right;
+    flex-shrink: 0;
+    line-height: 1.1;
+}
+.hh-seal-script {
+    display: block;
+    font-family: "Cormorant Garamond", Georgia, serif;
+    font-style: italic;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--hh-gold-soft);
+}
+.hh-seal-sub {
+    display: block;
+    margin-top: 2px;
+    font-size: 8px;
+    letter-spacing: 1.6px;
+    text-transform: uppercase;
+    color: var(--hh-muted);
+}
+
+/* --- Fundo das paginas escuras (scanner / perfil) --- */
+.hh-page {
+    margin: -1rem;
+    padding: 1rem 1rem 1.25rem;
+    background: linear-gradient(180deg, #0C1C33 0%, #102544 45%, #0A1729 100%);
+    min-height: calc(100vh - 210px);
+}
+body.hh-dark-bg .container {
+    background-color: #0A1729 !important;
+    background-image: linear-gradient(180deg, #0C1C33, #0A1729) !important;
+}
+
+/* --- Cartao da camara --- */
+.hh-cam {
+    position: relative;
+    height: 450px;
+    border-radius: 18px;
+    overflow: hidden;
+    background: #071120;
+    border: 1px solid var(--hh-line);
+    box-shadow: 0 18px 38px rgba(4, 12, 24, 0.55);
+}
+.hh-cam-video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 1;
+}
+.hh-cam-idle {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 2;
+    transition: opacity 0.4s ease;
+}
+#scannerOverlay:not(.hidden) ~ .hh-cam-idle,
+#scannerResult:not(.hidden) ~ .hh-cam-idle {
+    opacity: 0;
+}
+.hh-cam-shade {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    pointer-events: none;
+    background: linear-gradient(180deg, rgba(8, 18, 34, 0.45) 0%, rgba(8, 18, 34, 0) 28%, rgba(8, 18, 34, 0.15) 55%, rgba(8, 18, 34, 0.88) 100%);
+}
+.hh-brackets {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    pointer-events: none;
+}
+.hh-bracket {
+    position: absolute;
+    width: 54px;
+    height: 54px;
+    border: 5px solid rgba(255, 255, 255, 0.92);
+    transition: opacity 0.3s ease;
+}
+.hh-bracket-tl {
+    top: 22%;
+    left: 15%;
+    border-right: 0;
+    border-bottom: 0;
+    border-top-left-radius: 20px;
+}
+.hh-bracket-tr {
+    top: 22%;
+    right: 15%;
+    border-left: 0;
+    border-bottom: 0;
+    border-top-right-radius: 20px;
+}
+.hh-bracket-bl {
+    bottom: 30%;
+    left: 15%;
+    border-right: 0;
+    border-top: 0;
+    border-bottom-left-radius: 20px;
+}
+.hh-bracket-br {
+    bottom: 30%;
+    right: 15%;
+    border-left: 0;
+    border-top: 0;
+    border-bottom-right-radius: 20px;
+}
+.hh-qr-glyph {
+    position: absolute;
+    top: 46%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 40px;
+    color: rgba(255, 255, 255, 0.9);
+    transition: opacity 0.3s ease;
+}
+#scannerOverlay:not(.hidden) ~ .hh-brackets .hh-qr-glyph,
+#scannerResult:not(.hidden) ~ .hh-brackets .hh-qr-glyph {
+    opacity: 0;
+}
+#scannerResult:not(.hidden) ~ .hh-brackets .hh-bracket,
+#scannerResult:not(.hidden) ~ .hh-cam-shade {
+    opacity: 0;
+}
+.hh-cam-close {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    z-index: 20;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #FFE3E3;
+    background: rgba(12, 22, 38, 0.72);
+    border: 1px solid rgba(248, 113, 113, 0.5);
+    backdrop-filter: blur(6px);
+    transition: all 0.25s ease;
+}
+.hh-cam-close:hover {
+    background: rgba(220, 38, 38, 0.85);
+    color: #fff;
+}
+.hh-torch {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 16px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #F2F6FC;
+    background: rgba(12, 22, 38, 0.6);
+    border: 1px solid rgba(233, 240, 249, 0.28);
+    backdrop-filter: blur(8px);
+    transition: all 0.25s ease;
+}
+.hh-torch svg {
+    width: 16px;
+    height: 16px;
+}
+.hh-torch:hover {
+    background: rgba(12, 22, 38, 0.8);
+}
+.hh-torch.hh-torch-on {
+    background: rgba(214, 178, 116, 0.9);
+    border-color: var(--hh-gold-soft);
+    color: #13294A;
+}
+.hh-cam-foot {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 16px;
+    z-index: 8;
+    padding: 0 18px;
+    text-align: center;
+}
+.hh-cam-hint {
+    font-size: 14px;
+    color: rgba(240, 246, 252, 0.92);
+    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
+    margin-bottom: 12px;
+}
+.hh-gold-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 14px 18px;
+    border-radius: 14px;
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 19px;
+    font-weight: 700;
+    color: #17325A;
+    background: linear-gradient(135deg, #E7CE9A 0%, #D6B274 55%, #C9A263 100%);
+    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.35);
+    transition: all 0.25s ease;
+}
+.hh-gold-btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 14px 26px rgba(0, 0, 0, 0.45);
+}
+.hh-gold-btn:disabled {
+    opacity: 0.85;
+    cursor: default;
+}
+.hh-gold-btn-sm {
+    width: auto;
+    margin: 0 auto;
+    padding: 10px 22px;
+    font-size: 16px;
+}
+
+/* Moldura de leitura sobreposta */
+.hh-cam .scanner-frame {
+    width: 220px;
+    height: 220px;
+    border: 0;
+    box-shadow: none;
+    margin: 0 auto 18px;
+}
+.hh-cam .scanner-line {
+    background: linear-gradient(90deg, transparent, #E7CE9A, transparent);
+    box-shadow: 0 0 20px rgba(214, 178, 116, 0.8);
+}
+.hh-scanning-label {
+    font-size: 15px;
+    font-weight: 600;
+    color: #F2F6FC;
+    text-shadow: 0 1px 8px rgba(0, 0, 0, 0.7);
+}
+
+/* Cartao do resultado da leitura */
+.hh-result-card {
+    max-width: 19rem;
+    margin: 0 1rem;
+    padding: 22px;
+    text-align: center;
+    border-radius: 18px;
+    background: linear-gradient(160deg, #16304F, #0E2039);
+    border: 1px solid rgba(214, 178, 116, 0.35);
+    box-shadow: 0 22px 44px rgba(3, 10, 20, 0.7);
+}
+.hh-result-title {
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: #F2F6FC;
+    margin-bottom: 6px;
+}
+.hh-result-desc {
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--hh-muted);
+    margin-bottom: 14px;
+}
+.hh-result-points {
+    padding: 10px;
+    margin-bottom: 16px;
+    border-radius: 12px;
+    background: rgba(214, 178, 116, 0.14);
+    border: 1px solid rgba(214, 178, 116, 0.3);
+}
+.hh-result-points p {
+    font-size: 17px;
+    font-weight: 700;
+    color: #E7CE9A;
+}
+
+/* --- Cartao de progresso --- */
+.hh-card {
+    margin-top: 18px;
+    padding: 20px 18px;
+    border-radius: 18px;
+    background: linear-gradient(165deg, rgba(23, 50, 90, 0.85), rgba(14, 32, 57, 0.95));
+    border: 1px solid var(--hh-line);
+    box-shadow: 0 14px 30px rgba(4, 12, 24, 0.45);
+}
+.hh-progress-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+.hh-section-title {
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 24px;
+    font-weight: 700;
+    color: #F2F6FC;
+}
+.hh-points {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 17px;
+    font-weight: 700;
+    color: #F2F6FC;
+}
+.hh-points i {
+    color: var(--hh-gold);
+    font-size: 19px;
+}
+.hh-points-word {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--hh-gold);
+}
+.hh-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+.hh-bar-track {
+    flex: 1;
+    height: 10px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    overflow: hidden;
+}
+.hh-bar-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #C9A263, #E7CE9A);
+    box-shadow: 0 0 12px rgba(214, 178, 116, 0.5);
+}
+.hh-bar-percent {
+    font-size: 14px;
+    font-weight: 700;
+    color: #F2F6FC;
+    min-width: 34px;
+    text-align: right;
+}
+
+/* --- Medalhas --- */
+.hh-badges {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+}
+.hh-badge {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+.hh-badge + .hh-badge::before {
+    content: "";
+    position: absolute;
+    top: 29px;
+    right: 50%;
+    left: -50%;
+    height: 1px;
+    background: rgba(233, 240, 249, 0.22);
+    z-index: 0;
+}
+.hh-badge-ring {
+    position: relative;
+    z-index: 1;
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 21px;
+    transition: transform 0.3s ease;
+}
+.hh-badge[data-threshold="25"] .hh-badge-ring {
+    background: linear-gradient(160deg, #A8875A, #8C6F47);
+    color: #3B2A14;
+}
+.hh-badge[data-threshold="50"] .hh-badge-ring {
+    background: linear-gradient(160deg, #7D9BC4, #5C7DA8);
+    color: #16304F;
+}
+.hh-badge[data-threshold="75"] .hh-badge-ring {
+    background: linear-gradient(160deg, #A98BC9, #8A6BAD);
+    color: #2E1B44;
+}
+.hh-badge[data-threshold="100"] .hh-badge-ring {
+    background: linear-gradient(160deg, #DCBF7C, #C2A055);
+    color: #3B2A14;
+}
+.hh-badge.is-unlocked .hh-badge-ring {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4), 0 0 0 2px rgba(214, 178, 116, 0.45);
+    cursor: pointer;
+}
+.hh-badge.is-unlocked:hover .hh-badge-ring {
+    transform: scale(1.06);
+}
+.hh-badge.is-locked {
+    opacity: 0.55;
+}
+.hh-badge-pct {
+    margin-top: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(233, 240, 249, 0.85);
+}
+.hh-badge-name {
+    margin-top: 6px;
+    padding: 4px 6px;
+    width: 100%;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--hh-muted);
+    border: 1px solid var(--hh-line);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.04);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.hh-badge.is-unlocked .hh-badge-name {
+    color: var(--hh-gold-soft);
+    border-color: rgba(214, 178, 116, 0.4);
+}
+
+/* --- Citacao --- */
+.hh-quote {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 22px;
+}
+.hh-quote p {
+    flex: 1;
+    text-align: center;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--hh-muted);
+}
+.hh-rule {
+    width: 46px;
+    height: 1px;
+    flex-shrink: 0;
+    background: linear-gradient(90deg, transparent, rgba(214, 178, 116, 0.7));
+}
+.hh-quote .hh-rule:last-child {
+    background: linear-gradient(90deg, rgba(214, 178, 116, 0.7), transparent);
+}
+
+/* --- Navegacao inferior --- */
+nav.hh-nav {
+    background: linear-gradient(180deg, #0E2039, #0A1729);
+    border-top: 1px solid var(--hh-line);
+    box-shadow: 0 -8px 24px rgba(4, 12, 24, 0.5);
+}
+nav.hh-nav button {
+    position: relative;
+    padding: 12px 16px;
+}
+nav.hh-nav button.text-gray-400 {
+    color: #7F93B0;
+}
+nav.hh-nav button.text-blue-600 {
+    color: #7FB2FF;
+}
+nav.hh-nav button.text-blue-600::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: 2px;
+    transform: translateX(-50%);
+    width: 30px;
+    height: 2px;
+    border-radius: 2px;
+    background: #7FB2FF;
+}
+nav.hh-nav button:hover {
+    color: #C8D8EE;
+}
+
+@media (max-width: 380px) {
+    .hh-brand-title {
+        font-size: 18px;
+    }
+    .hh-logo {
+        width: 52px;
+        height: 42px;
+    }
+    .hh-icon-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 13px;
+    }
+    .hh-seal-script {
+        font-size: 18px;
+    }
+    .hh-gold-btn {
+        font-size: 17px;
+    }
+}
+
+/* Garante que .hidden vence sempre os displays do tema Heritage */
+.hh-torch.hidden,
+.hh-cam-close.hidden,
+.hh-gold-btn.hidden {
+    display: none;
+}
+
+/* ==========================================================
+   Heritage — pagina de perfil
+   ========================================================== */
+
+/* --- Cartao de identidade --- */
+.hh-id-card {
+    position: relative;
+    overflow: hidden;
+}
+.hh-id-bg {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 62%;
+    background-image: url("imagens/igreja_nossa_senhora_luz.jpg");
+    background-size: cover;
+    background-position: center;
+    opacity: 0.16;
+    filter: grayscale(0.3) brightness(0.8);
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 55%);
+    mask-image: linear-gradient(90deg, transparent, #000 55%);
+    pointer-events: none;
+}
+.hh-id-main {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+.hh-avatar-wrap {
+    position: relative;
+    flex-shrink: 0;
+}
+.hh-avatar {
+    width: 84px;
+    height: 84px;
+    border-radius: 50%;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(160deg, #1D3B63, #12294A);
+    border: 3px solid var(--hh-gold);
+    box-shadow: 0 8px 20px rgba(3, 10, 20, 0.55), 0 0 0 1px rgba(214, 178, 116, 0.35);
+}
+.hh-avatar i {
+    font-size: 30px;
+    color: var(--hh-gold-soft);
+}
+.hh-avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+.hh-avatar-btn {
+    position: absolute;
+    right: -2px;
+    bottom: -2px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    color: #F2F6FC;
+    background: linear-gradient(160deg, #1B3A63, #122B4C);
+    border: 1px solid rgba(214, 178, 116, 0.55);
+    box-shadow: 0 4px 12px rgba(3, 10, 20, 0.6);
+    transition: all 0.25s ease;
+}
+.hh-avatar-btn:hover {
+    background: rgba(214, 178, 116, 0.9);
+    color: #12294A;
+}
+.hh-id-text {
+    min-width: 0;
+    flex: 1;
+}
+.hh-id-name {
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 27px;
+    font-weight: 700;
+    line-height: 1.1;
+    color: #F5F8FC;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.hh-id-level {
+    margin-top: 4px;
+    font-size: 17px;
+    font-weight: 600;
+    color: #7FB2FF;
+}
+.hh-id-email {
+    margin-top: 3px;
+    font-size: 13px;
+    color: var(--hh-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.hh-id-motto {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+    max-width: 92px;
+}
+.hh-motto-script {
+    font-family: "Cormorant Garamond", Georgia, serif;
+    font-style: italic;
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.25;
+    text-align: right;
+    color: var(--hh-gold-soft);
+}
+.hh-motto-rule {
+    width: 62px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(214, 178, 116, 0.8));
+}
+
+/* --- Mosaicos de estatisticas --- */
+.hh-stats {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 18px;
+}
+.hh-stat {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 12px 10px;
+    border-radius: 14px;
+    border: 1px solid transparent;
+}
+.hh-stat-icon {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    border: 2px solid currentColor;
+}
+.hh-stat-body {
+    min-width: 0;
+}
+.hh-stat-value {
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.1;
+    white-space: nowrap;
+}
+.hh-stat-label {
+    margin-top: 2px;
+    font-size: 11px;
+    color: rgba(233, 240, 249, 0.75);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.hh-stat-blue {
+    background: linear-gradient(150deg, rgba(41, 84, 143, 0.55), rgba(19, 44, 78, 0.6));
+    border-color: rgba(127, 178, 255, 0.28);
+}
+.hh-stat-blue .hh-stat-value {
+    color: #7FB2FF;
+}
+.hh-stat-blue .hh-stat-icon {
+    color: var(--hh-gold);
+}
+.hh-stat-green {
+    background: linear-gradient(150deg, rgba(23, 92, 78, 0.55), rgba(14, 46, 45, 0.6));
+    border-color: rgba(52, 211, 153, 0.28);
+}
+.hh-stat-green .hh-stat-value,
+.hh-stat-green .hh-stat-icon {
+    color: #4ADE9B;
+}
+.hh-stat-purple {
+    background: linear-gradient(150deg, rgba(76, 52, 122, 0.55), rgba(38, 28, 68, 0.6));
+    border-color: rgba(192, 132, 252, 0.28);
+}
+.hh-stat-purple .hh-stat-value,
+.hh-stat-purple .hh-stat-icon {
+    color: #C48BFA;
+}
+
+/* --- Monumentos descobertos --- */
+.hh-discover-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+.hh-section-title.hh-underlined {
+    font-size: 22px;
+    position: relative;
+    padding-bottom: 10px;
+    flex: 1;
+    min-width: 0;
+}
+.hh-section-title.hh-underlined::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 72px;
+    height: 2px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, var(--hh-gold), rgba(214, 178, 116, 0));
+}
+.hh-compass {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--hh-gold);
+}
+.hh-compass svg {
+    width: 42px;
+    height: 42px;
+    flex-shrink: 0;
+    opacity: 0.9;
+}
+.hh-compass-text {
+    font-size: 8px;
+    line-height: 1.5;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+    color: var(--hh-muted);
+}
+.hh-mon-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.hh-empty {
+    padding: 32px 0;
+    text-align: center;
+    font-size: 14px;
+    color: var(--hh-muted);
+}
+.hh-mon-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    border-radius: 16px;
+    cursor: pointer;
+    background: linear-gradient(150deg, rgba(30, 62, 105, 0.55), rgba(15, 33, 58, 0.7));
+    border: 1px solid rgba(127, 178, 255, 0.16);
+    transition: all 0.3s ease;
+}
+.hh-mon-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(214, 178, 116, 0.45);
+    box-shadow: 0 12px 24px rgba(3, 10, 20, 0.5);
+}
+.hh-mon-thumb {
+    width: 76px;
+    height: 76px;
+    flex-shrink: 0;
+    object-fit: cover;
+    border-radius: 12px;
+    border: 1px solid rgba(233, 240, 249, 0.14);
+}
+.hh-mon-info {
+    flex: 1;
+    min-width: 0;
+}
+.hh-mon-name {
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 17px;
+    font-weight: 700;
+    line-height: 1.2;
+    color: #F2F6FC;
+}
+.hh-mon-desc {
+    margin-top: 5px;
+    font-size: 12px;
+    line-height: 1.45;
+    color: var(--hh-muted);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.hh-mon-points {
+    flex-shrink: 0;
+    text-align: center;
+    min-width: 54px;
+}
+.hh-mon-pts {
+    font-size: 19px;
+    font-weight: 700;
+    line-height: 1.1;
+    color: #4ADE9B;
+}
+.hh-mon-pts-label {
+    font-size: 11px;
+    color: var(--hh-muted);
+}
+.hh-mon-points i {
+    display: block;
+    margin-top: 6px;
+    font-size: 13px;
+    color: var(--hh-gold);
+}
+
+@media (max-width: 400px) {
+    .hh-id-motto {
+        display: none;
+    }
+    .hh-stat {
+        flex-direction: column;
+        gap: 6px;
+        text-align: center;
+        padding: 12px 6px;
+    }
+    .hh-stat-icon {
+        width: 32px;
+        height: 32px;
+        font-size: 13px;
+    }
+    .hh-stat-value {
+        font-size: 18px;
+    }
+    .hh-compass-text {
+        display: none;
+    }
+}
+
+/* ==========================================================
+   Heritage — pagina do mapa
+   ========================================================== */
+.hh-map-card {
+    padding: 16px 14px 14px;
+}
+.hh-map-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+.hh-map-title {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    min-width: 0;
+    flex: 1 1 190px;
+}
+.hh-map-pin {
+    font-size: 22px;
+    line-height: 1.2;
+    color: var(--hh-gold);
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+.hh-map-title-text {
+    min-width: 0;
+}
+.hh-map-card .hh-section-title {
+    font-size: 21px;
+}
+.hh-map-sub {
+    margin-top: 3px;
+    font-size: 12.5px;
+    line-height: 1.4;
+    color: var(--hh-muted);
+}
+.hh-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    flex-shrink: 0;
+}
+.hh-legend-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #E9F0F9;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(233, 240, 249, 0.14);
+}
+.hh-legend-pill i {
+    font-size: 13px;
+}
+.hh-legend-found i {
+    color: #4ADE9B;
+}
+.hh-legend-todo i {
+    color: #5FA0F5;
+}
+
+.hh-map-wrap {
+    position: relative;
+    z-index: 1;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid rgba(233, 240, 249, 0.14);
+    box-shadow: inset 0 0 0 1px rgba(10, 23, 41, 0.4);
+}
+.hh-locate {
+    position: absolute;
+    right: 14px;
+    bottom: 14px;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 19px;
+    color: #F2F6FC;
+    background: rgba(12, 26, 46, 0.82);
+    border: 2px solid rgba(214, 178, 116, 0.75);
+    box-shadow: 0 8px 20px rgba(3, 10, 20, 0.6);
+    backdrop-filter: blur(6px);
+    transition: all 0.25s ease;
+}
+.hh-locate:hover {
+    background: rgba(214, 178, 116, 0.92);
+    color: #12294A;
+}
+
+/* Mapa sempre em tom escuro, para acompanhar o tema */
+.hh-map-wrap .leaflet-container {
+    background: #0F172A;
+}
+.hh-map-wrap .leaflet-tile-pane {
+    filter: invert(1) hue-rotate(180deg) brightness(0.9) contrast(0.92);
+}
+.hh-map-wrap .leaflet-control-zoom {
+    border: 1px solid rgba(233, 240, 249, 0.18);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 6px 16px rgba(3, 10, 20, 0.55);
+}
+.hh-map-wrap .leaflet-control-zoom a,
+.hh-map-wrap .leaflet-bar a {
+    background-color: rgba(12, 26, 46, 0.9);
+    color: #F2F6FC;
+    border-color: rgba(233, 240, 249, 0.14);
+}
+.hh-map-wrap .leaflet-control-zoom a:hover,
+.hh-map-wrap .leaflet-bar a:hover {
+    background-color: rgba(214, 178, 116, 0.85);
+    color: #12294A;
+}
+.hh-map-wrap .leaflet-popup-content-wrapper,
+.hh-map-wrap .leaflet-popup-tip {
+    background: #14294A;
+    color: #E9F0F9;
+    box-shadow: 0 10px 26px rgba(3, 10, 20, 0.6);
+}
+.hh-map-wrap .leaflet-popup-content b {
+    color: #F2F6FC;
+}
+.hh-map-wrap .leaflet-popup-close-button {
+    color: #9DB0C8 !important;
+}
+.hh-map-wrap .leaflet-control-attribution {
+    background: rgba(10, 23, 41, 0.8) !important;
+    color: #8296B0;
+}
+.hh-map-wrap .leaflet-control-attribution a {
+    color: #7FB2FF;
+}
+
+/* --- Lista de monumentos do mapa --- */
+.hh-map-mon .hh-mon-desc {
+    -webkit-line-clamp: 3;
+}
+.hh-mon-status {
+    margin-top: 6px;
+    font-size: 11.5px;
+    font-weight: 600;
+}
+.hh-mon-status.is-ok {
+    color: #4ADE9B;
+}
+.hh-mon-status.is-off {
+    color: #F87171;
+}
+.hh-mon-state {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.hh-state-badge {
+    width: 38px;
+    height: 38px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+}
+.hh-state-badge.is-ok {
+    color: #4ADE9B;
+    background: rgba(74, 222, 155, 0.16);
+    border: 1px solid rgba(74, 222, 155, 0.45);
+}
+.hh-state-badge.is-off {
+    color: #8FA3BC;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(233, 240, 249, 0.16);
+}
+.hh-state-pts {
+    font-size: 16px;
+    font-weight: 700;
+    color: #4ADE9B;
+    white-space: nowrap;
+}
+.hh-state-chevron {
+    font-size: 13px;
+    color: var(--hh-gold);
+}
+.hh-map-mon.is-locked .hh-mon-name {
+    color: #DCE6F2;
+}
+
+@media (max-width: 400px) {
+    .hh-state-pts {
+        font-size: 14px;
+    }
+    .hh-state-badge {
+        width: 32px;
+        height: 32px;
+        font-size: 13px;
+    }
+    .hh-mon-state {
+        gap: 5px;
+    }
+    .hh-map-mon .hh-mon-thumb {
+        width: 64px;
+        height: 64px;
+    }
+}
+
+/* ==========================================================
+   Heritage — pagina de definicoes
+   ========================================================== */
+.hh-settings-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.hh-settings-title i {
+    font-size: 25px;
+    color: rgba(157, 176, 200, 0.9);
+}
+.hh-settings-panel {
+    padding: 4px 14px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.035);
+    border: 1px solid rgba(233, 240, 249, 0.09);
+}
+.hh-set-section {
+    padding: 18px 0;
+}
+.hh-set-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+}
+.hh-set-divider {
+    height: 1px;
+    background: rgba(233, 240, 249, 0.1);
+}
+.hh-set-head {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    min-width: 0;
+}
+.hh-set-icon {
+    width: 42px;
+    height: 42px;
+    flex-shrink: 0;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+}
+.hh-set-icon-blue {
+    color: #7FB2FF;
+    background: linear-gradient(150deg, rgba(41, 84, 143, 0.7), rgba(19, 44, 78, 0.8));
+    border: 1px solid rgba(127, 178, 255, 0.3);
+}
+.hh-set-icon-green {
+    color: #4ADE9B;
+    background: linear-gradient(150deg, rgba(23, 92, 78, 0.7), rgba(14, 46, 45, 0.8));
+    border: 1px solid rgba(74, 222, 155, 0.3);
+}
+.hh-set-icon-purple {
+    color: #C48BFA;
+    background: linear-gradient(150deg, rgba(76, 52, 122, 0.7), rgba(38, 28, 68, 0.8));
+    border: 1px solid rgba(192, 132, 252, 0.3);
+}
+.hh-set-head-text {
+    min-width: 0;
+}
+.hh-set-title {
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.25;
+    color: #F2F6FC;
+}
+.hh-set-sub {
+    margin-top: 3px;
+    font-size: 12.5px;
+    line-height: 1.4;
+    color: var(--hh-muted);
+}
+
+/* Selector de tema */
+.hh-theme-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    margin-top: 14px;
+    padding: 6px;
+    border-radius: 14px;
+    background: rgba(6, 15, 29, 0.55);
+    border: 1px solid rgba(233, 240, 249, 0.08);
+}
+#settingsView .theme-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 7px;
+    padding: 12px 4px;
+    border-radius: 11px;
+    border: 1px solid transparent;
+    background: transparent;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--hh-muted);
+    box-shadow: none;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+#settingsView .theme-option i {
+    font-size: 18px;
+}
+#settingsView .theme-option:hover {
+    color: #C8D8EE;
+    background: rgba(255, 255, 255, 0.04);
+}
+#settingsView .theme-option.active {
+    color: #7FB2FF;
+    background: rgba(41, 84, 143, 0.4);
+    border-color: rgba(127, 178, 255, 0.65);
+    box-shadow: 0 4px 14px rgba(3, 10, 20, 0.45);
+}
+
+/* Selector de idioma */
+.hh-lang-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 14px;
+}
+#settingsView .lang-option {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    gap: 14px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid rgba(233, 240, 249, 0.12);
+    background: rgba(6, 15, 29, 0.4);
+    font-size: 15px;
+    font-weight: 500;
+    color: #DCE6F2;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+#settingsView .lang-option:hover {
+    border-color: rgba(127, 178, 255, 0.4);
+    background: rgba(41, 84, 143, 0.25);
+}
+#settingsView .lang-option.active {
+    color: #F2F6FC;
+    border-color: rgba(127, 178, 255, 0.7);
+    background: rgba(41, 84, 143, 0.45);
+}
+#settingsView .lang-option .flag {
+    width: 32px;
+    height: 22px;
+    box-shadow: 0 0 0 1px rgba(233, 240, 249, 0.25);
+}
+#settingsView .lang-option .lang-check {
+    color: #7FB2FF;
+    font-size: 15px;
+}
+
+/* Interruptor */
+#settingsView .switch-slider {
+    background: rgba(255, 255, 255, 0.18);
+}
+#settingsView .switch input:checked + .switch-slider {
+    background: linear-gradient(135deg, #3B82F6, #2563EB);
+}
+
+/* Terminar sessao + versao */
+.hh-set-foot {
+    padding: 18px 0 16px;
+}
+.hh-logout-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 15px 18px;
+    border-radius: 14px;
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: #F87171;
+    background: rgba(248, 113, 113, 0.06);
+    border: 1px solid rgba(248, 113, 113, 0.5);
+    transition: all 0.25s ease;
+}
+.hh-logout-btn:hover {
+    background: rgba(248, 113, 113, 0.16);
+    border-color: rgba(248, 113, 113, 0.8);
+}
+.hh-version {
+    margin-top: 16px;
+    text-align: center;
+    font-size: 12px;
+    color: rgba(157, 176, 200, 0.75);
+}
+
+/* Botao de definicoes activo no cabecalho */
+.hh-icon-btn.is-active {
+    background: rgba(214, 178, 116, 0.22);
+    border-color: var(--hh-gold);
+    color: #F3DCB2;
+    box-shadow: 0 0 0 1px rgba(214, 178, 116, 0.35), 0 4px 12px rgba(3, 10, 20, 0.45);
+}
+
+@media (max-width: 400px) {
+    .hh-settings-panel {
+        padding: 4px 10px;
+    }
+    .hh-set-icon {
+        width: 36px;
+        height: 36px;
+        font-size: 15px;
+    }
+    .hh-set-title {
+        font-size: 16px;
+    }
+    #settingsView .theme-option {
+        font-size: 12px;
+    }
+    .hh-logout-btn {
+        font-size: 16px;
+    }
 }
