@@ -2231,3 +2231,681 @@ html:not(.dark) .hh-motto-rule {
 html:not(.dark) .hh-badge.is-unlocked .hh-badge-name {
     border-color: rgba(168, 129, 63, 0.5);
 }
+
+/* ==========================================================
+   Heritage — pagina do monumento (aberta a partir do mapa)
+   ========================================================== */
+body.hh-no-scroll {
+    overflow: hidden;
+}
+.hh-mp-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 70;
+    display: flex;
+    justify-content: center;
+    padding: 10px 8px 78px;
+    background: rgba(4, 10, 20, 0.72);
+    backdrop-filter: blur(3px);
+    overflow: hidden;
+}
+.hh-mp-overlay.hidden {
+    display: none;
+}
+.hh-mp-sheet {
+    width: 100%;
+    max-width: 28rem;
+    max-height: 100%;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 22px;
+    background: linear-gradient(180deg, #0C1C33 0%, #102544 45%, #0A1729 100%);
+    border: 1px solid rgba(233, 240, 249, 0.14);
+    box-shadow: 0 26px 60px rgba(3, 10, 20, 0.7);
+    animation: mpSlideUp 0.38s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes mpSlideUp {
+    from { opacity: 0; transform: translateY(34px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.hh-mp-sheet::-webkit-scrollbar {
+    width: 0;
+}
+
+/* --- Imagem de topo --- */
+.hh-mp-hero {
+    position: relative;
+    height: 220px;
+    flex-shrink: 0;
+}
+.hh-mp-hero-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+.hh-mp-hero-shade {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(180deg, rgba(8, 18, 34, 0.55) 0%, rgba(8, 18, 34, 0) 30%, rgba(14, 32, 58, 0.25) 58%, rgba(14, 32, 58, 0.9) 86%, #0E203A 100%);
+}
+.hh-mp-crest {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 8px 14px 8px 11px;
+    border-radius: 12px;
+    background: rgba(9, 20, 36, 0.78);
+    border: 1px solid rgba(214, 178, 116, 0.6);
+    backdrop-filter: blur(6px);
+    box-shadow: 0 6px 16px rgba(3, 10, 20, 0.45);
+}
+.hh-mp-crest i {
+    font-size: 17px;
+    color: var(--hh-gold);
+}
+.hh-mp-crest-text {
+    font-size: 9.5px;
+    font-weight: 700;
+    line-height: 1.32;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #F2F6FC;
+}
+.hh-mp-close {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    color: #F2F6FC;
+    background: rgba(18, 32, 52, 0.85);
+    border: 1px solid rgba(233, 240, 249, 0.2);
+    backdrop-filter: blur(6px);
+    box-shadow: 0 6px 16px rgba(3, 10, 20, 0.5);
+    transition: all 0.25s ease;
+}
+.hh-mp-close:hover {
+    background: rgba(214, 178, 116, 0.92);
+    border-color: var(--hh-gold);
+    color: #12294A;
+    transform: rotate(90deg);
+}
+
+/* --- Cabecalho do monumento --- */
+.hh-mp-body {
+    position: relative;
+    margin-top: -34px;
+    padding: 0 16px 18px;
+}
+.hh-mp-headline {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.hh-mp-title {
+    font-family: "Playfair Display", Georgia, "Times New Roman", serif;
+    font-size: 30px;
+    font-weight: 700;
+    line-height: 1.12;
+    letter-spacing: 0.2px;
+    color: #F5F8FD;
+    text-shadow: 0 2px 12px rgba(4, 10, 20, 0.8);
+    min-width: 0;
+    flex: 1 1 auto;
+}
+.hh-mp-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+    padding: 8px 15px;
+    border-radius: 999px;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #4ADE9B;
+    background: rgba(74, 222, 155, 0.12);
+    border: 1px solid rgba(74, 222, 155, 0.5);
+}
+.hh-mp-status i {
+    font-size: 15px;
+}
+.hh-mp-place {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+    font-size: 14px;
+    color: #C3D2E6;
+}
+.hh-mp-place i {
+    font-size: 14px;
+    color: var(--hh-gold-soft);
+}
+.hh-mp-sub {
+    margin-top: 8px;
+    font-size: 13.5px;
+    color: var(--hh-muted);
+}
+
+/* --- Chips de resumo --- */
+.hh-mp-chips {
+    display: flex;
+    gap: 9px;
+    margin-top: 14px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    scrollbar-width: none;
+}
+.hh-mp-chips::-webkit-scrollbar {
+    height: 0;
+}
+.hh-mp-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+    padding: 11px 14px;
+    border-radius: 12px;
+    font-size: 13.5px;
+    color: #DCE6F2;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(233, 240, 249, 0.14);
+    white-space: nowrap;
+}
+.hh-mp-chip b {
+    font-size: 15px;
+    font-weight: 700;
+    color: #F2F6FC;
+}
+.hh-chip-gold {
+    font-size: 15px;
+    color: var(--hh-gold);
+}
+.hh-chip-blue {
+    font-size: 15px;
+    color: #7FB2FF;
+}
+
+/* --- Cartoes de seccao --- */
+.hh-mp-card {
+    position: relative;
+    margin-top: 14px;
+    padding: 14px 14px 15px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.035);
+    border: 1px solid rgba(233, 240, 249, 0.12);
+    overflow: hidden;
+}
+.hh-mp-card::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 14px;
+    bottom: 14px;
+    width: 3px;
+    border-radius: 0 3px 3px 0;
+    background: linear-gradient(180deg, var(--hh-gold), rgba(214, 178, 116, 0));
+}
+.hh-mp-card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+.hh-mp-card-title {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    min-width: 0;
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 19px;
+    font-weight: 700;
+    color: #F2F6FC;
+}
+.hh-mp-card-icon {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9px;
+    font-size: 15px;
+    color: var(--hh-gold);
+    background: rgba(214, 178, 116, 0.14);
+    border: 1px solid rgba(214, 178, 116, 0.32);
+}
+.hh-mp-card-sub {
+    margin: -6px 0 12px;
+    font-size: 12.5px;
+    line-height: 1.45;
+    color: var(--hh-muted);
+}
+.hh-mp-count {
+    flex-shrink: 0;
+    font-size: 12.5px;
+    color: var(--hh-muted);
+    white-space: nowrap;
+}
+.hh-mp-ghost-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+    padding: 9px 15px;
+    border-radius: 999px;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #7FB2FF;
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(96, 165, 250, 0.45);
+    transition: all 0.25s ease;
+}
+.hh-mp-ghost-btn:hover {
+    background: rgba(59, 130, 246, 0.25);
+    border-color: rgba(96, 165, 250, 0.8);
+    color: #DCE9FF;
+}
+.hh-mp-ghost-btn.is-editing {
+    color: #4ADE9B;
+    background: rgba(74, 222, 155, 0.12);
+    border-color: rgba(74, 222, 155, 0.5);
+}
+
+/* --- Minha experiencia --- */
+.hh-mp-note {
+    padding: 13px 14px;
+    border-radius: 11px;
+    background: rgba(10, 23, 41, 0.55);
+    border: 1px solid rgba(233, 240, 249, 0.1);
+}
+.hh-mp-note-text {
+    font-size: 14.5px;
+    line-height: 1.6;
+    color: #DCE6F2;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+.hh-mp-note-text.is-empty {
+    font-style: italic;
+    color: var(--hh-muted);
+}
+.hh-mp-note-input {
+    width: 100%;
+    min-height: 96px;
+    resize: vertical;
+    background: transparent;
+    border: 0;
+    outline: none;
+    font-size: 14.5px;
+    line-height: 1.6;
+    color: #F2F6FC;
+    font-family: inherit;
+}
+.hh-mp-note-input::placeholder {
+    color: #6F849D;
+}
+
+/* --- Album de fotos --- */
+.hh-mp-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 9px;
+}
+.hh-mp-photo {
+    position: relative;
+    border-radius: 10px;
+    overflow: hidden;
+    aspect-ratio: 3 / 4;
+    border: 1px solid rgba(233, 240, 249, 0.14);
+}
+.hh-mp-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.3s ease;
+}
+.hh-mp-photo:hover img {
+    transform: scale(1.06);
+}
+.hh-mp-photo-del {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    color: #FFFFFF;
+    background: rgba(220, 38, 38, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    opacity: 0;
+    transition: opacity 0.25s ease;
+}
+.hh-mp-photo:hover .hh-mp-photo-del,
+.hh-mp-photo:focus-within .hh-mp-photo-del {
+    opacity: 1;
+}
+.hh-mp-add {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    aspect-ratio: 3 / 4;
+    padding: 4px;
+    border-radius: 10px;
+    text-align: center;
+    font-size: 11.5px;
+    line-height: 1.25;
+    font-weight: 600;
+    color: #7FB2FF;
+    background: rgba(59, 130, 246, 0.08);
+    border: 1.5px dashed rgba(96, 165, 250, 0.6);
+    transition: all 0.25s ease;
+}
+.hh-mp-add i {
+    font-size: 17px;
+}
+.hh-mp-add:hover {
+    background: rgba(59, 130, 246, 0.2);
+    border-color: rgba(96, 165, 250, 0.95);
+}
+.hh-mp-add.is-full {
+    color: var(--hh-muted);
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(233, 240, 249, 0.22);
+    cursor: not-allowed;
+}
+.hh-mp-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 11px;
+}
+.hh-mp-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    padding: 13px 10px;
+    border-radius: 11px;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.25s ease;
+}
+.hh-mp-action i {
+    font-size: 15px;
+}
+.hh-mp-action.is-blue {
+    color: #7FB2FF;
+    background: rgba(59, 130, 246, 0.12);
+    border: 1px solid rgba(96, 165, 250, 0.45);
+}
+.hh-mp-action.is-blue:hover {
+    background: rgba(59, 130, 246, 0.28);
+    border-color: rgba(96, 165, 250, 0.85);
+    color: #E4EEFF;
+}
+.hh-mp-action.is-green {
+    color: #4ADE9B;
+    background: rgba(74, 222, 155, 0.1);
+    border: 1px solid rgba(74, 222, 155, 0.45);
+}
+.hh-mp-action.is-green:hover {
+    background: rgba(74, 222, 155, 0.24);
+    border-color: rgba(74, 222, 155, 0.85);
+    color: #DFFBEE;
+}
+
+/* --- Memorias rapidas --- */
+.hh-mp-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 9px;
+}
+.hh-mp-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 15px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #DCE6F2;
+    background: transparent;
+    border: 1px solid rgba(214, 178, 116, 0.45);
+    transition: all 0.25s ease;
+}
+.hh-mp-tag i {
+    font-size: 13px;
+    color: var(--hh-gold-soft);
+}
+.hh-mp-tag:hover {
+    border-color: var(--hh-gold);
+    background: rgba(214, 178, 116, 0.1);
+}
+.hh-mp-tag.is-on {
+    color: #12294A;
+    font-weight: 600;
+    background: linear-gradient(135deg, var(--hh-gold-soft), var(--hh-gold));
+    border-color: var(--hh-gold-soft);
+    box-shadow: 0 4px 12px rgba(214, 178, 116, 0.28);
+}
+.hh-mp-tag.is-on i {
+    color: #12294A;
+}
+
+/* --- Guardar --- */
+.hh-mp-save {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 11px;
+    width: 100%;
+    margin-top: 18px;
+    padding: 15px 16px;
+    border-radius: 14px;
+    font-size: 16px;
+    font-weight: 700;
+    color: #FFFFFF;
+    background: linear-gradient(135deg, #3B82F6, #2563EB);
+    box-shadow: 0 10px 26px rgba(37, 99, 235, 0.42);
+    transition: all 0.25s ease;
+}
+.hh-mp-save i {
+    font-size: 17px;
+}
+.hh-mp-save:hover {
+    background: linear-gradient(135deg, #4C8DF7, #1D4ED8);
+    box-shadow: 0 14px 32px rgba(37, 99, 235, 0.55);
+    transform: translateY(-1px);
+}
+.hh-mp-save:active {
+    transform: translateY(0);
+}
+
+@media (max-width: 380px) {
+    .hh-mp-title {
+        font-size: 26px;
+    }
+    .hh-mp-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    .hh-mp-chip {
+        padding: 10px 12px;
+        font-size: 12.5px;
+    }
+}
+
+/* --- Variante do tema claro --- */
+html:not(.dark) .hh-mp-overlay {
+    background: rgba(24, 40, 66, 0.45);
+}
+html:not(.dark) .hh-mp-sheet {
+    background: linear-gradient(180deg, #FBF8F2 0%, #F4F1E9 55%, #EFEBE1 100%);
+    border-color: #E0D9C9;
+    box-shadow: 0 24px 54px rgba(24, 40, 66, 0.28);
+}
+html:not(.dark) .hh-mp-hero-shade {
+    background: linear-gradient(180deg, rgba(24, 40, 66, 0.4) 0%, rgba(24, 40, 66, 0) 30%, rgba(249, 246, 239, 0.4) 58%, rgba(249, 246, 239, 0.95) 86%, #F9F6EF 100%);
+}
+html:not(.dark) .hh-mp-crest {
+    background: rgba(255, 255, 255, 0.92);
+    border-color: rgba(168, 129, 63, 0.7);
+}
+html:not(.dark) .hh-mp-crest-text {
+    color: #12294A;
+}
+html:not(.dark) .hh-mp-close {
+    background: rgba(255, 255, 255, 0.94);
+    color: #12294A;
+    border-color: rgba(18, 41, 74, 0.16);
+}
+html:not(.dark) .hh-mp-close:hover {
+    background: #A8813F;
+    border-color: #A8813F;
+    color: #FFFFFF;
+}
+html:not(.dark) .hh-mp-title {
+    color: #12294A;
+    text-shadow: none;
+}
+html:not(.dark) .hh-mp-status {
+    color: #0F9D6B;
+    background: #E7F8F0;
+    border-color: rgba(15, 157, 107, 0.45);
+}
+html:not(.dark) .hh-mp-place {
+    color: #22344E;
+}
+html:not(.dark) .hh-mp-chip {
+    color: #22344E;
+    background: #FFFFFF;
+    border-color: #E4DED1;
+}
+html:not(.dark) .hh-mp-chip b {
+    color: #12294A;
+}
+html:not(.dark) .hh-chip-blue {
+    color: #2563EB;
+}
+html:not(.dark) .hh-mp-card {
+    background: #FFFFFF;
+    border-color: #E8E2D5;
+    box-shadow: 0 6px 16px rgba(24, 40, 66, 0.06);
+}
+html:not(.dark) .hh-mp-card-title {
+    color: #12294A;
+}
+html:not(.dark) .hh-mp-card-icon {
+    background: rgba(168, 129, 63, 0.12);
+    border-color: rgba(168, 129, 63, 0.35);
+}
+html:not(.dark) .hh-mp-note {
+    background: #FAF8F2;
+    border-color: #E8E2D5;
+}
+html:not(.dark) .hh-mp-note-text {
+    color: #33445C;
+}
+html:not(.dark) .hh-mp-note-input {
+    color: #12294A;
+}
+html:not(.dark) .hh-mp-note-input::placeholder {
+    color: #94A3B8;
+}
+html:not(.dark) .hh-mp-ghost-btn {
+    color: #2563EB;
+    background: rgba(37, 99, 235, 0.07);
+    border-color: rgba(37, 99, 235, 0.4);
+}
+html:not(.dark) .hh-mp-ghost-btn:hover {
+    background: rgba(37, 99, 235, 0.15);
+    border-color: rgba(37, 99, 235, 0.7);
+    color: #1D4ED8;
+}
+html:not(.dark) .hh-mp-ghost-btn.is-editing {
+    color: #0F9D6B;
+    background: #E7F8F0;
+    border-color: rgba(15, 157, 107, 0.5);
+}
+html:not(.dark) .hh-mp-photo {
+    border-color: rgba(18, 41, 74, 0.12);
+}
+html:not(.dark) .hh-mp-add {
+    color: #2563EB;
+    background: rgba(37, 99, 235, 0.05);
+    border-color: rgba(37, 99, 235, 0.5);
+}
+html:not(.dark) .hh-mp-add:hover {
+    background: rgba(37, 99, 235, 0.13);
+    border-color: rgba(37, 99, 235, 0.85);
+}
+html:not(.dark) .hh-mp-add.is-full {
+    color: #7B8798;
+    background: #F2F0EA;
+    border-color: rgba(18, 41, 74, 0.2);
+}
+html:not(.dark) .hh-mp-action.is-blue {
+    color: #2563EB;
+    background: #EFF5FF;
+    border-color: #CBDFFB;
+}
+html:not(.dark) .hh-mp-action.is-blue:hover {
+    background: #DDEAFE;
+    border-color: rgba(37, 99, 235, 0.6);
+}
+html:not(.dark) .hh-mp-action.is-green {
+    color: #0F9D6B;
+    background: #ECFAF3;
+    border-color: #BCE9D3;
+}
+html:not(.dark) .hh-mp-action.is-green:hover {
+    background: #D7F3E7;
+    border-color: rgba(15, 157, 107, 0.6);
+}
+html:not(.dark) .hh-mp-tag {
+    color: #33445C;
+    border-color: rgba(168, 129, 63, 0.5);
+    background: #FFFFFF;
+}
+html:not(.dark) .hh-mp-tag i {
+    color: #A8813F;
+}
+html:not(.dark) .hh-mp-tag:hover {
+    background: rgba(168, 129, 63, 0.1);
+    border-color: #A8813F;
+}
+html:not(.dark) .hh-mp-tag.is-on {
+    color: #FFFFFF;
+    background: linear-gradient(135deg, #C29A55, #A8813F);
+    border-color: #A8813F;
+    box-shadow: 0 4px 12px rgba(168, 129, 63, 0.3);
+}
+html:not(.dark) .hh-mp-tag.is-on i {
+    color: #FFFFFF;
+}
+html:not(.dark) .hh-mp-count,
+html:not(.dark) .hh-mp-card-sub,
+html:not(.dark) .hh-mp-sub {
+    color: #5D6E86;
+}

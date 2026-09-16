@@ -9,6 +9,7 @@ const state = {
     userLocationMarker: null,
     userLocationCircle: null,
     currentMonumentForPhotos: null,
+    monumentTagsDraft: [],
     cameraStream: null,
     settings: null,
     monuments: [
@@ -276,8 +277,27 @@ const takePhotoBtn = document.getElementById('takePhotoBtn');
 const uploadPhotoBtn = document.getElementById('uploadPhotoBtn');
 const photoUploadInput = document.getElementById('photoUploadInput');
 const monumentNote = document.getElementById('monumentNote');
+const monumentNoteText = document.getElementById('monumentNoteText');
+const editNoteBtn = document.getElementById('editNoteBtn');
+const editNoteBtnLabel = document.getElementById('editNoteBtnLabel');
 const saveNoteBtn = document.getElementById('saveNoteBtn');
 const userPhotosGrid = document.getElementById('userPhotosGrid');
+const monumentPageLocation = document.getElementById('monumentPageLocation');
+const monumentPagePoints = document.getElementById('monumentPagePoints');
+const monumentPagePhotoCount = document.getElementById('monumentPagePhotoCount');
+const monumentPageVisit = document.getElementById('monumentPageVisit');
+const monumentPageAlbumCount = document.getElementById('monumentPageAlbumCount');
+const monumentPageTags = document.getElementById('monumentPageTags');
+
+// Pagina do monumento: limite do album e etiquetas disponiveis
+const MONUMENT_PHOTO_LIMIT = 10;
+const MEMORY_TAGS = [
+    { id: 'architecture', icon: 'fas fa-landmark', key: 'tagArchitecture' },
+    { id: 'historicCenter', icon: 'fas fa-map-marker-alt', key: 'tagHistoricCenter' },
+    { id: 'memorable', icon: 'fas fa-heart', key: 'tagMemorable' },
+    { id: 'comeBack', icon: 'fas fa-undo', key: 'tagComeBack' }
+];
+let noteEditing = false;
 
 // Camera Modal elements
 const cameraModal = document.getElementById('cameraModal');
@@ -313,31 +333,8 @@ function initMap() {
     
     // Add markers for all monuments
     state.monuments.forEach(monument => {
-        const isScanned = state.scannedMonuments.some(m => m.id === monument.id);
-        
-        const marker = L.marker([monument.lat, monument.lng])
-            .addTo(map)
-            .bindPopup(`
-                <div class="text-center">
-                    <img src="${monument.image}" alt="${monument.name}" class="w-full h-24 object-cover rounded mb-2">
-                    <b>${monument.name}</b><br>
-                    <span class="text-sm">${monument.description}</span><br>
-                    <span class="text-blue-600 font-bold">${monument.points} ${t('pointsWord')}</span>
-                    ${isScanned ? `<br><span class="text-green-600">${t('discoveredCheck')}</span>` : ''}
-                </div>
-            `);
-        
-        if (isScanned) {
-            marker.setIcon(L.icon({
-                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
-                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-                iconSize: [25, 41],
-                iconAnchor: [12, 41],
-                popupAnchor: [1, -34],
-                shadowSize: [41, 41]
-            }));
-        }
-        
+        const marker = L.marker([monument.lat, monument.lng]).addTo(map);
+        applyMarkerBehaviour(marker, monument);
         markers.push({ marker, monument });
     });
 
@@ -346,14 +343,55 @@ function initMap() {
         const monument = state.currentMonumentForMap;
         map.setView([monument.lat, monument.lng], 17);
         
-        // Open popup for the monument
+        // Open popup for the monument (os descobertos abrem a pagina propria)
         const targetMarker = markers.find(m => m.monument.id === monument.id);
-        if (targetMarker) {
+        if (targetMarker && targetMarker.marker.getPopup()) {
             targetMarker.marker.openPopup();
         }
         
         // Reset the state
         state.currentMonumentForMap = null;
+    }
+}
+
+// Conteudo do balao de um monumento ainda por descobrir
+function monumentPopupHtml(monument) {
+    return `
+        <div class="text-center">
+            <img src="${monument.image}" alt="${monument.name}" class="w-full h-24 object-cover rounded mb-2">
+            <b>${monument.name}</b><br>
+            <span class="text-sm">${monument.description}</span><br>
+            <span class="text-blue-600 font-bold">${monument.points} ${t('pointsWord')}</span>
+        </div>
+    `;
+}
+
+// Um monumento descoberto abre a pagina propria; os restantes mostram o balao
+function applyMarkerBehaviour(marker, monument) {
+    const isScanned = state.scannedMonuments.some(m => m.id === monument.id);
+
+    if (isScanned) {
+        marker.setIcon(L.icon({
+            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
+            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+            shadowSize: [41, 41]
+        }));
+    }
+
+    if (marker.hhOpenPage) {
+        marker.off('click', marker.hhOpenPage);
+        marker.hhOpenPage = null;
+    }
+
+    if (isScanned) {
+        if (marker.getPopup()) marker.unbindPopup();
+        marker.hhOpenPage = () => openMonumentPhotos(monument.id);
+        marker.on('click', marker.hhOpenPage);
+    } else {
+        marker.bindPopup(monumentPopupHtml(monument));
     }
 }
 
@@ -736,6 +774,11 @@ function applyLanguage() {
     applyContentLanguage();
     updateLanguageSelector();
 
+    // Pagina do monumento, caso esteja aberta
+    if (isMonumentPageOpen()) {
+        renderMonumentPage();
+    }
+
     // Botão do scanner (só quando está em repouso, para não interromper uma leitura)
     if (!state.qrScanner) {
         startScannerBtn.innerHTML = `<i class="fas fa-qrcode mr-3 text-xl"></i> <span data-i18n="scanQr">${t('scanQr')}</span>`;
@@ -917,6 +960,7 @@ function handleQRResult(qrData) {
     }
     
     // Add to scanned monuments
+    monument.discoveredAt = new Date().toISOString();
     state.scannedMonuments.push(monument);
     state.points += monument.points;
     
@@ -1165,28 +1209,10 @@ function updateMapMarkers() {
     }
     
     markers.forEach(({ marker, monument }) => {
-        const isScanned = state.scannedMonuments.some(m => m.id === monument.id);
-        
-        if (isScanned) {
-            marker.setIcon(L.icon({
-                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
-                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-                iconSize: [25, 41],
-                iconAnchor: [12, 41],
-                popupAnchor: [1, -34],
-                shadowSize: [41, 41]
-            }));
+        applyMarkerBehaviour(marker, monument);
+        if (marker.getPopup()) {
+            marker.setPopupContent(monumentPopupHtml(monument));
         }
-        
-        marker.setPopupContent(`
-            <div class="text-center">
-                <img src="${monument.image}" alt="${monument.name}" class="w-full h-24 object-cover rounded mb-2">
-                <b>${monument.name}</b><br>
-                <span class="text-sm">${monument.description}</span><br>
-                <span class="text-blue-600 font-bold">${monument.points} ${t('pointsWord')}</span>
-                ${isScanned ? `<br><span class="text-green-600">${t('discoveredCheck')}</span>` : ''}
-            </div>
-        `);
     });
 }
 
@@ -1194,79 +1220,210 @@ function updateProfileView() {
     updateProgress();
 }
 
-// Monument Photos Functions
+// ============================================================
+// Pagina do monumento (abre a partir do mapa, ao tocar num
+// monumento ja descoberto)
+// ============================================================
 function openMonumentPhotos(monumentId) {
     const monument = state.monuments.find(m => m.id === monumentId);
     if (!monument) return;
-    
-    // Check if monument is scanned
+
+    // So os monumentos ja descobertos tem pagina
     const isScanned = state.scannedMonuments.some(m => m.id === monumentId);
     if (!isScanned) {
         alert(t('mustDiscoverFirst'));
         return;
     }
-    
+
     state.currentMonumentForPhotos = monument;
-    
-    monumentPhotosImage.src = monument.image;
-    monumentPhotosImage.alt = monument.name;
-    monumentPhotosName.textContent = monument.name;
-    
-    // Load saved note
-    const savedNote = localStorage.getItem(`monument_note_${monumentId}`);
-    monumentNote.value = savedNote || '';
-    
-    updateUserPhotosGrid();
+    state.monumentTagsDraft = getMonumentTags(monumentId);
+    monumentNote.value = localStorage.getItem(`monument_note_${monumentId}`) || '';
+
+    renderMonumentPage();
     monumentPhotosModal.classList.remove('hidden');
+    document.body.classList.add('hh-no-scroll');
+    monumentPhotosModal.querySelector('.hh-mp-sheet').scrollTop = 0;
 }
 
 function closeMonumentPhotos() {
     monumentPhotosModal.classList.add('hidden');
+    document.body.classList.remove('hh-no-scroll');
     state.currentMonumentForPhotos = null;
+    state.monumentTagsDraft = [];
+    noteEditing = false;
+}
+
+function isMonumentPageOpen() {
+    return !monumentPhotosModal.classList.contains('hidden');
+}
+
+// Desenha todo o conteudo da pagina do monumento
+function renderMonumentPage() {
+    const monument = state.currentMonumentForPhotos;
+    if (!monument) return;
+
+    const scanned = state.scannedMonuments.find(m => m.id === monument.id);
+
+    monumentPhotosImage.src = monument.image;
+    monumentPhotosImage.alt = monument.name;
+    monumentPhotosImage.onerror = function () {
+        this.src = 'imagens/placeholder.jpg';
+        this.onerror = null;
+    };
+
+    monumentPhotosName.textContent = monument.name;
+    monumentPageLocation.textContent = t('monumentCity');
+    monumentPagePoints.textContent = monument.points;
+
+    const visitDate = formatShortDate(scanned && scanned.discoveredAt);
+    monumentPageVisit.textContent = visitDate
+        ? t('visitedOn', { d: visitDate })
+        : t('visitDateUnknown');
+
+    setNoteEditing(noteEditing);
+    renderMemoryTags();
+    updateUserPhotosGrid();
+}
+
+// --- Minha experiencia ---
+function renderMonumentNote() {
+    const note = (monumentNote.value || '').trim();
+    monumentNoteText.textContent = note || t('noNoteYet');
+    monumentNoteText.classList.toggle('is-empty', !note);
+}
+
+function setNoteEditing(editing) {
+    noteEditing = editing;
+    monumentNote.classList.toggle('hidden', !editing);
+    monumentNoteText.classList.toggle('hidden', editing);
+    editNoteBtn.classList.toggle('is-editing', editing);
+    editNoteBtnLabel.textContent = editing ? t('done') : t('edit');
+
+    const icon = editNoteBtn.querySelector('i');
+    if (icon) icon.className = editing ? 'fas fa-check' : 'fas fa-pen';
+
+    if (editing) {
+        monumentNote.focus();
+    } else {
+        renderMonumentNote();
+    }
+}
+
+function toggleNoteEditing() {
+    setNoteEditing(!noteEditing);
+}
+
+// --- Memorias rapidas ---
+function getMonumentTags(monumentId) {
+    try {
+        const saved = JSON.parse(localStorage.getItem(`monument_tags_${monumentId}`));
+        return Array.isArray(saved) ? saved : [];
+    } catch (e) {
+        return [];
+    }
+}
+
+function renderMemoryTags() {
+    monumentPageTags.innerHTML = '';
+
+    MEMORY_TAGS.forEach(tag => {
+        const isOn = state.monumentTagsDraft.indexOf(tag.id) !== -1;
+        const tagButton = document.createElement('button');
+        tagButton.type = 'button';
+        tagButton.className = `hh-mp-tag ${isOn ? 'is-on' : ''}`;
+        tagButton.setAttribute('aria-pressed', isOn ? 'true' : 'false');
+        tagButton.innerHTML = `<i class="${tag.icon}"></i><span>${t(tag.key)}</span>`;
+        tagButton.addEventListener('click', () => toggleMemoryTag(tag.id));
+        monumentPageTags.appendChild(tagButton);
+    });
+}
+
+function toggleMemoryTag(tagId) {
+    const index = state.monumentTagsDraft.indexOf(tagId);
+    if (index === -1) {
+        state.monumentTagsDraft.push(tagId);
+    } else {
+        state.monumentTagsDraft.splice(index, 1);
+    }
+    renderMemoryTags();
+}
+
+// --- Album de fotos ---
+function getMonumentPhotos(monumentId) {
+    try {
+        const saved = JSON.parse(localStorage.getItem(`monument_photos_${monumentId}`));
+        return Array.isArray(saved) ? saved : [];
+    } catch (e) {
+        return [];
+    }
 }
 
 function updateUserPhotosGrid() {
     if (!state.currentMonumentForPhotos) return;
-    
+
     const monumentId = state.currentMonumentForPhotos.id;
-    const savedPhotos = JSON.parse(localStorage.getItem(`monument_photos_${monumentId}`)) || [];
-    
-    if (savedPhotos.length === 0) {
-        userPhotosGrid.innerHTML = `
-            <div class="text-center text-gray-500 text-sm py-8 col-span-2" data-i18n-html="noPhotos">
-                ${t('noPhotos')}
-            </div>
-        `;
-        return;
-    }
-    
+    const savedPhotos = getMonumentPhotos(monumentId);
+    const isFull = savedPhotos.length >= MONUMENT_PHOTO_LIMIT;
+
+    monumentPagePhotoCount.textContent = savedPhotos.length === 1
+        ? t('photosCountOne')
+        : t('photosCountMany', { n: savedPhotos.length });
+    monumentPageAlbumCount.textContent = t('albumCount', {
+        n: savedPhotos.length,
+        max: MONUMENT_PHOTO_LIMIT
+    });
+
     userPhotosGrid.innerHTML = '';
+
     savedPhotos.forEach((photo, index) => {
         const photoElement = document.createElement('div');
-        photoElement.className = 'relative';
+        photoElement.className = 'hh-mp-photo';
         photoElement.innerHTML = `
-            <img src="${photo}" alt="${t('photoAlt')} ${index + 1}" class="photo-thumbnail">
-            <button onclick="deletePhoto(${index})" class="absolute -top-2 -right-2 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center text-white text-xs hover:bg-red-600 transition">
+            <img src="${photo}" alt="${t('photoAlt')} ${index + 1}">
+            <button type="button" class="hh-mp-photo-del" title="${t('close')}">
                 <i class="fas fa-times"></i>
             </button>
         `;
+        photoElement.querySelector('.hh-mp-photo-del')
+            .addEventListener('click', () => deletePhoto(index));
         userPhotosGrid.appendChild(photoElement);
     });
+
+    const addButton = document.createElement('button');
+    addButton.type = 'button';
+    addButton.className = `hh-mp-add ${isFull ? 'is-full' : ''}`;
+    addButton.innerHTML = `<i class="fas fa-camera"></i><span>${t('addPhoto')}</span>`;
+    addButton.addEventListener('click', () => {
+        if (isFull) {
+            alert(t('photoLimitReached', { max: MONUMENT_PHOTO_LIMIT }));
+            return;
+        }
+        uploadPhoto();
+    });
+    userPhotosGrid.appendChild(addButton);
 }
 
-function saveNote() {
+// --- Guardar experiencia (nota + etiquetas) ---
+function saveExperience() {
     if (!state.currentMonumentForPhotos) return;
-    
+
     const monumentId = state.currentMonumentForPhotos.id;
     const note = monumentNote.value.trim();
-    
+
     if (note) {
         localStorage.setItem(`monument_note_${monumentId}`, note);
-        alert(t('noteSaved'));
     } else {
         localStorage.removeItem(`monument_note_${monumentId}`);
-        alert(t('noteRemoved'));
     }
+
+    if (state.monumentTagsDraft.length) {
+        localStorage.setItem(`monument_tags_${monumentId}`, JSON.stringify(state.monumentTagsDraft));
+    } else {
+        localStorage.removeItem(`monument_tags_${monumentId}`);
+    }
+
+    setNoteEditing(false);
+    alert(t('experienceSaved'));
 }
 
 function takePhoto() {
@@ -1333,8 +1490,13 @@ function savePhoto(photoData) {
     if (!state.currentMonumentForPhotos) return;
     
     const monumentId = state.currentMonumentForPhotos.id;
-    const savedPhotos = JSON.parse(localStorage.getItem(`monument_photos_${monumentId}`)) || [];
-    
+    const savedPhotos = getMonumentPhotos(monumentId);
+
+    if (savedPhotos.length >= MONUMENT_PHOTO_LIMIT) {
+        alert(t('photoLimitReached', { max: MONUMENT_PHOTO_LIMIT }));
+        return;
+    }
+
     savedPhotos.push(photoData);
     localStorage.setItem(`monument_photos_${monumentId}`, JSON.stringify(savedPhotos));
     
@@ -1346,8 +1508,8 @@ function deletePhoto(index) {
     if (!state.currentMonumentForPhotos) return;
     
     const monumentId = state.currentMonumentForPhotos.id;
-    const savedPhotos = JSON.parse(localStorage.getItem(`monument_photos_${monumentId}`)) || [];
-    
+    const savedPhotos = getMonumentPhotos(monumentId);
+
     if (confirm(t('confirmDeletePhoto'))) {
         savedPhotos.splice(index, 1);
         localStorage.setItem(`monument_photos_${monumentId}`, JSON.stringify(savedPhotos));
@@ -1375,12 +1537,21 @@ closeAchievementModal.addEventListener('click', closeAchievementDetails);
 closeMonumentModal.addEventListener('click', closeMonumentDetails);
 locateUserBtn.addEventListener('click', locateUser);
 
-// Monument Photos Modal listeners
+// Monument page listeners
 closeMonumentPhotosModal.addEventListener('click', closeMonumentPhotos);
 takePhotoBtn.addEventListener('click', takePhoto);
 uploadPhotoBtn.addEventListener('click', uploadPhoto);
 photoUploadInput.addEventListener('change', handlePhotoUpload);
-saveNoteBtn.addEventListener('click', saveNote);
+editNoteBtn.addEventListener('click', toggleNoteEditing);
+saveNoteBtn.addEventListener('click', saveExperience);
+
+// Fechar a pagina do monumento tocando fora da folha ou com Esc
+monumentPhotosModal.addEventListener('click', (e) => {
+    if (e.target === monumentPhotosModal) closeMonumentPhotos();
+});
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && isMonumentPageOpen()) closeMonumentPhotos();
+});
 
 // Camera Modal listeners
 closeCameraModal.addEventListener('click', closeCameraCapture);

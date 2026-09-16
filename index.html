@@ -589,48 +589,110 @@
             </div>
         </div>
 
-        <!-- Monument Photos Modal -->
-        <div id="monumentPhotosModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden overflow-y-auto">
-            <div class="bg-white rounded-2xl max-w-sm mx-4 modal-animation shadow-2xl overflow-hidden max-h-screen">
-                <div class="relative">
-                    <img id="monumentPhotosImage" src="" alt="" class="w-full h-48 object-cover">
-                    <button id="closeMonumentPhotosModal" class="absolute top-4 right-4 w-8 h-8 bg-black bg-opacity-50 rounded-full flex items-center justify-center text-white hover:bg-opacity-70 transition">
-                        <i class="fas fa-times text-sm"></i>
+        <!-- Monument Page (pagina do monumento descoberto) -->
+        <div id="monumentPhotosModal" class="hh-mp-overlay hidden">
+            <div class="hh-mp-sheet" role="dialog" aria-modal="true" aria-labelledby="monumentPhotosName">
+                <!-- Hero -->
+                <div class="hh-mp-hero">
+                    <img id="monumentPhotosImage" src="" alt="" class="hh-mp-hero-img">
+                    <div class="hh-mp-hero-shade"></div>
+                    <div class="hh-mp-crest">
+                        <i class="fas fa-landmark"></i>
+                        <span class="hh-mp-crest-text" data-i18n-html="heritageCrest">PATRIMÓNIO<br>DE CABO VERDE</span>
+                    </div>
+                    <button id="closeMonumentPhotosModal" class="hh-mp-close" data-i18n-title="close" title="Fechar">
+                        <i class="fas fa-times"></i>
                     </button>
                 </div>
-                <div class="p-6 max-h-96 overflow-y-auto">
-                    <h3 id="monumentPhotosName" class="text-xl font-bold mb-4 text-gray-800"></h3>
-                    
-                    <!-- Photo Actions -->
-                    <div class="grid grid-cols-2 gap-3 mb-6">
-                        <button id="takePhotoBtn" class="flex flex-col items-center p-4 bg-blue-50 rounded-xl hover:bg-blue-100 transition">
-                            <i class="fas fa-camera text-blue-600 text-xl mb-2"></i>
-                            <span class="text-sm font-medium text-blue-600" data-i18n="takePhoto">Tirar Foto</span>
-                        </button>
-                        <button id="uploadPhotoBtn" class="flex flex-col items-center p-4 bg-green-50 rounded-xl hover:bg-green-100 transition">
-                            <i class="fas fa-upload text-green-600 text-xl mb-2"></i>
-                            <span class="text-sm font-medium text-green-600" data-i18n="uploadPhoto">Carregar Foto</span>
-                        </button>
+
+                <!-- Conteudo -->
+                <div class="hh-mp-body">
+                    <div class="hh-mp-headline">
+                        <h2 id="monumentPhotosName" class="hh-mp-title"></h2>
+                        <span class="hh-mp-status">
+                            <i class="fas fa-check-circle"></i>
+                            <span data-i18n="legendFound">Descoberto</span>
+                        </span>
                     </div>
-                    
-                    <!-- Note Section -->
-                    <div class="mb-6">
-                        <label class="block text-sm font-medium text-gray-700 mb-2" data-i18n="yourNote">Sua Nota sobre este Monumento</label>
-                        <textarea id="monumentNote" class="w-full px-3 py-2 border border-gray-200 rounded-lg resize-none h-20" data-i18n-placeholder="notePlaceholder" placeholder="Escreva suas impressões sobre este monumento..."></textarea>
-                        <button id="saveNoteBtn" class="mt-2 w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition text-sm font-medium" data-i18n="saveNote">
-                            Salvar Nota
-                        </button>
+                    <p class="hh-mp-place">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span id="monumentPageLocation"></span>
+                    </p>
+                    <p class="hh-mp-sub" data-i18n="yourAlbumOf">O teu álbum deste monumento</p>
+
+                    <!-- Chips de resumo -->
+                    <div class="hh-mp-chips">
+                        <span class="hh-mp-chip">
+                            <i class="fas fa-star hh-chip-gold"></i>
+                            <b id="monumentPagePoints">0</b>
+                            <span data-i18n="pts">pts</span>
+                        </span>
+                        <span class="hh-mp-chip">
+                            <i class="fas fa-images hh-chip-blue"></i>
+                            <span id="monumentPagePhotoCount">0</span>
+                        </span>
+                        <span class="hh-mp-chip">
+                            <i class="fas fa-calendar-alt hh-chip-blue"></i>
+                            <span id="monumentPageVisit"></span>
+                        </span>
                     </div>
-                    
-                    <!-- User Photos Grid -->
-                    <div class="mb-4">
-                        <h4 class="text-sm font-bold text-gray-800 mb-3" data-i18n="yourPhotos">Suas Fotos</h4>
-                        <div id="userPhotosGrid" class="grid grid-cols-2 gap-2">
-                            <div class="text-center text-gray-500 text-sm py-8 col-span-2" data-i18n-html="noPhotos">
-                                Nenhuma foto ainda.<br>Tire ou carregue fotos deste monumento!
-                            </div>
+
+                    <!-- Minha experiencia -->
+                    <section class="hh-mp-card">
+                        <div class="hh-mp-card-head">
+                            <h3 class="hh-mp-card-title">
+                                <span class="hh-mp-card-icon"><i class="fas fa-file-alt"></i></span>
+                                <span data-i18n="myExperience">Minha experiência</span>
+                            </h3>
+                            <button id="editNoteBtn" class="hh-mp-ghost-btn">
+                                <i class="fas fa-pen"></i>
+                                <span id="editNoteBtnLabel" data-i18n="edit">Editar</span>
+                            </button>
                         </div>
-                    </div>
+                        <div class="hh-mp-note">
+                            <p id="monumentNoteText" class="hh-mp-note-text is-empty"></p>
+                            <textarea id="monumentNote" class="hh-mp-note-input hidden" data-i18n-placeholder="notePlaceholder" placeholder="Escreva suas impressões sobre este monumento..."></textarea>
+                        </div>
+                    </section>
+
+                    <!-- Album de fotos -->
+                    <section class="hh-mp-card">
+                        <div class="hh-mp-card-head">
+                            <h3 class="hh-mp-card-title">
+                                <span class="hh-mp-card-icon"><i class="fas fa-image"></i></span>
+                                <span data-i18n="photoAlbum">Álbum de Fotos</span>
+                            </h3>
+                            <span id="monumentPageAlbumCount" class="hh-mp-count"></span>
+                        </div>
+                        <div id="userPhotosGrid" class="hh-mp-grid"></div>
+                        <div class="hh-mp-actions">
+                            <button id="takePhotoBtn" class="hh-mp-action is-blue">
+                                <i class="fas fa-camera"></i>
+                                <span data-i18n="takePhotoShort">Tirar foto</span>
+                            </button>
+                            <button id="uploadPhotoBtn" class="hh-mp-action is-green">
+                                <i class="fas fa-upload"></i>
+                                <span data-i18n="uploadPhotoShort">Carregar foto</span>
+                            </button>
+                        </div>
+                    </section>
+
+                    <!-- Memorias rapidas -->
+                    <section class="hh-mp-card">
+                        <div class="hh-mp-card-head">
+                            <h3 class="hh-mp-card-title">
+                                <span class="hh-mp-card-icon"><i class="fas fa-tag"></i></span>
+                                <span data-i18n="quickMemories">Memórias rápidas</span>
+                            </h3>
+                        </div>
+                        <p class="hh-mp-card-sub" data-i18n="quickMemoriesSub">Adiciona etiquetas que representam a tua experiência</p>
+                        <div id="monumentPageTags" class="hh-mp-tags"></div>
+                    </section>
+
+                    <button id="saveNoteBtn" class="hh-mp-save">
+                        <i class="fas fa-save"></i>
+                        <span data-i18n="saveExperience">Guardar experiência</span>
+                    </button>
                 </div>
             </div>
         </div>

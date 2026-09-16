@@ -102,6 +102,32 @@ const translations = {
         "confirmDeletePhoto": "Tem certeza que deseja excluir esta foto?",
         "noteSaved": "Nota salva com sucesso!",
         "noteRemoved": "Nota removida!",
+        "heritageCrest": "PATRIMÓNIO<br>DE CABO VERDE",
+        "monumentCity": "Mindelo, São Vicente",
+        "yourAlbumOf": "O teu álbum deste monumento",
+        "photosCountOne": "1 foto",
+        "photosCountMany": "{n} fotos",
+        "visitedOn": "Visitado em {d}",
+        "visitDateUnknown": "Descoberto",
+        "myExperience": "Minha experiência",
+        "edit": "Editar",
+        "done": "Concluir",
+        "noNoteYet": "Ainda não escreveste nada sobre este monumento.",
+        "photoAlbum": "Álbum de Fotos",
+        "albumCount": "{n} de {max} fotos",
+        "addPhoto": "Adicionar<br>foto",
+        "takePhotoShort": "Tirar foto",
+        "uploadPhotoShort": "Carregar foto",
+        "quickMemories": "Memórias rápidas",
+        "quickMemoriesSub": "Adiciona etiquetas que representam a tua experiência",
+        "tagArchitecture": "Arquitetura",
+        "tagHistoricCenter": "Centro histórico",
+        "tagMemorable": "Lugar marcante",
+        "tagComeBack": "Quero voltar",
+        "saveExperience": "Guardar experiência",
+        "experienceSaved": "Experiência guardada!",
+        "photoLimitReached": "Já atingiste o limite de {max} fotos para este monumento.",
+        "monthsShort": ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"],
         "monuments": {
             "1": "Antigo palácio do governo colonial, construído em 1874, hoje serve como centro cultural e um dos símbolos mais importantes da história de Cabo Verde.",
             "2": "Farol histórico construído em 1886, oferece uma vista panorâmica deslumbrante da cidade e do porto de Mindelo.",
@@ -239,6 +265,32 @@ const translations = {
         "confirmDeletePhoto": "Are you sure you want to delete this photo?",
         "noteSaved": "Note saved successfully!",
         "noteRemoved": "Note removed!",
+        "heritageCrest": "CAPE VERDE<br>HERITAGE",
+        "monumentCity": "Mindelo, São Vicente",
+        "yourAlbumOf": "Your album for this monument",
+        "photosCountOne": "1 photo",
+        "photosCountMany": "{n} photos",
+        "visitedOn": "Visited on {d}",
+        "visitDateUnknown": "Discovered",
+        "myExperience": "My experience",
+        "edit": "Edit",
+        "done": "Done",
+        "noNoteYet": "You haven't written anything about this monument yet.",
+        "photoAlbum": "Photo Album",
+        "albumCount": "{n} of {max} photos",
+        "addPhoto": "Add<br>photo",
+        "takePhotoShort": "Take photo",
+        "uploadPhotoShort": "Upload photo",
+        "quickMemories": "Quick memories",
+        "quickMemoriesSub": "Add tags that capture your experience",
+        "tagArchitecture": "Architecture",
+        "tagHistoricCenter": "Historic centre",
+        "tagMemorable": "Memorable place",
+        "tagComeBack": "I'll come back",
+        "saveExperience": "Save experience",
+        "experienceSaved": "Experience saved!",
+        "photoLimitReached": "You have reached the limit of {max} photos for this monument.",
+        "monthsShort": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
         "monuments": {
             "1": "Former colonial government palace, built in 1874, today a cultural centre and one of the most important symbols of Cape Verde's history.",
             "2": "Historic lighthouse built in 1886, offering a stunning panoramic view of the city and the port of Mindelo.",
@@ -376,6 +428,32 @@ const translations = {
         "confirmDeletePhoto": "Voulez-vous vraiment supprimer cette photo ?",
         "noteSaved": "Note enregistrée avec succès !",
         "noteRemoved": "Note supprimée !",
+        "heritageCrest": "PATRIMOINE<br>DU CAP-VERT",
+        "monumentCity": "Mindelo, São Vicente",
+        "yourAlbumOf": "Votre album de ce monument",
+        "photosCountOne": "1 photo",
+        "photosCountMany": "{n} photos",
+        "visitedOn": "Visité le {d}",
+        "visitDateUnknown": "Découvert",
+        "myExperience": "Mon expérience",
+        "edit": "Modifier",
+        "done": "Terminer",
+        "noNoteYet": "Vous n'avez encore rien écrit sur ce monument.",
+        "photoAlbum": "Album photo",
+        "albumCount": "{n} sur {max} photos",
+        "addPhoto": "Ajouter<br>une photo",
+        "takePhotoShort": "Prendre une photo",
+        "uploadPhotoShort": "Importer une photo",
+        "quickMemories": "Souvenirs rapides",
+        "quickMemoriesSub": "Ajoutez des étiquettes qui représentent votre expérience",
+        "tagArchitecture": "Architecture",
+        "tagHistoricCenter": "Centre historique",
+        "tagMemorable": "Lieu marquant",
+        "tagComeBack": "Je veux revenir",
+        "saveExperience": "Enregistrer l'expérience",
+        "experienceSaved": "Expérience enregistrée !",
+        "photoLimitReached": "Vous avez atteint la limite de {max} photos pour ce monument.",
+        "monthsShort": ["janv.", "févr.", "mars", "avr.", "mai", "juin", "juil.", "août", "sept.", "oct.", "nov.", "déc."],
         "monuments": {
             "1": "Ancien palais du gouvernement colonial, construit en 1874, aujourd'hui centre culturel et l'un des symboles les plus importants de l'histoire du Cap-Vert.",
             "2": "Phare historique construit en 1886, il offre une vue panoramique époustouflante sur la ville et le port de Mindelo.",
@@ -437,6 +515,16 @@ function t(key, vars) {
         });
     }
     return text;
+}
+
+// Formata uma data no formato curto do idioma activo (ex.: 12 Jun 2026)
+function formatShortDate(value) {
+    if (!value) return '';
+    const date = value instanceof Date ? value : new Date(value);
+    if (isNaN(date.getTime())) return '';
+    const dict = translations[currentLanguage] || translations.pt;
+    const months = dict.monthsShort || translations.pt.monthsShort;
+    return date.getDate() + ' ' + months[date.getMonth()] + ' ' + date.getFullYear();
 }
 
 function monumentDescription(id) {
