@@ -857,6 +857,12 @@ function showMapView() {
 function updateNavButtons(activeView) {
     if (settingsBtn) settingsBtn.classList.toggle('is-active', activeView === 'settings');
 
+    // Desliza o indicador do glass radio group para a aba activa
+    const navBar = document.querySelector('nav.hh-nav');
+    if (navBar) {
+        navBar.dataset.active = ['scanner', 'profile', 'map'].includes(activeView) ? activeView : 'none';
+    }
+
     const buttons = [
         { element: navScanner, view: 'scanner' },
         { element: navProfile, view: 'profile' },
