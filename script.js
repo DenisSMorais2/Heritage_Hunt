@@ -1523,6 +1523,19 @@ function deletePhoto(index) {
     }
 }
 
+// Mostra/oculta a senha nos campos do ecra de autenticacao
+document.querySelectorAll('[data-toggle-password]').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const input = document.getElementById(btn.dataset.togglePassword);
+        if (!input) return;
+        const hidden = input.type === 'password';
+        input.type = hidden ? 'text' : 'password';
+        const icon = btn.querySelector('i');
+        if (icon) icon.className = hidden ? 'far fa-eye-slash' : 'far fa-eye';
+        input.focus();
+    });
+});
+
 // Event listeners
 showRegisterBtn.addEventListener('click', showRegisterForm);
 showLoginBtn.addEventListener('click', showLoginForm);

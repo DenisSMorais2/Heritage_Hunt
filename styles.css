@@ -2970,3 +2970,388 @@ html:not(.dark) .hh-mp-card-sub,
 html:not(.dark) .hh-mp-sub {
     color: #5D6E86;
 }
+
+/* ==========================================================
+   Ecra de autenticacao — "Descubra os tesouros de Mindelo"
+   Identidade dourada sobre azul-noite (independente do tema)
+   ========================================================== */
+.hh-auth {
+    position: relative;
+    display: flex;
+    min-height: 100vh;
+    min-height: 100dvh;
+    overflow: hidden;
+    isolation: isolate;
+    background: #050B18;
+    color: #EDE6D4;
+}
+.hh-auth.hidden {
+    display: none !important;
+}
+
+/* Camada fotografica: a baia do Mindelo, tratada como noite */
+.hh-auth-photo {
+    position: absolute;
+    inset: -4%;
+    background: url('imagens/porto_mindelo.jpg') center 38% / cover no-repeat;
+    filter: brightness(.5) saturate(.5) contrast(1.15) hue-rotate(-10deg) blur(.5px);
+    transform: scale(1.04);
+}
+
+/* Veu azul-noite + vinheta + brilho quente do porto */
+.hh-auth-veil {
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(120% 55% at 78% 22%, rgba(214, 160, 70, .20) 0%, rgba(214, 160, 70, 0) 60%),
+        radial-gradient(90% 50% at 12% 18%, rgba(9, 22, 44, .55) 0%, rgba(9, 22, 44, 0) 70%),
+        linear-gradient(180deg, rgba(5, 11, 24, .58) 0%, rgba(6, 14, 30, .70) 38%, rgba(5, 11, 24, .92) 72%, #040914 100%);
+}
+
+/* Ondas douradas no rodape */
+.hh-auth-waves {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 170px;
+    pointer-events: none;
+}
+
+.hh-auth-inner {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    padding: 24px 22px 22px;
+}
+
+/* ---------- Cabecalho decorativo ---------- */
+.hh-auth-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+}
+.hh-auth-kicker {
+    margin: 0;
+    font-size: 10px;
+    line-height: 1.85;
+    letter-spacing: .26em;
+    text-transform: uppercase;
+    color: rgba(238, 230, 209, .78);
+}
+.hh-auth-kicker::after {
+    content: "";
+    display: block;
+    width: 34px;
+    height: 1px;
+    margin-top: 10px;
+    background: linear-gradient(90deg, #D9B96B, rgba(217, 185, 107, 0));
+}
+.hh-auth-place {
+    margin: 0;
+    text-align: right;
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-style: italic;
+    font-weight: 600;
+    font-size: 21px;
+    line-height: 1.25;
+    color: rgba(238, 224, 186, .62);
+}
+
+/* ---------- Marca ---------- */
+.hh-auth-brand {
+    margin-top: -6px;
+    text-align: center;
+}
+.hh-auth-logo {
+    display: block;
+    width: 118px;
+    height: auto;
+    margin: 0 auto;
+    filter: drop-shadow(0 8px 22px rgba(0, 0, 0, .55)) drop-shadow(0 0 14px rgba(224, 180, 90, .28));
+}
+.hh-auth-wordmark {
+    margin: 2px 0 0;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-weight: 700;
+    font-size: clamp(34px, 10.5vw, 44px);
+    letter-spacing: .005em;
+    line-height: 1.05;
+    background: linear-gradient(180deg, #FBF1CB 0%, #EBD08A 42%, #C79C42 78%, #F2E1A6 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 10px 24px rgba(0, 0, 0, .45);
+}
+.hh-auth-tagline {
+    margin: 8px 0 0;
+    font-size: 11px;
+    letter-spacing: .28em;
+    text-transform: uppercase;
+    color: rgba(235, 215, 155, .80);
+}
+
+/* ---------- Cartao ---------- */
+.hh-auth-card {
+    position: relative;
+    margin-top: 22px;
+    padding: 26px 22px 24px;
+    border-radius: 26px;
+    border: 1px solid rgba(214, 178, 98, .55);
+    background:
+        linear-gradient(180deg, rgba(13, 28, 55, .86) 0%, rgba(8, 18, 38, .90) 100%);
+    box-shadow:
+        0 0 0 1px rgba(255, 255, 255, .03) inset,
+        0 24px 60px rgba(2, 6, 16, .62);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+}
+/* Realce dourado no topo do cartao */
+.hh-auth-card::before {
+    content: "";
+    position: absolute;
+    top: -1px;
+    left: 18%;
+    right: 18%;
+    height: 1px;
+    border-radius: 1px;
+    background: linear-gradient(90deg, rgba(247, 232, 184, 0), #F7E8B8, rgba(247, 232, 184, 0));
+    box-shadow: 0 0 10px rgba(240, 208, 126, .55);
+}
+.hh-auth-dash {
+    display: block;
+    width: 62px;
+    height: 2px;
+    margin: 0 auto 20px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, rgba(217, 185, 107, 0), #E0C079, rgba(217, 185, 107, 0));
+}
+.hh-auth-form {
+    display: flex;
+    flex-direction: column;
+}
+.hh-auth-form.hidden {
+    display: none !important;
+}
+.hh-auth-title {
+    margin: 0;
+    text-align: center;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-weight: 700;
+    font-size: clamp(26px, 7.6vw, 32px);
+    line-height: 1.15;
+    background: linear-gradient(180deg, #FCF4D6 0%, #EFD79A 55%, #D4AC57 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+}
+.hh-auth-sub {
+    margin: 8px 0 22px;
+    text-align: center;
+    font-size: 14.5px;
+    color: rgba(206, 213, 226, .72);
+}
+.hh-auth-label {
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #E7E1D2;
+}
+.hh-auth-label + .hh-auth-field {
+    margin-bottom: 18px;
+}
+
+/* ---------- Campos ---------- */
+.hh-auth-field {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    height: 54px;
+    padding: 0 16px;
+    border: 1px solid rgba(212, 175, 93, .52);
+    border-radius: 13px;
+    background: rgba(5, 12, 26, .45);
+    transition: border-color .25s ease, box-shadow .25s ease, background-color .25s ease;
+}
+.hh-auth-field:focus-within {
+    border-color: #EBCB7A;
+    background: rgba(8, 18, 38, .62);
+    box-shadow: 0 0 0 3px rgba(212, 175, 93, .16);
+}
+.hh-auth-field > i {
+    width: 20px;
+    flex: 0 0 20px;
+    text-align: center;
+    font-size: 17px;
+    color: #DDB96A;
+}
+html .hh-auth .hh-auth-field input {
+    flex: 1 1 auto;
+    min-width: 0;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    outline: none;
+    background: transparent;
+    font-size: 16px;
+    color: #F2ECDC;
+    box-shadow: none;
+}
+html .hh-auth .hh-auth-field input::placeholder {
+    color: rgba(226, 219, 200, .42);
+}
+html .hh-auth .hh-auth-field input:-webkit-autofill {
+    -webkit-text-fill-color: #F2ECDC;
+    -webkit-box-shadow: 0 0 0 1000px #0B182F inset;
+    caret-color: #F2ECDC;
+}
+.hh-auth-eye {
+    flex: 0 0 auto;
+    padding: 6px;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    font-size: 17px;
+    color: rgba(221, 185, 106, .85);
+    transition: color .2s ease, transform .2s ease;
+}
+.hh-auth-eye:hover {
+    color: #F3DFA2;
+    transform: scale(1.08);
+}
+
+/* ---------- Botao principal ---------- */
+.hh-auth-cta {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+    height: 58px;
+    margin-top: 12px;
+    padding: 0 22px;
+    border: 1px solid rgba(255, 246, 214, .55);
+    border-radius: 15px;
+    cursor: pointer;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-weight: 700;
+    font-size: 20px;
+    color: #17233B;
+    background: linear-gradient(180deg, #FBF0C2 0%, #EDD489 30%, #D5AC4E 62%, #F1DFA0 100%);
+    box-shadow:
+        0 1px 0 rgba(255, 255, 255, .55) inset,
+        0 10px 26px rgba(196, 152, 63, .32);
+    transition: transform .25s ease, box-shadow .25s ease, filter .25s ease;
+}
+.hh-auth-cta i {
+    position: absolute;
+    right: 24px;
+    font-size: 17px;
+    transition: transform .25s ease;
+}
+.hh-auth-cta:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.05);
+    box-shadow:
+        0 1px 0 rgba(255, 255, 255, .6) inset,
+        0 16px 34px rgba(196, 152, 63, .42);
+}
+.hh-auth-cta:hover i {
+    transform: translateX(5px);
+}
+.hh-auth-cta:active {
+    transform: translateY(0);
+    box-shadow: 0 4px 14px rgba(150, 112, 40, .35);
+}
+
+/* ---------- Alternar login / registo ---------- */
+.hh-auth-switch {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin: 26px 0 0;
+    font-size: 14.5px;
+    color: rgba(206, 213, 226, .72);
+}
+.hh-auth-switch::before,
+.hh-auth-switch::after {
+    content: "";
+    flex: 1 1 0;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(214, 178, 98, 0), rgba(214, 178, 98, .5));
+}
+.hh-auth-switch::after {
+    background: linear-gradient(90deg, rgba(214, 178, 98, .5), rgba(214, 178, 98, 0));
+}
+.hh-auth-switch > span {
+    flex: 0 0 auto;
+    white-space: nowrap;
+}
+.hh-auth-switch button {
+    flex: 0 0 auto;
+    padding: 0 0 2px;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 15px;
+    color: #F0DCA2;
+    border-bottom: 1px solid rgba(240, 220, 162, .6);
+    transition: color .2s ease, border-color .2s ease;
+}
+.hh-auth-switch button:hover {
+    color: #FBF1C8;
+    border-color: #FBF1C8;
+}
+
+/* ---------- Mote ---------- */
+.hh-auth-motto {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    margin: 26px 0 4px;
+    text-align: center;
+    font-size: 10.5px;
+    line-height: 1.9;
+    letter-spacing: .26em;
+    text-transform: uppercase;
+    color: rgba(226, 203, 144, .72);
+}
+.hh-auth-motto::before,
+.hh-auth-motto::after {
+    content: "";
+    flex: 1 1 0;
+    max-width: 78px;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(217, 185, 107, 0), rgba(217, 185, 107, .65));
+}
+.hh-auth-motto::after {
+    background: linear-gradient(90deg, rgba(217, 185, 107, .65), rgba(217, 185, 107, 0));
+}
+
+/* ---------- Ecras baixos ---------- */
+@media (max-height: 980px) {
+    .hh-auth-inner { padding: 20px 20px 18px; }
+    .hh-auth-logo { width: 104px; }
+    .hh-auth-card { margin-top: 14px; padding: 20px 20px 18px; }
+    .hh-auth-dash { margin-bottom: 14px; }
+    .hh-auth-sub { margin-bottom: 16px; }
+    .hh-auth-label + .hh-auth-field { margin-bottom: 14px; }
+    .hh-auth-switch { margin-top: 20px; }
+    .hh-auth-motto { margin-top: 18px; }
+}
+@media (max-height: 720px) {
+    .hh-auth-top { display: none; }
+    .hh-auth-logo { width: 84px; }
+    .hh-auth-field { height: 48px; }
+    .hh-auth-cta { height: 52px; font-size: 18px; }
+}
