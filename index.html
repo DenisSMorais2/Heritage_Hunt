@@ -252,6 +252,7 @@
                                     <p>+<span id="pointsEarned">0</span> <span data-i18n="xpLabel">XP</span></p>
                                 </div>
                                 <p id="scannerProgress" class="hh-result-progress"></p>
+                                <p id="scannerLevelNote" class="hh-result-level hidden"></p>
                                 <div id="scannerZoneNote" class="hh-xp-zone-note hidden"></div>
                                 <div id="scannerStreakNote" class="hh-streak-note hidden"></div>
                                 <button id="closeResultBtn" class="hh-gold-btn hh-gold-btn-sm" data-i18n="keepExploring">Continuar Explorando</button>
@@ -326,7 +327,10 @@
                             </div>
                             <div class="hh-id-text">
                                 <h2 class="hh-id-name" id="profileUserName">Explorador</h2>
-                                <p class="hh-id-level"><span data-i18n="level">Nível</span>: <span id="userLevel">1</span></p>
+                                <button type="button" class="hh-id-level" id="userLevelLine" data-i18n-title="levelViewJourney" title="Ver a tua jornada">
+                                    <span class="hh-id-level-name" id="userLevelName">Explorador</span>
+                                    <span class="hh-id-level-rank" id="userLevel">Nível 1</span>
+                                </button>
                                 <p class="hh-id-email" id="userEmail">email@exemplo.com</p>
                             </div>
                             <div class="hh-id-motto">
@@ -357,6 +361,19 @@
                                     <p class="hh-stat-label" data-i18n="achievementsLabel">Conquistas</p>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Progressao de nivel -->
+                    <div class="hh-card hh-level-card">
+                        <div class="hh-discover-head">
+                            <h3 class="hh-section-title hh-underlined" data-i18n="levelCardTitle">A tua jornada</h3>
+                            <span id="levelCardCrest" class="hh-level-crest" aria-hidden="true">
+                                <i class="fas fa-compass"></i>
+                            </span>
+                        </div>
+                        <div id="levelCardBody" class="hh-level-body">
+                            <!-- Desenhado por levels-ui.js -->
                         </div>
                     </div>
 
@@ -827,6 +844,37 @@
         <!-- Aviso discreto de XP -->
         <div id="xpToast" class="hh-xp-toast hidden" role="status" aria-live="polite"></div>
 
+        <!-- A tua jornada: todos os niveis -->
+        <div id="levelJourneyModal" class="hh-mp-overlay hh-streak-overlay hidden">
+            <div class="hh-streak-sheet" role="dialog" aria-modal="true" aria-labelledby="levelJourneyTitle">
+                <div class="hh-streak-sheet-head">
+                    <div class="hh-streak-sheet-title">
+                        <span class="hh-mp-card-icon"><i class="fas fa-route"></i></span>
+                        <h3 id="levelJourneyTitle" data-i18n="levelJourneyTitle">A tua jornada</h3>
+                    </div>
+                    <button id="closeLevelJourney" class="hh-mp-close" data-i18n-title="close" title="Fechar">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div id="levelJourneyList" class="hh-level-journey"></div>
+            </div>
+        </div>
+
+        <!-- Celebracao de novo nivel -->
+        <div id="levelUpModal" class="hh-streak-celebration hh-level-celebration hidden">
+            <div class="hh-streak-celebration-card hh-level-celebration-card modal-animation" role="dialog" aria-modal="true" aria-labelledby="levelUpName">
+                <span id="levelUpMark" class="hh-level-celebration-mark is-bronze" aria-hidden="true">
+                    <i class="fas fa-compass"></i>
+                </span>
+                <p id="levelUpKicker" class="hh-streak-celebration-kicker">NOVO NÍVEL</p>
+                <p id="levelUpName" class="hh-level-celebration-name"></p>
+                <p id="levelUpRank" class="hh-level-celebration-rank"></p>
+                <p id="levelUpDesc" class="hh-streak-celebration-note"></p>
+                <p id="levelUpUnlocked" class="hh-level-celebration-check"></p>
+                <button id="closeLevelUp" class="hh-gold-btn hh-gold-btn-sm" data-i18n="keepExploring">Continuar Explorando</button>
+            </div>
+        </div>
+
         <!-- Detalhe de um dia da sequencia -->
         <div id="streakDayModal" class="hh-mp-overlay hh-streak-overlay hidden">
             <div class="hh-streak-sheet" role="dialog" aria-modal="true" aria-labelledby="streakDayTitle">
@@ -916,6 +964,8 @@
 <script src="streak-ui.js"></script>
 <script src="xp.js"></script>
 <script src="xp-ui.js"></script>
+<script src="levels.js"></script>
+<script src="levels-ui.js"></script>
 <script src="script.js"></script>
 </body>
 </html>

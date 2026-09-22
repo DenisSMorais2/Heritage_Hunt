@@ -231,7 +231,6 @@ const navScanner = document.getElementById('navScanner');
 const navProfile = document.getElementById('navProfile');
 const navMap = document.getElementById('navMap');
 const settingsBtn = document.getElementById('settingsBtn');
-const userLevel = document.getElementById('userLevel');
 const userName = document.getElementById('userName');
 const profileUserName = document.getElementById('profileUserName');
 const userEmail = document.getElementById('userEmail');
@@ -632,13 +631,16 @@ function register() {
         points: 0,
         scannedMonuments: [],
         xp: XP.createEmptyWallet(),
-        explorationStreak: ExplorationStreak.createEmptyStreak()
+        explorationStreak: ExplorationStreak.createEmptyStreak(),
+        // Toda a gente comeca Explorador, sem celebracao (ponto 3)
+        levelSeen: Levels.getLevelFromXP(0).level
     };
-    
+
     // Save user data
     localStorage.setItem('heritageUser', JSON.stringify(user));
     state.user = user;
-    
+    levelCelebrationsReady = true;
+
     showMainApp();
 }
 
@@ -648,8 +650,10 @@ function logout() {
         state.user = null;
         state.points = 0;
         state.scannedMonuments = [];
+        levelCelebrationsReady = false;
         StreakUI.render();
         XPUI.render();
+        LevelsUI.render();
         document.body.classList.remove('hh-dark-bg');
         authScreen.classList.remove('hidden');
         mainApp.classList.add('hidden');
@@ -663,12 +667,17 @@ function showMainApp() {
     updateUserInterface();
     StreakUI.render();
     XPUI.render();
+    LevelsUI.render();
     renderZonesView();
     showScannerView();
 }
 
 function loadUserData() {
     if (state.user) {
+        // Nada do que acontece durante o arranque e "agora": migracoes
+        // e recompensas retroactivas nunca celebram niveis (ponto 47).
+        levelCelebrationsReady = false;
+
         state.scannedMonuments = state.user.scannedMonuments || [];
 
         // Pontos antigos passam a XP (uma unica vez) e as zonas ja
@@ -676,7 +685,11 @@ function loadUserData() {
         migrateUserToXP();
         syncZoneCompletions();
         state.points = XP.getTotalXP();
-                
+
+        // O nivel passa a ser derivado do XP: um `level` guardado por
+        // versoes antigas deixa de ter significado (pontos 30 e 31).
+        migrateUserToLevels();
+
         // Update badges based on current progress
         const progress = (state.scannedMonuments.length / state.monuments.length) * 100;
         state.badges.forEach(badge => {
@@ -685,6 +698,9 @@ function loadUserData() {
 
         // Os monumentos guardados podem ter sido gravados noutro idioma
         applyContentLanguage();
+
+        // A partir daqui, qualquer subida de nivel aconteceu mesmo agora
+        levelCelebrationsReady = true;
     }
 }
 
@@ -738,11 +754,19 @@ function initXPSystem() {
         })
     });
 
+    LevelsUI.init({
+        // O nivel le o XP pela camada de dominio, nunca por state.points
+        getTotalXP: () => XP.getTotalXP(),
+        // Fechar a celebracao devolve o lugar a fila de conquistas
+        onLevelUpClosed: () => scheduleNextBadge(400)
+    });
+
     // A UI reage a qualquer mudanca de XP, venha de onde vier (ponto 52)
     XP.subscribeToXPChanges((change) => {
         state.points = XP.getTotalXP();
         XPUI.applyChange(change);
-        updateLevelDisplay();
+        LevelsUI.applyChange(change);
+        handleLevelChange(change);
     });
 }
 
@@ -774,12 +798,63 @@ function announceReward(xpBatch, streakResult, fallbackText) {
         StreakUI.showCelebration(streakResult, XPUI.summaryText(xpBatch));
         return;
     }
-    XPUI.toast(xpBatch, fallbackText);
+    // O aviso leva tambem quanto falta para o proximo nivel: ganhar XP
+    // sem subir de nivel continua a mostrar progresso (ponto 42).
+    XPUI.toast(xpBatch, fallbackText, LevelsUI.nextLevelHint());
 }
 
-// O nivel continua a ser derivado do total (100 XP por nivel)
+// ============================================================
+// Niveis — ligacao entre o dominio (levels.js), o XP e a
+// interface (levels-ui.js)
+//
+// O nivel NAO e guardado: e sempre Levels.getLevelFromXP(total).
+// A unica coisa persistida e `levelSeen`, o nivel cuja celebracao
+// o utilizador ja viu, para nao voltar a aparecer depois de um
+// refresh (ponto 47).
+// ============================================================
+
+// Enquanto a sessao arranca (migracao de pontos antigos, zonas
+// concluidas noutra sessao) nao ha celebracoes: essas subidas nao
+// aconteceram agora (pontos 16 e 47).
+let levelCelebrationsReady = false;
+
+// O nivel visivel e sempre recalculado a partir do XP
 function updateLevelDisplay() {
-    userLevel.textContent = Math.floor(state.points / 100) + 1;
+    LevelsUI.render();
+}
+
+// Alinha `levelSeen` com o nivel actual sem celebrar nada.
+// Usado no arranque e depois de recompensas retroactivas.
+function syncLevelSeen() {
+    if (!state.user) return;
+
+    const level = Levels.getLevelFromXP(XP.getTotalXP()).level;
+    if (state.user.levelSeen === level) return;
+
+    state.user.levelSeen = level;
+    saveUserData();
+}
+
+// Ponto unico de deteccao de subida de nivel (ponto 14).
+// Recebe o resultado de qualquer atribuicao de XP, venha de onde vier.
+function handleLevelChange(change) {
+    if (!state.user || !levelCelebrationsReady) return;
+    if (!change || change.migration || change.reset) return;
+
+    const transition = Levels.detectLevelUp(change.previousXP, change.currentXP);
+    if (!transition.leveledUp) return;
+
+    // Uma recompensa repetida ou um duplo clique nunca geram uma
+    // segunda celebracao do mesmo nivel (pontos 12 e 13).
+    const seen = typeof state.user.levelSeen === 'number' ? state.user.levelSeen : 0;
+    if (transition.newLevel.level <= seen) return;
+
+    state.user.levelSeen = transition.newLevel.level;
+    saveUserData();
+
+    if (!state.settings || state.settings.achievementAlerts) {
+        enqueueLevelUp(transition.newLevel);
+    }
 }
 
 // Ponto 40 — lista de zonas no mapa
@@ -829,6 +904,31 @@ function migrateUserToXP() {
     });
 
     state.points = XP.getTotalXP();
+}
+
+// ============================================================
+// Migracao do nivel antigo (pontos 30, 31 e 32)
+//
+// Ate aqui o nivel era um numero calculado na interface
+// (1 nivel por cada 100 XP) e nunca chegou a ser guardado. Passa a
+// ser derivado de LEVEL_CONFIG, por isso o numero visivel muda para
+// alguns utilizadores — mas o XP fica exactamente igual.
+//
+// Exemplo: 315 XP mostrava "Nivel 4" e passa a mostrar
+// "Viajante · Nivel 2". Continuam a ser 315 XP.
+// ============================================================
+function migrateUserToLevels() {
+    if (!state.user) return;
+
+    // Um `level` guardado por uma versao antiga deixa de ser lido:
+    // manter o campo so convidava a dessincronizacao (ponto 2).
+    if (state.user.level !== undefined) {
+        delete state.user.level;
+    }
+
+    // `levelSeen` nasce alinhado com o XP actual, para quem ja era
+    // utilizador nao receber celebracoes de niveis antigos.
+    syncLevelSeen();
 }
 
 // Ids dos monumentos ja descobertos
@@ -1106,6 +1206,9 @@ function applyLanguage() {
     XPUI.render();
     renderZonesView();
 
+    // Cartao de nivel (nome, descricao e texto do proximo nivel)
+    LevelsUI.render();
+
     // Botão do scanner (só quando está em repouso, para não interromper uma leitura)
     if (!state.qrScanner) {
         startScannerBtn.innerHTML = `<i class="fas fa-qrcode mr-3 text-xl"></i> <span data-i18n="scanQr">${t('scanQr')}</span>`;
@@ -1352,6 +1455,9 @@ function handleQRResult(qrData) {
     // Zona concluida, quando for o caso (ponto 24)
     XPUI.renderDiscovery(xpBatch);
 
+    // Quanto falta para o proximo nivel, sem abrir modal nenhum
+    LevelsUI.renderDiscoveryNote();
+
     // So celebramos a sequencia na primeira actividade valida do dia
     StreakUI.renderDiscoveryNote(scannerStreakNote, streakResult);
     
@@ -1386,6 +1492,7 @@ function resetScanner() {
 function closeResult() {
     scannerResult.classList.add('hidden');
     XPUI.clearDiscovery();
+    LevelsUI.clearDiscoveryNote();
     StreakUI.renderDiscoveryNote(scannerStreakNote, null);
     resetScanner();
 }
@@ -1400,9 +1507,10 @@ function updateProgress() {
     monumentsScanned.textContent = state.scannedMonuments.length;
     totalMonuments.textContent = state.monuments.length;
 
-    // Totais e cartao de XP (a camada de XP e a fonte de verdade)
+    // Totais, cartao de XP e nivel (a camada de XP e a fonte de verdade)
     XPUI.render();
     updateLevelDisplay();
+
     
     // Update badges earned count
     const earnedBadges = state.badges.filter(badge => badge.unlocked).length;
@@ -1430,13 +1538,23 @@ function checkForBadges() {
     renderBadges();
 }
 
-// Uma conquista de cada vez: as medalhas de progresso e as de
-// sequencia partilham o mesmo modal.
+// Uma celebracao de cada vez (ponto 16): as medalhas de progresso,
+// as de sequencia e as subidas de nivel partilham a mesma fila, por
+// isso uma descoberta nunca abre varios modais ao mesmo tempo.
+//
+// A ordem e a de chegada: descoberta (no proprio cartao do scanner),
+// depois medalha, depois novo nivel.
 const badgeQueue = [];
 let badgeQueueTimer = null;
 
 function enqueueBadge(badge) {
-    badgeQueue.push(badge);
+    badgeQueue.push({ kind: 'badge', badge: badge });
+    scheduleNextBadge(1000);
+}
+
+// O novo nivel entra na mesma fila, mas abre o seu proprio modal
+function enqueueLevelUp(level) {
+    badgeQueue.push({ kind: 'level', level: level });
     scheduleNextBadge(1000);
 }
 
@@ -1447,7 +1565,9 @@ function scheduleNextBadge(delay) {
     badgeQueueTimer = setTimeout(() => {
         badgeQueueTimer = null;
         const next = badgeQueue.shift();
-        if (next) showBadge(next);
+        if (!next) return;
+        if (next.kind === 'level') LevelsUI.showLevelUp(next.level);
+        else showBadge(next.badge);
     }, delay);
 }
 
@@ -2096,6 +2216,7 @@ function initApp() {
     updateMonumentsList();
     StreakUI.render();
     XPUI.render();
+    LevelsUI.render();
 }
 
 // Start the app

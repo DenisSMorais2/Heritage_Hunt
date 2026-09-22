@@ -286,7 +286,11 @@ const XPUI = (function () {
     // Recebe o resultado de XP.awardMany. Quando nao houve XP (limite
     // atingido, recompensa repetida) mostra apenas `fallbackText`, para
     // a accao nunca ficar sem confirmacao.
-    function toast(batch, fallbackText) {
+    //
+    // `noteText` e uma segunda linha opcional (ex.: "170 XP para
+    // Conhecedor"). So aparece quando houve mesmo XP: sem recompensa
+    // nao ha progresso por anunciar (ponto 42).
+    function toast(batch, fallbackText, noteText) {
         if (!elements.toast) return;
 
         const earned = !!(batch && batch.totalAwarded);
@@ -296,13 +300,16 @@ const XPUI = (function () {
             const info = describe(batch.awarded[0].transaction);
             elements.toast.innerHTML = '' +
                 '<span class="hh-xp-toast-amount">' + escapeHtml(t('xpAmount', { n: batch.totalAwarded })) + '</span>' +
-                '<span class="hh-xp-toast-text">' + escapeHtml(info.title) + '</span>';
+                '<span class="hh-xp-toast-text">' + escapeHtml(info.title) + '</span>' +
+                (noteText ? '<span class="hh-xp-toast-note">' + escapeHtml(noteText) + '</span>' : '');
         } else {
             elements.toast.innerHTML =
                 '<span class="hh-xp-toast-text">' + escapeHtml(fallbackText) + '</span>';
         }
 
         elements.toast.classList.toggle('is-plain', !earned);
+        // Com segunda linha o aviso deixa de ser uma pilula de uma linha
+        elements.toast.classList.toggle('has-note', !!(earned && noteText));
         elements.toast.classList.remove('hidden');
         // reinicia a animacao
         void elements.toast.offsetWidth;

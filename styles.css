@@ -4831,3 +4831,550 @@ html:not(.dark) .hh-streak-celebration-xp {
 #monumentModal img {
     height: clamp(140px, 26dvh, 192px);
 }
+
+/* ==========================================================
+   Heritage — Niveis do explorador
+   (ver LEVEL_CONFIG em levels.js e levels-ui.js)
+
+   A identidade continua navy + dourado: cada nivel recebe
+   apenas um acento discreto. Sem neon e sem visual arcade.
+   ========================================================== */
+:root {
+    /* Acento de cada nivel: cor do icone/texto, fundo e contorno */
+    --hh-lv-bronze: #D3A96F;
+    --hh-lv-bronze-bg: rgba(211, 169, 111, 0.13);
+    --hh-lv-bronze-line: rgba(211, 169, 111, 0.36);
+
+    --hh-lv-blue: #7FB2FF;
+    --hh-lv-blue-bg: rgba(127, 178, 255, 0.12);
+    --hh-lv-blue-line: rgba(127, 178, 255, 0.34);
+
+    --hh-lv-violet: #C2A2F0;
+    --hh-lv-violet-bg: rgba(194, 162, 240, 0.12);
+    --hh-lv-violet-line: rgba(194, 162, 240, 0.34);
+
+    --hh-lv-gold: #E7CE9A;
+    --hh-lv-gold-bg: rgba(214, 178, 116, 0.14);
+    --hh-lv-gold-line: rgba(214, 178, 116, 0.42);
+}
+
+/* --- Linha de nivel no cartao de identificacao (ponto 23) --- */
+.hh-id-level {
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px 8px;
+    margin-top: 5px;
+    padding: 0;
+    max-width: 100%;
+    font: inherit;
+    text-align: left;
+    background: none;
+    border: 0;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+.hh-id-level:focus-visible {
+    outline: 2px solid var(--hh-gold);
+    outline-offset: 3px;
+    border-radius: 6px;
+}
+.hh-id-level-name {
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: clamp(15px, 4.4vw, 17px);
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--hh-gold-soft);
+    overflow-wrap: anywhere;
+}
+.hh-id-level-rank {
+    flex-shrink: 0;
+    padding: 2px 8px;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.7px;
+    text-transform: uppercase;
+    white-space: nowrap;
+    border-radius: 999px;
+    color: var(--hh-muted);
+    background: rgba(157, 176, 200, 0.12);
+    border: 1px solid var(--hh-line);
+}
+
+/* --- Cartao "A tua jornada" (ponto 9) --- */
+.hh-level-crest {
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    border-radius: 50%;
+    color: var(--hh-gold-soft);
+    background: var(--hh-lv-gold-bg);
+    border: 1px solid var(--hh-lv-gold-line);
+}
+.hh-level-body {
+    margin-top: 14px;
+}
+
+/* Marca do nivel: o icone dentro do circulo com o acento */
+.hh-level-mark {
+    width: 42px;
+    height: 42px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    border-radius: 50%;
+    border: 1px solid transparent;
+}
+.hh-level-mark.is-bronze { color: var(--hh-lv-bronze); background: var(--hh-lv-bronze-bg); border-color: var(--hh-lv-bronze-line); }
+.hh-level-mark.is-blue   { color: var(--hh-lv-blue);   background: var(--hh-lv-blue-bg);   border-color: var(--hh-lv-blue-line); }
+.hh-level-mark.is-violet { color: var(--hh-lv-violet); background: var(--hh-lv-violet-bg); border-color: var(--hh-lv-violet-line); }
+.hh-level-mark.is-gold   { color: var(--hh-lv-gold);   background: var(--hh-lv-gold-bg);   border-color: var(--hh-lv-gold-line); }
+.hh-level-mark.is-locked {
+    opacity: 0.45;
+}
+
+/* Cabecalho tocavel: abre "A tua jornada" (ponto 24) */
+.hh-level-head {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 0;
+    text-align: left;
+    background: none;
+    border: 0;
+    color: inherit;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+.hh-level-head:focus-visible {
+    outline: 2px solid var(--hh-gold);
+    outline-offset: 4px;
+    border-radius: 12px;
+}
+.hh-level-head-text {
+    min-width: 0;
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.hh-level-name {
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: clamp(17px, 5vw, 20px);
+    font-weight: 700;
+    line-height: 1.2;
+    color: #F2F6FC;
+    overflow-wrap: anywhere;
+}
+.hh-level-rank {
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 1.1px;
+    text-transform: uppercase;
+    color: var(--hh-muted);
+}
+.hh-level-chevron {
+    flex-shrink: 0;
+    font-size: 12px;
+    color: var(--hh-muted);
+    transition: transform 0.2s ease;
+}
+.hh-level-head:hover .hh-level-chevron {
+    transform: translateX(2px);
+}
+.hh-level-desc {
+    margin-top: 10px;
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: var(--hh-muted);
+}
+
+/* Total de XP dentro do cartao de nivel */
+.hh-level-xp {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-top: 14px;
+}
+.hh-level-xp-value {
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 30px;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--hh-gold-soft);
+    font-variant-numeric: tabular-nums;
+}
+.hh-level-xp-unit {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: var(--hh-muted);
+}
+
+/* Barra: progresso ENTRE o nivel actual e o seguinte (ponto 7) */
+.hh-level-track {
+    height: 8px;
+    margin-top: 10px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--hh-line);
+    overflow: hidden;
+}
+.hh-level-fill {
+    height: 100%;
+    border-radius: 999px;
+    transition: width 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.hh-level-fill.is-bronze { background: linear-gradient(90deg, #A9793D, #D3A96F); }
+.hh-level-fill.is-blue   { background: linear-gradient(90deg, #3E6FBF, #7FB2FF); }
+.hh-level-fill.is-violet { background: linear-gradient(90deg, #7B5AB6, #C2A2F0); }
+.hh-level-fill.is-gold   { background: linear-gradient(90deg, #C9A263, #E7CE9A); }
+
+/* Sem animacao para quem a dispensa (ponto 39) */
+@media (prefers-reduced-motion: reduce) {
+    .hh-level-fill {
+        transition: none;
+    }
+}
+
+.hh-level-next {
+    margin-top: 9px;
+    font-size: 12.5px;
+    line-height: 1.45;
+    color: var(--hh-cream);
+    overflow-wrap: anywhere;
+}
+.hh-level-next.is-max {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-weight: 700;
+    color: var(--hh-gold-soft);
+}
+.hh-level-max-note {
+    margin-top: 4px;
+    font-size: 12px;
+    line-height: 1.45;
+    color: var(--hh-muted);
+}
+
+/* --- Nota no cartao da descoberta (ponto 42) --- */
+.hh-result-level {
+    margin: -6px 0 12px;
+    font-size: 12px;
+    color: var(--hh-gold-soft);
+    overflow-wrap: anywhere;
+}
+.hh-result-level.hidden {
+    display: none;
+}
+
+/* --- Segunda linha do aviso discreto (ponto 42) --- */
+.hh-xp-toast.has-note {
+    flex-wrap: wrap;
+    border-radius: 16px;
+    row-gap: 2px;
+}
+.hh-xp-toast-note {
+    flex-basis: 100%;
+    font-size: 11.5px;
+    line-height: 1.35;
+    color: var(--hh-muted);
+    overflow-wrap: anywhere;
+}
+
+/* --- Folha "A tua jornada" (pontos 24, 25 e 26) --- */
+.hh-level-journey {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 14px;
+}
+.hh-level-detail {
+    padding: 14px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--hh-line);
+}
+.hh-level-detail-head {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+}
+.hh-level-detail-rows {
+    margin-top: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.hh-level-detail-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 12.5px;
+    color: var(--hh-muted);
+}
+.hh-level-detail-row strong {
+    font-weight: 700;
+    color: var(--hh-cream);
+    text-align: right;
+    overflow-wrap: anywhere;
+}
+.hh-level-detail-row.is-full {
+    display: block;
+}
+
+/* Cada nivel da jornada: concluido, actual ou bloqueado */
+.hh-level-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+    padding: 13px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--hh-line);
+}
+.hh-level-step.is-current {
+    background: rgba(214, 178, 116, 0.08);
+    border-color: rgba(214, 178, 116, 0.34);
+}
+.hh-level-step.is-locked {
+    opacity: 0.72;
+}
+.hh-level-step-body {
+    min-width: 0;
+    flex: 1 1 auto;
+}
+.hh-level-step-name {
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 15.5px;
+    font-weight: 700;
+    line-height: 1.25;
+    color: #F2F6FC;
+    overflow-wrap: anywhere;
+}
+.hh-level-step-sub {
+    margin-top: 2px;
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+    color: var(--hh-muted);
+}
+.hh-level-step-desc {
+    margin-top: 6px;
+    font-size: 12px;
+    line-height: 1.45;
+    color: var(--hh-muted);
+}
+.hh-level-step-state {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    min-width: 58px;
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    text-align: center;
+    color: var(--hh-muted);
+}
+.hh-level-step-state i {
+    font-size: 11px;
+}
+.hh-level-step.is-done .hh-level-step-state {
+    color: #6FD3A4;
+}
+.hh-level-step.is-current .hh-level-step-state {
+    color: var(--hh-gold-soft);
+}
+.hh-level-step.is-current .hh-level-step-state i {
+    font-size: 8px;
+}
+
+/* --- Celebracao de novo nivel (ponto 15) --- */
+.hh-level-celebration-mark {
+    width: 66px;
+    height: 66px;
+    margin: 0 auto 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 27px;
+    border: 1px solid transparent;
+}
+.hh-level-celebration-mark.is-bronze { color: #2A1B08; background: linear-gradient(135deg, #E6C797, #C08F45); box-shadow: 0 8px 20px rgba(192, 143, 69, 0.28); }
+.hh-level-celebration-mark.is-blue   { color: #08172E; background: linear-gradient(135deg, #A9CBFF, #4C7FCC); box-shadow: 0 8px 20px rgba(76, 127, 204, 0.28); }
+.hh-level-celebration-mark.is-violet { color: #1B0E30; background: linear-gradient(135deg, #DAC4F7, #8C68C9); box-shadow: 0 8px 20px rgba(140, 104, 201, 0.28); }
+.hh-level-celebration-mark.is-gold   { color: #17325A; background: linear-gradient(135deg, #F7E8B8, #D2A947); box-shadow: 0 8px 20px rgba(214, 178, 116, 0.28); }
+
+.hh-level-celebration-name {
+    margin-top: 8px;
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: clamp(21px, 6.4vw, 25px);
+    font-weight: 700;
+    line-height: 1.2;
+    color: #F2F6FC;
+    overflow-wrap: anywhere;
+}
+.hh-level-celebration-rank {
+    margin-top: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--hh-muted);
+}
+.hh-level-celebration-card .hh-streak-celebration-note {
+    margin: 10px 0 14px;
+}
+.hh-level-celebration-check {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    margin-bottom: 18px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #6FD3A4;
+}
+
+/* --- Ecras muito estreitos (320px) --- */
+@media (max-width: 360px) {
+    .hh-level-mark {
+        width: 38px;
+        height: 38px;
+        font-size: 15px;
+    }
+    .hh-level-xp-value {
+        font-size: 26px;
+    }
+    .hh-level-step {
+        padding: 11px;
+        gap: 9px;
+    }
+    .hh-level-step-state {
+        min-width: 50px;
+        font-size: 9px;
+    }
+    .hh-level-celebration-mark {
+        width: 58px;
+        height: 58px;
+        font-size: 24px;
+    }
+}
+
+/* ==========================================================
+   Niveis — tema claro
+   ========================================================== */
+html:not(.dark) {
+    --hh-lv-bronze: #96662B;
+    --hh-lv-bronze-bg: rgba(150, 102, 43, 0.1);
+    --hh-lv-bronze-line: rgba(150, 102, 43, 0.34);
+
+    --hh-lv-blue: #2563EB;
+    --hh-lv-blue-bg: rgba(37, 99, 235, 0.09);
+    --hh-lv-blue-line: rgba(37, 99, 235, 0.3);
+
+    --hh-lv-violet: #6D42B8;
+    --hh-lv-violet-bg: rgba(109, 66, 184, 0.09);
+    --hh-lv-violet-line: rgba(109, 66, 184, 0.3);
+
+    --hh-lv-gold: #A8813F;
+    --hh-lv-gold-bg: rgba(168, 129, 63, 0.1);
+    --hh-lv-gold-line: rgba(168, 129, 63, 0.38);
+}
+html:not(.dark) .hh-id-level-name {
+    color: #8A6A2F;
+}
+html:not(.dark) .hh-id-level-rank {
+    color: #46586F;
+    background: rgba(18, 41, 74, 0.06);
+    border-color: rgba(18, 41, 74, 0.12);
+}
+html:not(.dark) .hh-level-crest {
+    color: #8A6A2F;
+}
+html:not(.dark) .hh-level-name,
+html:not(.dark) .hh-level-step-name {
+    color: #12294A;
+}
+html:not(.dark) .hh-level-rank,
+html:not(.dark) .hh-level-desc,
+html:not(.dark) .hh-level-chevron,
+html:not(.dark) .hh-level-step-sub,
+html:not(.dark) .hh-level-step-desc,
+html:not(.dark) .hh-level-detail-row,
+html:not(.dark) .hh-level-max-note {
+    color: #46586F;
+}
+html:not(.dark) .hh-level-xp-value {
+    color: #8A6A2F;
+}
+html:not(.dark) .hh-level-xp-unit {
+    color: #46586F;
+}
+html:not(.dark) .hh-level-track {
+    background: #EDE8DC;
+    border-color: rgba(18, 41, 74, 0.08);
+}
+html:not(.dark) .hh-level-fill.is-bronze { background: linear-gradient(90deg, #96662B, #C79A58); }
+html:not(.dark) .hh-level-fill.is-blue   { background: linear-gradient(90deg, #2563EB, #6A9BF5); }
+html:not(.dark) .hh-level-fill.is-violet { background: linear-gradient(90deg, #6D42B8, #A47CE0); }
+html:not(.dark) .hh-level-fill.is-gold   { background: linear-gradient(90deg, #A8813F, #D2A947); }
+html:not(.dark) .hh-level-next {
+    color: #12294A;
+}
+html:not(.dark) .hh-level-next.is-max {
+    color: #8A6A2F;
+}
+html:not(.dark) .hh-level-detail,
+html:not(.dark) .hh-level-step {
+    background: #FAF7F0;
+    border-color: #E8E2D5;
+}
+html:not(.dark) .hh-level-step.is-current {
+    background: rgba(168, 129, 63, 0.1);
+    border-color: rgba(168, 129, 63, 0.4);
+}
+html:not(.dark) .hh-level-detail-row strong {
+    color: #12294A;
+}
+html:not(.dark) .hh-level-step-state {
+    color: #46586F;
+}
+html:not(.dark) .hh-level-step.is-done .hh-level-step-state {
+    color: #0F9D6B;
+}
+html:not(.dark) .hh-level-step.is-current .hh-level-step-state {
+    color: #8A6A2F;
+}
+html:not(.dark) .hh-level-celebration-name {
+    color: #12294A;
+}
+html:not(.dark) .hh-level-celebration-rank {
+    color: #46586F;
+}
+html:not(.dark) .hh-level-celebration-check {
+    color: #0F9D6B;
+}
+html:not(.dark) .hh-xp-toast-note {
+    color: #46586F;
+}
+
+/* O cartao de descoberta do scanner mantem o fundo escuro nos dois
+   temas, por isso a nota de nivel nao segue o tema claro. */
+html:not(.dark) .hh-result-card .hh-result-level {
+    color: var(--hh-gold-soft);
+}

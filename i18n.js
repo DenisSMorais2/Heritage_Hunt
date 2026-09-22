@@ -173,6 +173,45 @@ const translations = {
             "colinas": "Colinas e Fortificações",
             "cultura_viva": "Cultura Viva"
         },
+        "levelLabel": "Nível",
+        "levelShort": "Nível {n}",
+        "levelCardTitle": "A tua jornada",
+        "levelXpValue": "{n} XP",
+        "levelNextLabel": "Próximo nível",
+        "levelRemaining": "{n} XP para {name}",
+        "levelRemainingShort": "Faltam {n} XP",
+        "levelRequired": "Necessário: {n} XP",
+        "levelProgressPercent": "Progresso: {n}%",
+        "levelProgressAria": "Progresso para o próximo nível",
+        "levelMaxLabel": "Nível máximo atual",
+        "levelMaxXp": "{n}+ XP",
+        "levelMaxNote": "Continua a explorar e a construir a tua história.",
+        "levelViewJourney": "Ver a tua jornada",
+        "levelJourneyTitle": "A tua jornada",
+        "levelJourneyDone": "Concluído",
+        "levelJourneyCurrent": "Atual",
+        "levelJourneyLocked": "Bloqueado",
+        "levelUpKicker": "NOVO NÍVEL",
+        "levelUpUnlocked": "Nível desbloqueado",
+        "levelUpReached": "Chegaste a {name}.",
+        "levels": {
+            "explorer": {
+                "name": "Explorador",
+                "description": "A tua jornada pelo património começa aqui."
+            },
+            "traveler": {
+                "name": "Viajante",
+                "description": "Já descobriste diferentes lugares e histórias."
+            },
+            "connoisseur": {
+                "name": "Conhecedor",
+                "description": "Cada monumento começa a revelar uma parte maior da história de Cabo Verde."
+            },
+            "heritage_guardian": {
+                "name": "Guardião do Património",
+                "description": "Exploras, conheces e valorizas a história que te rodeia."
+            }
+        },
         "streakTitle": "Sequência de exploração",
         "streakDayOne": "1 dia de exploração",
         "streakDayMany": "{n} dias de exploração",
@@ -445,6 +484,45 @@ const translations = {
             "frente_mar": "Waterfront",
             "colinas": "Hills and Forts",
             "cultura_viva": "Living Culture"
+        },
+        "levelLabel": "Level",
+        "levelShort": "Level {n}",
+        "levelCardTitle": "Your journey",
+        "levelXpValue": "{n} XP",
+        "levelNextLabel": "Next level",
+        "levelRemaining": "{n} XP to {name}",
+        "levelRemainingShort": "{n} XP to go",
+        "levelRequired": "Required: {n} XP",
+        "levelProgressPercent": "Progress: {n}%",
+        "levelProgressAria": "Progress towards the next level",
+        "levelMaxLabel": "Current highest level",
+        "levelMaxXp": "{n}+ XP",
+        "levelMaxNote": "Keep exploring and building your story.",
+        "levelViewJourney": "See your journey",
+        "levelJourneyTitle": "Your journey",
+        "levelJourneyDone": "Completed",
+        "levelJourneyCurrent": "Current",
+        "levelJourneyLocked": "Locked",
+        "levelUpKicker": "NEW LEVEL",
+        "levelUpUnlocked": "Level unlocked",
+        "levelUpReached": "You have reached {name}.",
+        "levels": {
+            "explorer": {
+                "name": "Explorer",
+                "description": "Your heritage journey starts here."
+            },
+            "traveler": {
+                "name": "Traveller",
+                "description": "You have already discovered different places and stories."
+            },
+            "connoisseur": {
+                "name": "Connoisseur",
+                "description": "Every monument starts to reveal a wider part of Cape Verde's history."
+            },
+            "heritage_guardian": {
+                "name": "Heritage Guardian",
+                "description": "You explore, you know and you value the history around you."
+            }
         },
         "streakTitle": "Exploration streak",
         "streakDayOne": "1 day of exploration",
@@ -719,6 +797,45 @@ const translations = {
             "colinas": "Collines et forts",
             "cultura_viva": "Culture vivante"
         },
+        "levelLabel": "Niveau",
+        "levelShort": "Niveau {n}",
+        "levelCardTitle": "Votre parcours",
+        "levelXpValue": "{n} XP",
+        "levelNextLabel": "Niveau suivant",
+        "levelRemaining": "{n} XP pour {name}",
+        "levelRemainingShort": "Encore {n} XP",
+        "levelRequired": "Requis : {n} XP",
+        "levelProgressPercent": "Progression : {n} %",
+        "levelProgressAria": "Progression vers le niveau suivant",
+        "levelMaxLabel": "Niveau maximum actuel",
+        "levelMaxXp": "{n}+ XP",
+        "levelMaxNote": "Continuez à explorer et à écrire votre histoire.",
+        "levelViewJourney": "Voir votre parcours",
+        "levelJourneyTitle": "Votre parcours",
+        "levelJourneyDone": "Terminé",
+        "levelJourneyCurrent": "Actuel",
+        "levelJourneyLocked": "Verrouillé",
+        "levelUpKicker": "NOUVEAU NIVEAU",
+        "levelUpUnlocked": "Niveau débloqué",
+        "levelUpReached": "Vous avez atteint {name}.",
+        "levels": {
+            "explorer": {
+                "name": "Explorateur",
+                "description": "Votre parcours à travers le patrimoine commence ici."
+            },
+            "traveler": {
+                "name": "Voyageur",
+                "description": "Vous avez déjà découvert différents lieux et différentes histoires."
+            },
+            "connoisseur": {
+                "name": "Connaisseur",
+                "description": "Chaque monument révèle une part plus vaste de l'histoire du Cap-Vert."
+            },
+            "heritage_guardian": {
+                "name": "Gardien du Patrimoine",
+                "description": "Vous explorez, vous connaissez et vous valorisez l'histoire qui vous entoure."
+            }
+        },
         "streakTitle": "Série d'exploration",
         "streakDayOne": "1 jour d'exploration",
         "streakDayMany": "{n} jours d'exploration",
@@ -921,4 +1038,29 @@ function zoneName(id) {
 // "+50 XP"
 function xpAmountText(amount) {
     return t('xpAmount', { n: amount });
+}
+
+// --- Niveis do explorador -----------------------------------
+
+// Texto de um nivel (ver LEVEL_CONFIG em levels.js). O `id` e a
+// chave estavel do nivel, igual em todos os idiomas: so o texto muda.
+function levelText(id, field) {
+    const dict = translations[currentLanguage] || translations.pt;
+    const entry = (dict.levels && dict.levels[id]) || (translations.pt.levels && translations.pt.levels[id]);
+    return entry ? entry[field] : '';
+}
+
+// "Conhecedor"
+function levelName(id) {
+    return levelText(id, 'name') || id;
+}
+
+// "Cada monumento comeca a revelar..."
+function levelDescription(id) {
+    return levelText(id, 'description');
+}
+
+// "Nivel 3"
+function levelRankText(number) {
+    return t('levelShort', { n: number });
 }
