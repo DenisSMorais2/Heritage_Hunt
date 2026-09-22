@@ -173,6 +173,28 @@ const translations = {
             "colinas": "Colinas e Fortificações",
             "cultura_viva": "Cultura Viva"
         },
+        "journeyProgress": "{done} de {total} monumentos",
+        "journeyProgressAria": "Progresso da jornada",
+        "journeyRemaining": "Mais {n} monumentos por descobrir.",
+        "journeyRemainingOne": "Falta 1 monumento por descobrir.",
+        "journeyDiscovered": "Descoberto",
+        "journeyCurrent": "Próxima descoberta",
+        "journeyUpcoming": "Por descobrir",
+        "journeyEarned": "{n} XP obtidos",
+        "journeyViewMap": "Ver no mapa",
+        "journeyViewPath": "Ver percurso completo",
+        "journeyContinue": "Continuar jornada",
+        "journeyFirstStep": "Primeira etapa",
+        "journeyEmptyTitle": "A tua jornada começa aqui.",
+        "journeyCompleteTitle": "Jornada concluída",
+        "journeyCompleteNote": "Conheces agora uma parte importante da história de Mindelo.",
+        "journeyOtherZone": "Outros lugares",
+        "journeys": {
+            "mindelo_historico": {
+                "name": "Jornada de Mindelo",
+                "subtitle": "Cada descoberta revela uma nova parte da história."
+            }
+        },
         "levelLabel": "Nível",
         "levelShort": "Nível {n}",
         "levelCardTitle": "A tua jornada",
@@ -484,6 +506,28 @@ const translations = {
             "frente_mar": "Waterfront",
             "colinas": "Hills and Forts",
             "cultura_viva": "Living Culture"
+        },
+        "journeyProgress": "{done} of {total} monuments",
+        "journeyProgressAria": "Journey progress",
+        "journeyRemaining": "{n} more monuments to discover.",
+        "journeyRemainingOne": "1 monument left to discover.",
+        "journeyDiscovered": "Discovered",
+        "journeyCurrent": "Next discovery",
+        "journeyUpcoming": "To discover",
+        "journeyEarned": "{n} XP earned",
+        "journeyViewMap": "View on map",
+        "journeyViewPath": "See the full route",
+        "journeyContinue": "Continue journey",
+        "journeyFirstStep": "First stop",
+        "journeyEmptyTitle": "Your journey starts here.",
+        "journeyCompleteTitle": "Journey complete",
+        "journeyCompleteNote": "You now know an important part of Mindelo's history.",
+        "journeyOtherZone": "Other places",
+        "journeys": {
+            "mindelo_historico": {
+                "name": "Mindelo Journey",
+                "subtitle": "Every discovery reveals a new part of the story."
+            }
         },
         "levelLabel": "Level",
         "levelShort": "Level {n}",
@@ -797,6 +841,28 @@ const translations = {
             "colinas": "Collines et forts",
             "cultura_viva": "Culture vivante"
         },
+        "journeyProgress": "{done} sur {total} monuments",
+        "journeyProgressAria": "Progression du parcours",
+        "journeyRemaining": "Encore {n} monuments à découvrir.",
+        "journeyRemainingOne": "Il reste 1 monument à découvrir.",
+        "journeyDiscovered": "Découvert",
+        "journeyCurrent": "Prochaine découverte",
+        "journeyUpcoming": "À découvrir",
+        "journeyEarned": "{n} XP obtenus",
+        "journeyViewMap": "Voir sur la carte",
+        "journeyViewPath": "Voir le parcours complet",
+        "journeyContinue": "Continuer le parcours",
+        "journeyFirstStep": "Première étape",
+        "journeyEmptyTitle": "Votre parcours commence ici.",
+        "journeyCompleteTitle": "Parcours terminé",
+        "journeyCompleteNote": "Vous connaissez désormais une part importante de l'histoire de Mindelo.",
+        "journeyOtherZone": "Autres lieux",
+        "journeys": {
+            "mindelo_historico": {
+                "name": "Parcours de Mindelo",
+                "subtitle": "Chaque découverte révèle une nouvelle part de l'histoire."
+            }
+        },
         "levelLabel": "Niveau",
         "levelShort": "Niveau {n}",
         "levelCardTitle": "Votre parcours",
@@ -1063,4 +1129,24 @@ function levelDescription(id) {
 // "Nivel 3"
 function levelRankText(number) {
     return t('levelShort', { n: number });
+}
+
+// --- Jornada cultural ---------------------------------------
+
+// Texto de uma jornada (ver JOURNEY_CONFIG em journey.js). O `id`
+// e a chave estavel da jornada, igual em todos os idiomas.
+function journeyText(id, field) {
+    const dict = translations[currentLanguage] || translations.pt;
+    const entry = (dict.journeys && dict.journeys[id]) || (translations.pt.journeys && translations.pt.journeys[id]);
+    return entry ? entry[field] : '';
+}
+
+// "Jornada de Mindelo"
+function journeyName(id) {
+    return journeyText(id, 'name') || id;
+}
+
+// "Cada descoberta revela uma nova parte da historia."
+function journeySubtitle(id) {
+    return journeyText(id, 'subtitle');
 }

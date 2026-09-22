@@ -306,6 +306,22 @@
                             <span class="hh-rule"></span>
                         </div>
                     </div>
+
+                    <!-- Resumo da jornada cultural -->
+                    <div class="hh-card hh-journey-card">
+                        <div class="hh-discover-head">
+                            <div class="hh-journey-title">
+                                <h3 id="journeySummaryTitle" class="hh-section-title hh-underlined">Jornada de Mindelo</h3>
+                                <p id="journeySummarySub" class="hh-journey-sub"></p>
+                            </div>
+                            <span class="hh-journey-crest" aria-hidden="true">
+                                <i class="fas fa-route"></i>
+                            </span>
+                        </div>
+                        <div id="journeySummary" class="hh-journey-summary">
+                            <!-- Desenhado por journey-ui.js -->
+                        </div>
+                    </div>
                   </div>
                 </div>
 
@@ -617,6 +633,11 @@
                         </div>
                         <p id="zonesSubtitle" class="hh-zones-sub"></p>
                         <div id="zonesList" class="hh-zone-list"></div>
+                        <button id="openJourneyFromMap" type="button" class="hh-jp-cta hh-jp-cta-wide">
+                            <i class="fas fa-route" aria-hidden="true"></i>
+                            <span data-i18n="journeyViewPath">Ver percurso completo</span>
+                            <i class="fas fa-chevron-right" aria-hidden="true"></i>
+                        </button>
                     </div>
 
                     <div class="hh-card hh-discover">
@@ -844,6 +865,25 @@
         <!-- Aviso discreto de XP -->
         <div id="xpToast" class="hh-xp-toast hidden" role="status" aria-live="polite"></div>
 
+        <!-- Jornada cultural: o percurso completo -->
+        <div id="journeyModal" class="hh-mp-overlay hh-streak-overlay hidden">
+            <div class="hh-streak-sheet hh-journey-sheet" role="dialog" aria-modal="true" aria-labelledby="journeyModalTitle">
+                <div class="hh-streak-sheet-head">
+                    <div class="hh-streak-sheet-title">
+                        <span class="hh-mp-card-icon"><i class="fas fa-route"></i></span>
+                        <div class="hh-journey-sheet-text">
+                            <h3 id="journeyModalTitle">Jornada de Mindelo</h3>
+                            <p id="journeyModalSub" class="hh-journey-sub"></p>
+                        </div>
+                    </div>
+                    <button id="closeJourney" class="hh-mp-close" data-i18n-title="close" title="Fechar">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div id="journeyPath" class="hh-journey-path"></div>
+            </div>
+        </div>
+
         <!-- A tua jornada: todos os niveis -->
         <div id="levelJourneyModal" class="hh-mp-overlay hh-streak-overlay hidden">
             <div class="hh-streak-sheet" role="dialog" aria-modal="true" aria-labelledby="levelJourneyTitle">
@@ -966,6 +1006,8 @@
 <script src="xp-ui.js"></script>
 <script src="levels.js"></script>
 <script src="levels-ui.js"></script>
+<script src="journey.js"></script>
+<script src="journey-ui.js"></script>
 <script src="script.js"></script>
 </body>
 </html>

@@ -359,20 +359,33 @@ function initMap() {
         markers.push({ marker, monument });
     });
 
-    // If there's a monument to focus on, center map on it
-    if (state.currentMonumentForMap) {
-        const monument = state.currentMonumentForMap;
-        map.setView([monument.lat, monument.lng], 17);
-        
-        // Open popup for the monument (os descobertos abrem a pagina propria)
-        const targetMarker = markers.find(m => m.monument.id === monument.id);
-        if (targetMarker && targetMarker.marker.getPopup()) {
-            targetMarker.marker.openPopup();
-        }
-        
-        // Reset the state
-        state.currentMonumentForMap = null;
+    focusMonumentOnMap();
+}
+
+// Centra o mapa no monumento pedido, se houver um.
+//
+// Vive fora de initMap porque initMap so corre uma vez: quando o
+// mapa ja existe, era aqui que o pedido de foco se perdia e o
+// "Ver no mapa" nao fazia nada a partir da segunda vez.
+function focusMonumentOnMap() {
+    if (!map || !state.currentMonumentForMap) return;
+
+    const monument = state.currentMonumentForMap;
+
+    // O contentor pode ter acabado de deixar de estar escondido. Sem
+    // o medir outra vez, a animacao de zoom do Leaflet e descartada e
+    // o mapa ficava exactamente onde estava.
+    map.invalidateSize();
+    map.setView([monument.lat, monument.lng], 17, { animate: false });
+
+    // Abre o balao do monumento (os descobertos abrem a pagina propria)
+    const targetMarker = markers.find(m => m.monument.id === monument.id);
+    if (targetMarker && targetMarker.marker.getPopup()) {
+        targetMarker.marker.openPopup();
     }
+
+    // O pedido e consumido uma unica vez
+    state.currentMonumentForMap = null;
 }
 
 // Conteudo do balao de um monumento ainda por descobrir
@@ -654,6 +667,7 @@ function logout() {
         StreakUI.render();
         XPUI.render();
         LevelsUI.render();
+        JourneyUI.render();
         document.body.classList.remove('hh-dark-bg');
         authScreen.classList.remove('hidden');
         mainApp.classList.add('hidden');
@@ -669,6 +683,7 @@ function showMainApp() {
     XPUI.render();
     LevelsUI.render();
     renderZonesView();
+    JourneyUI.render();
     showScannerView();
 }
 
@@ -855,6 +870,48 @@ function handleLevelChange(change) {
     if (!state.settings || state.settings.achievementAlerts) {
         enqueueLevelUp(transition.newLevel);
     }
+}
+
+// ============================================================
+// Jornada cultural — ligacao entre o dominio (journey.js), os
+// dados reais da aplicacao e a interface (journey-ui.js)
+//
+// A jornada NAO guarda nada: le os monumentos, as zonas e as
+// descobertas que ja existem (ponto 47). Tambem nao atribui XP
+// nem mexe em niveis ou na sequencia (pontos 25, 26 e 27).
+// ============================================================
+function initJourney() {
+    Journey.configure({
+        getMonuments: () => state.monuments,
+        getZones: () => state.zones,
+        // Fonte unica de verdade das descobertas
+        getDiscoveredIds: () => discoveredMonumentIds()
+    });
+
+    JourneyUI.init({
+        // Etapa descoberta: abre o album/pagina que ja existe (ponto 21)
+        onOpenMonument: (monumentId) => openMonumentPhotos(monumentId),
+
+        // Proxima etapa: leva ao mapa existente, centrado no monumento
+        // (ponto 23 — nao ha um segundo mapa)
+        onShowOnMap: (monument) => {
+            state.currentMonumentForMap = monument;
+            showMapView();
+        },
+
+        // So ha distancia quando a localizacao ja foi obtida e e
+        // precisa. Nunca a pedimos so para desenhar o caminho (ponto 56).
+        getDistanceTo: (monument) => {
+            if (!state.userLocation || !state.userLocationIsPrecise) return null;
+            if (!monument) return null;
+            return calculateDistance(
+                state.userLocation.lat,
+                state.userLocation.lng,
+                monument.lat,
+                monument.lng
+            );
+        }
+    });
 }
 
 // Ponto 40 — lista de zonas no mapa
@@ -1209,6 +1266,9 @@ function applyLanguage() {
     // Cartao de nivel (nome, descricao e texto do proximo nivel)
     LevelsUI.render();
 
+    // Jornada cultural (nomes das zonas, estados e microcopy)
+    JourneyUI.render();
+
     // Botão do scanner (só quando está em repouso, para não interromper uma leitura)
     if (!state.qrScanner) {
         startScannerBtn.innerHTML = `<i class="fas fa-qrcode mr-3 text-xl"></i> <span data-i18n="scanQr">${t('scanQr')}</span>`;
@@ -1279,6 +1339,8 @@ function showMapView() {
     mapView.classList.remove('hidden');
     renderZonesView();
     initMap();
+    // Tambem quando o mapa ja estava criado (initMap so corre uma vez)
+    focusMonumentOnMap();
     updateNavButtons('map');
     setTimeout(() => {
         if (map) map.invalidateSize();
@@ -1458,6 +1520,10 @@ function handleQRResult(qrData) {
     // Quanto falta para o proximo nivel, sem abrir modal nenhum
     LevelsUI.renderDiscoveryNote();
 
+    // A jornada assinala a etapa acabada de percorrer: o no anima
+    // uma unica vez, quando o percurso for aberto (ponto 54).
+    JourneyUI.markDiscovery(monument.id);
+
     // So celebramos a sequencia na primeira actividade valida do dia
     StreakUI.renderDiscoveryNote(scannerStreakNote, streakResult);
     
@@ -1521,6 +1587,10 @@ function updateProgress() {
     updateMonumentsList();
     updateMapMarkers();
     renderZonesView();
+
+    // A jornada reage a qualquer mudanca nas descobertas, sem
+    // recarregar a pagina (ponto 24). Deriva sempre do estado real.
+    JourneyUI.render();
 }
 
 function checkForBadges() {
@@ -2200,6 +2270,7 @@ function initApp() {
     initSettings();
     initXPSystem();
     initExplorationStreak();
+    initJourney();
 
     const savedUser = localStorage.getItem('heritageUser');
     if (savedUser) {
@@ -2217,6 +2288,7 @@ function initApp() {
     StreakUI.render();
     XPUI.render();
     LevelsUI.render();
+    JourneyUI.render();
 }
 
 // Start the app

@@ -5378,3 +5378,714 @@ html:not(.dark) .hh-xp-toast-note {
 html:not(.dark) .hh-result-card .hh-result-level {
     color: var(--hh-gold-soft);
 }
+
+/* ==========================================================
+   Heritage — Jornada cultural
+   (ver JOURNEY_CONFIG em journey.js e journey-ui.js)
+
+   O percurso e vertical e construido com flexbox: a coluna da
+   esquerda e o carril (no + linha), a da direita e o cartao.
+   Nada aqui usa position:absolute para estruturar o caminho,
+   por isso funciona de 320px a tablet sem medidas fixas.
+   ========================================================== */
+:root {
+    --hh-jp-rail: 36px;
+    --hh-jp-line-off: rgba(157, 176, 200, 0.22);
+    --hh-jp-line-on: linear-gradient(180deg, #E7CE9A, #C9A263);
+}
+
+/* --- Cartao do resumo (ecra principal) --- */
+.hh-journey-title {
+    min-width: 0;
+}
+.hh-journey-sub {
+    margin-top: 4px;
+    font-size: 12px;
+    line-height: 1.45;
+    color: var(--hh-muted);
+    overflow-wrap: anywhere;
+}
+.hh-journey-crest {
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    border-radius: 50%;
+    color: var(--hh-gold-soft);
+    background: rgba(214, 178, 116, 0.14);
+    border: 1px solid rgba(214, 178, 116, 0.42);
+}
+.hh-journey-summary {
+    margin-top: 14px;
+}
+
+/* --- Progresso global --- */
+.hh-jp-count {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--hh-cream);
+}
+.hh-jp-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 8px;
+}
+.hh-jp-track {
+    flex: 1 1 auto;
+    min-width: 0;
+    height: 8px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--hh-line);
+    overflow: hidden;
+}
+.hh-jp-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #C9A263, #E7CE9A);
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.hh-jp-percent {
+    flex-shrink: 0;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--hh-gold-soft);
+    font-variant-numeric: tabular-nums;
+}
+.hh-jp-note {
+    margin-top: 9px;
+    font-size: 12.5px;
+    line-height: 1.45;
+    color: var(--hh-muted);
+    overflow-wrap: anywhere;
+}
+.hh-jp-note.is-done {
+    color: var(--hh-gold-soft);
+}
+.hh-jp-sum-note {
+    margin-top: 9px;
+    font-size: 12.5px;
+    line-height: 1.45;
+    color: var(--hh-muted);
+    overflow-wrap: anywhere;
+}
+
+/* --- Mapa de pontos do resumo --- */
+.hh-jp-dots {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin-top: 14px;
+}
+.hh-jp-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: rgba(157, 176, 200, 0.2);
+    border: 1px solid transparent;
+}
+.hh-jp-dot.is-discovered {
+    background: linear-gradient(135deg, #E7CE9A, #C9A263);
+}
+.hh-jp-dot.is-current {
+    background: transparent;
+    border-color: var(--hh-gold-soft);
+    box-shadow: 0 0 0 2px rgba(214, 178, 116, 0.22);
+}
+
+/* --- Proxima etapa no resumo --- */
+.hh-jp-next {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    margin-top: 14px;
+    padding: 11px 12px;
+    border-radius: 14px;
+    background: rgba(214, 178, 116, 0.08);
+    border: 1px solid rgba(214, 178, 116, 0.3);
+}
+.hh-jp-next-icon {
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    border-radius: 50%;
+    color: #17325A;
+    background: linear-gradient(135deg, #F7E8B8, #D2A947);
+}
+.hh-jp-next-text {
+    min-width: 0;
+    flex: 1 1 auto;
+}
+.hh-jp-next-label {
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--hh-muted);
+    /* "PROCHAINE DECOUVERTE" nao cabe em 320px sem poder quebrar */
+    overflow-wrap: anywhere;
+}
+.hh-jp-next-name {
+    margin-top: 2px;
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.25;
+    color: #F2F6FC;
+    overflow-wrap: anywhere;
+}
+.hh-jp-next-distance {
+    margin-top: 2px;
+    font-size: 11.5px;
+    color: var(--hh-gold-soft);
+    font-variant-numeric: tabular-nums;
+}
+.hh-jp-next-btn {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 7px 11px;
+    font-size: 11.5px;
+    font-weight: 700;
+    border-radius: 999px;
+    color: var(--hh-gold-soft);
+    background: rgba(214, 178, 116, 0.14);
+    border: 1px solid rgba(214, 178, 116, 0.42);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+.hh-jp-next-btn:hover {
+    background: rgba(214, 178, 116, 0.26);
+}
+
+/* --- Botao de abertura do percurso --- */
+.hh-jp-cta {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    margin-top: 14px;
+    padding: 11px 14px;
+    font-size: 13px;
+    font-weight: 700;
+    border-radius: 12px;
+    color: var(--hh-gold-soft);
+    background: rgba(214, 178, 116, 0.1);
+    border: 1px solid rgba(214, 178, 116, 0.34);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: background 0.2s ease;
+}
+.hh-jp-cta:hover {
+    background: rgba(214, 178, 116, 0.2);
+}
+.hh-jp-cta i {
+    font-size: 11px;
+}
+.hh-jp-cta-wide {
+    margin-top: 16px;
+}
+
+/* --- Folha do percurso completo --- */
+.hh-journey-sheet-text {
+    min-width: 0;
+}
+.hh-journey-sheet .hh-journey-sub {
+    margin-top: 2px;
+}
+.hh-journey-path {
+    margin-top: 6px;
+}
+.hh-jp-head {
+    padding: 13px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--hh-line);
+}
+
+/* --- Faixa de jornada concluida --- */
+.hh-jp-complete {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    margin-top: 12px;
+    padding: 13px;
+    border-radius: 14px;
+    background: rgba(214, 178, 116, 0.1);
+    border: 1px solid rgba(214, 178, 116, 0.36);
+}
+.hh-jp-complete-mark {
+    width: 38px;
+    height: 38px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    border-radius: 50%;
+    color: #17325A;
+    background: linear-gradient(135deg, #F7E8B8, #D2A947);
+}
+.hh-jp-complete-title {
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 15.5px;
+    font-weight: 700;
+    color: var(--hh-gold-soft);
+    overflow-wrap: anywhere;
+}
+
+/* --- Separador de zona --- */
+.hh-jp-zone {
+    margin: 20px 0 12px;
+    padding: 11px 13px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.035);
+    border: 1px solid var(--hh-line);
+}
+.hh-jp-group:first-of-type .hh-jp-zone {
+    margin-top: 14px;
+}
+.hh-jp-group.is-complete .hh-jp-zone {
+    background: rgba(214, 178, 116, 0.08);
+    border-color: rgba(214, 178, 116, 0.3);
+}
+.hh-jp-zone-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.hh-jp-zone-name {
+    min-width: 0;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 1.3px;
+    text-transform: uppercase;
+    color: var(--hh-cream);
+    overflow-wrap: anywhere;
+}
+.hh-jp-zone-count,
+.hh-jp-zone-done {
+    flex-shrink: 0;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--hh-muted);
+    white-space: nowrap;
+}
+.hh-jp-zone-done {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: #6FD3A4;
+}
+.hh-jp-zone-track {
+    height: 4px;
+    margin-top: 8px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    overflow: hidden;
+}
+.hh-jp-zone-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #C9A263, #E7CE9A);
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* --- Etapa: carril + cartao --- */
+.hh-jp-step {
+    display: flex;
+    align-items: stretch;
+    gap: 12px;
+    padding-bottom: 14px;
+}
+.hh-jp-step.is-last {
+    padding-bottom: 0;
+}
+
+/* Carril: o no em cima, a linha a preencher o resto da altura.
+   E isto que liga visualmente cada etapa a seguinte. */
+.hh-jp-rail {
+    flex: 0 0 var(--hh-jp-rail);
+    width: var(--hh-jp-rail);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.hh-jp-node {
+    width: var(--hh-jp-rail);
+    height: var(--hh-jp-rail);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    border-radius: 50%;
+    background: rgba(157, 176, 200, 0.12);
+    border: 1px solid var(--hh-line);
+    color: var(--hh-muted);
+}
+.hh-jp-link {
+    flex: 1 1 auto;
+    width: 2px;
+    min-height: 12px;
+    margin-top: 6px;
+    border-radius: 2px;
+    background: var(--hh-jp-line-off);
+}
+.hh-jp-link.is-on {
+    background: var(--hh-jp-line-on);
+}
+.hh-jp-step.is-last .hh-jp-link {
+    display: none;
+}
+
+/* Estados do no */
+.hh-jp-step.is-discovered .hh-jp-node {
+    color: #17325A;
+    background: linear-gradient(135deg, #F7E8B8, #D2A947);
+    border-color: transparent;
+}
+.hh-jp-step.is-current .hh-jp-node {
+    color: var(--hh-gold-soft);
+    background: rgba(214, 178, 116, 0.14);
+    border-color: var(--hh-gold-soft);
+    box-shadow: 0 0 0 4px rgba(214, 178, 116, 0.14);
+    animation: jpPulse 2.6s ease-in-out infinite;
+}
+@keyframes jpPulse {
+    0%, 100% { box-shadow: 0 0 0 4px rgba(214, 178, 116, 0.14); }
+    50%      { box-shadow: 0 0 0 7px rgba(214, 178, 116, 0.05); }
+}
+
+/* --- Cartao da etapa --- */
+.hh-jp-card {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 10px 11px;
+    font: inherit;
+    color: inherit;
+    text-align: left;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--hh-line);
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+button.hh-jp-card {
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+button.hh-jp-card:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(214, 178, 116, 0.32);
+}
+button.hh-jp-card:focus-visible,
+.hh-jp-map-btn:focus-visible,
+.hh-jp-cta:focus-visible,
+.hh-jp-next-btn:focus-visible {
+    outline: 2px solid var(--hh-gold);
+    outline-offset: 3px;
+}
+.hh-jp-step.is-current .hh-jp-card {
+    background: rgba(214, 178, 116, 0.08);
+    border-color: rgba(214, 178, 116, 0.34);
+}
+.hh-jp-step.is-upcoming .hh-jp-card {
+    opacity: 0.74;
+}
+
+/* Imagem: nitida quando descoberto, desfocada quando por descobrir */
+.hh-jp-thumb {
+    width: 52px;
+    height: 52px;
+    flex-shrink: 0;
+    display: block;
+    overflow: hidden;
+    border-radius: 11px;
+    background: rgba(157, 176, 200, 0.1);
+}
+.hh-jp-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+.hh-jp-step.is-current .hh-jp-thumb img {
+    filter: blur(3px) brightness(0.9);
+    transform: scale(1.14);
+}
+.hh-jp-step.is-upcoming .hh-jp-thumb img {
+    filter: blur(5px) grayscale(0.55) brightness(0.62);
+    transform: scale(1.16);
+}
+
+.hh-jp-body {
+    min-width: 0;
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+.hh-jp-name {
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 14.5px;
+    font-weight: 700;
+    line-height: 1.25;
+    color: #F2F6FC;
+    overflow-wrap: anywhere;
+}
+.hh-jp-state {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.9px;
+    text-transform: uppercase;
+    color: var(--hh-muted);
+}
+.hh-jp-state i {
+    font-size: 9px;
+}
+.hh-jp-step.is-discovered .hh-jp-state {
+    color: #6FD3A4;
+}
+.hh-jp-step.is-current .hh-jp-state {
+    color: var(--hh-gold-soft);
+}
+.hh-jp-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 10px;
+    font-size: 11.5px;
+    color: var(--hh-muted);
+    font-variant-numeric: tabular-nums;
+}
+.hh-jp-reward {
+    font-weight: 700;
+    color: var(--hh-gold-soft);
+}
+.hh-jp-step.is-discovered .hh-jp-reward {
+    color: var(--hh-muted);
+    font-weight: 600;
+}
+.hh-jp-distance {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+.hh-jp-distance i {
+    font-size: 9px;
+}
+.hh-jp-map-btn {
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    margin-top: 6px;
+    padding: 7px 12px;
+    font-size: 11.5px;
+    font-weight: 700;
+    border-radius: 999px;
+    color: #17325A;
+    background: linear-gradient(135deg, #F7E8B8, #D2A947);
+    border: 0;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+.hh-jp-map-btn i {
+    font-size: 9px;
+}
+.hh-jp-chevron {
+    flex-shrink: 0;
+    font-size: 11px;
+    color: var(--hh-muted);
+}
+
+/* --- Etapa acabada de descobrir (ponto 20 e 54) --- */
+.hh-jp-step.is-just-found .hh-jp-node {
+    animation: jpFound 0.55s cubic-bezier(0.34, 1.4, 0.5, 1);
+}
+.hh-jp-step.is-just-found .hh-jp-link.is-on {
+    transform-origin: top center;
+    animation: jpLine 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+}
+@keyframes jpFound {
+    0%   { transform: scale(0.5); opacity: 0.4; }
+    100% { transform: scale(1); opacity: 1; }
+}
+@keyframes jpLine {
+    0%   { transform: scaleY(0); }
+    100% { transform: scaleY(1); }
+}
+
+/* Sem animacao para quem a dispensa (ponto 20) */
+@media (prefers-reduced-motion: reduce) {
+    .hh-jp-step.is-current .hh-jp-node,
+    .hh-jp-step.is-just-found .hh-jp-node,
+    .hh-jp-step.is-just-found .hh-jp-link.is-on {
+        animation: none;
+    }
+    .hh-jp-fill,
+    .hh-jp-zone-fill {
+        transition: none;
+    }
+}
+
+/* --- Ecras muito estreitos (320px) --- */
+@media (max-width: 360px) {
+    :root {
+        --hh-jp-rail: 32px;
+    }
+    .hh-jp-step {
+        gap: 9px;
+    }
+    .hh-jp-card {
+        gap: 9px;
+        padding: 9px;
+    }
+    .hh-jp-thumb {
+        width: 44px;
+        height: 44px;
+    }
+    .hh-jp-name {
+        font-size: 13.5px;
+    }
+    .hh-jp-next {
+        gap: 9px;
+        padding: 10px;
+        /* Em ecras estreitos o botao passa para a sua propria linha,
+           em vez de espremer o nome do monumento. */
+        flex-wrap: wrap;
+    }
+    .hh-jp-next-text {
+        flex: 1 1 60%;
+    }
+    .hh-jp-next-btn {
+        padding: 7px 9px;
+        font-size: 11px;
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* --- Tablet e desktop: o caminho fica centrado, nunca esticado --- */
+@media (min-width: 720px) {
+    .hh-journey-path,
+    .hh-journey-summary {
+        max-width: 34rem;
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
+
+/* ==========================================================
+   Jornada cultural — tema claro
+   ========================================================== */
+html:not(.dark) {
+    --hh-jp-line-off: rgba(18, 41, 74, 0.16);
+    --hh-jp-line-on: linear-gradient(180deg, #C79A58, #A8813F);
+}
+html:not(.dark) .hh-journey-sub,
+html:not(.dark) .hh-jp-note,
+html:not(.dark) .hh-jp-sum-note,
+html:not(.dark) .hh-jp-zone-count,
+html:not(.dark) .hh-jp-meta,
+html:not(.dark) .hh-jp-state,
+html:not(.dark) .hh-jp-next-label,
+html:not(.dark) .hh-jp-chevron {
+    color: #46586F;
+}
+html:not(.dark) .hh-journey-crest,
+html:not(.dark) .hh-jp-percent,
+html:not(.dark) .hh-jp-reward,
+html:not(.dark) .hh-jp-next-distance,
+html:not(.dark) .hh-jp-complete-title,
+html:not(.dark) .hh-jp-note.is-done {
+    color: #8A6A2F;
+}
+html:not(.dark) .hh-jp-count,
+html:not(.dark) .hh-jp-zone-name,
+html:not(.dark) .hh-jp-name,
+html:not(.dark) .hh-jp-next-name {
+    color: #12294A;
+}
+html:not(.dark) .hh-jp-track,
+html:not(.dark) .hh-jp-zone-track {
+    background: #EDE8DC;
+    border-color: rgba(18, 41, 74, 0.08);
+}
+html:not(.dark) .hh-jp-fill,
+html:not(.dark) .hh-jp-zone-fill {
+    background: linear-gradient(90deg, #A8813F, #D2A947);
+}
+html:not(.dark) .hh-jp-head,
+html:not(.dark) .hh-jp-zone,
+html:not(.dark) .hh-jp-card {
+    background: #FAF7F0;
+    border-color: #E8E2D5;
+}
+html:not(.dark) button.hh-jp-card:hover {
+    background: #F4EFE3;
+    border-color: rgba(168, 129, 63, 0.4);
+}
+html:not(.dark) .hh-jp-group.is-complete .hh-jp-zone,
+html:not(.dark) .hh-jp-step.is-current .hh-jp-card,
+html:not(.dark) .hh-jp-next,
+html:not(.dark) .hh-jp-complete {
+    background: rgba(168, 129, 63, 0.1);
+    border-color: rgba(168, 129, 63, 0.4);
+}
+html:not(.dark) .hh-jp-node {
+    background: #F1ECE0;
+    border-color: #E0D8C7;
+    color: #6B7A8F;
+}
+html:not(.dark) .hh-jp-step.is-current .hh-jp-node {
+    color: #8A6A2F;
+    background: rgba(168, 129, 63, 0.12);
+    border-color: #A8813F;
+}
+html:not(.dark) .hh-jp-step.is-discovered .hh-jp-state,
+html:not(.dark) .hh-jp-zone-done {
+    color: #0F9D6B;
+}
+html:not(.dark) .hh-jp-step.is-current .hh-jp-state {
+    color: #8A6A2F;
+}
+html:not(.dark) .hh-jp-dot {
+    background: rgba(18, 41, 74, 0.14);
+}
+html:not(.dark) .hh-jp-dot.is-discovered {
+    background: linear-gradient(135deg, #D2A947, #A8813F);
+}
+html:not(.dark) .hh-jp-dot.is-current {
+    background: transparent;
+    border-color: #A8813F;
+}
+html:not(.dark) .hh-jp-cta,
+html:not(.dark) .hh-jp-next-btn {
+    color: #8A6A2F;
+    background: rgba(168, 129, 63, 0.1);
+    border-color: rgba(168, 129, 63, 0.4);
+}
+html:not(.dark) .hh-jp-cta:hover,
+html:not(.dark) .hh-jp-next-btn:hover {
+    background: rgba(168, 129, 63, 0.2);
+}
