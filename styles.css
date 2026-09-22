@@ -1,10 +1,70 @@
-#map { 
-    height: 350px; 
+/* ==========================================================
+   Heritage — base responsiva (mobile-first)
+   Tokens de medida fluida partilhados por toda a aplicacao.
+   Tudo o que esta aqui vale a partir de 320px; os ecras
+   maiores so acrescentam espaco, nunca corrigem o pequeno.
+   ========================================================== */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+:root {
+    /* Goteira lateral unica: 12px em 320px, 16px a partir de ~400px.
+       Mantem o espacamento original nos tamanhos de desenho. */
+    --hh-gutter: clamp(12px, 4vw, 16px);
+    /* Area segura do dispositivo (notch / barra inferior). Vale 0 no browser. */
+    --hh-safe-top: env(safe-area-inset-top, 0px);
+    --hh-safe-bottom: env(safe-area-inset-bottom, 0px);
+    /* Altura real da navegacao inferior, usada para libertar o conteudo. */
+    --hh-nav-h: 96px;
+}
+
+html,
+body {
+    width: 100%;
+    margin: 0;
+}
+
+body {
+    min-height: 100vh;
+    min-height: 100dvh;
+}
+
+/* Nenhum media nativo pode ser mais largo do que o seu contentor. */
+img,
+video,
+canvas,
+svg {
+    max-width: 100%;
+}
+
+/* O involucro da aplicacao continua a ser uma experiencia movel centrada. */
+body > .container {
+    width: 100%;
+    min-height: 100vh;
+    min-height: 100dvh;
+}
+
+/* Espaco reservado para a navegacao fixa (substitui o pb-20 do utilitario,
+   que era mais curto do que a propria barra e tapava o ultimo cartao). */
+#mainApp {
+    padding-bottom: calc(var(--hh-nav-h) + var(--hh-safe-bottom));
+}
+
+#mainApp > main {
+    padding: var(--hh-gutter);
+}
+
+#map {
+    /* Altura conduzida pelo ecra, com limites, em vez de um valor fixo. */
+    height: clamp(240px, 40dvh, 350px);
     z-index: 1;
     position: relative;
 }
 .hh-map-wrap #map {
-    height: 330px;
+    height: clamp(230px, 38dvh, 330px);
 }
 #locateUserBtn {
     z-index: 1000;
@@ -32,8 +92,9 @@
     background: transparent;
 }
 .scanner-frame {
-    width: 280px;
-    height: 280px;
+    width: min(280px, 70%);
+    height: auto;
+    aspect-ratio: 1 / 1;
     border: 4px solid #3B82F6;
     border-radius: 20px;
     position: relative;
@@ -468,7 +529,7 @@ html.dark .leaflet-control-attribution a {
 .hh-header {
     background: linear-gradient(160deg, #0E2039 0%, #122A4C 55%, #0C1C33 100%);
     color: var(--hh-cream);
-    padding: 16px 18px 14px;
+    padding: calc(16px + var(--hh-safe-top)) var(--hh-gutter) 14px;
     border-bottom-left-radius: 18px;
     border-bottom-right-radius: 18px;
     box-shadow: 0 12px 28px rgba(5, 14, 28, 0.45);
@@ -477,8 +538,8 @@ html.dark .leaflet-control-attribution a {
 .hh-header::after {
     content: "";
     position: absolute;
-    left: 18px;
-    right: 18px;
+    left: var(--hh-gutter);
+    right: var(--hh-gutter);
     bottom: 0;
     height: 1px;
     background: linear-gradient(90deg, transparent, rgba(214, 178, 116, 0.5), transparent);
@@ -496,8 +557,9 @@ html.dark .leaflet-control-attribution a {
     min-width: 0;
 }
 .hh-logo {
-    width: 66px;
-    height: 52px;
+    width: clamp(48px, 15vw, 66px);
+    height: auto;
+    aspect-ratio: 66 / 52;
     flex-shrink: 0;
     color: var(--hh-gold);
     opacity: 0.95;
@@ -507,10 +569,10 @@ html.dark .leaflet-control-attribution a {
 }
 .hh-brand-title {
     font-family: "Playfair Display", Georgia, "Times New Roman", serif;
-    font-size: 21px;
+    font-size: clamp(16px, 4.9vw, 21px);
     font-weight: 700;
     line-height: 1.15;
-    letter-spacing: 0.2px;
+    letter-spacing: 0.1px;
     color: #F2F6FC;
     white-space: nowrap;
     overflow: hidden;
@@ -593,10 +655,12 @@ html.dark .leaflet-control-attribution a {
 
 /* --- Fundo das paginas escuras (scanner / perfil) --- */
 .hh-page {
-    margin: -1rem;
-    padding: 1rem 1rem 1.25rem;
+    /* Anula a goteira do <main> para sangrar ate a borda do contentor. */
+    margin: calc(var(--hh-gutter) * -1);
+    padding: var(--hh-gutter) var(--hh-gutter) calc(var(--hh-gutter) + 4px);
     background: linear-gradient(180deg, #0C1C33 0%, #102544 45%, #0A1729 100%);
     min-height: calc(100vh - 210px);
+    min-height: calc(100dvh - 210px);
 }
 body.hh-dark-bg .container {
     background-color: #0A1729 !important;
@@ -606,7 +670,14 @@ body.hh-dark-bg .container {
 /* --- Cartao da camara --- */
 .hh-cam {
     position: relative;
-    height: 450px;
+    /* Proporcao do desenho original (4/5 == 450px a 360px de largura),
+       limitada pela altura disponivel para nao empurrar o botao para fora. */
+    height: auto;
+    aspect-ratio: 4 / 5;
+    min-height: 260px;
+    max-height: min(450px, 56dvh);
+    /* Faixa reservada ao rodape: dica (2 linhas) + margem + botao + folga. */
+    --hh-cam-foot-h: 132px;
     border-radius: 18px;
     overflow: hidden;
     background: #071120;
@@ -643,40 +714,41 @@ body.hh-dark-bg .container {
 }
 .hh-brackets {
     position: absolute;
-    inset: 0;
+    /* Nunca invade o rodape, seja qual for a altura do cartao. */
+    inset: 0 0 var(--hh-cam-foot-h) 0;
     z-index: 4;
     pointer-events: none;
 }
 .hh-bracket {
     position: absolute;
-    width: 54px;
-    height: 54px;
+    width: clamp(40px, 13vw, 54px);
+    height: clamp(40px, 13vw, 54px);
     border: 5px solid rgba(255, 255, 255, 0.92);
     transition: opacity 0.3s ease;
 }
 .hh-bracket-tl {
-    top: 22%;
+    top: 16%;
     left: 15%;
     border-right: 0;
     border-bottom: 0;
     border-top-left-radius: 20px;
 }
 .hh-bracket-tr {
-    top: 22%;
+    top: 16%;
     right: 15%;
     border-left: 0;
     border-bottom: 0;
     border-top-right-radius: 20px;
 }
 .hh-bracket-bl {
-    bottom: 30%;
+    bottom: 10%;
     left: 15%;
     border-right: 0;
     border-top: 0;
     border-bottom-left-radius: 20px;
 }
 .hh-bracket-br {
-    bottom: 30%;
+    bottom: 10%;
     right: 15%;
     border-left: 0;
     border-top: 0;
@@ -684,10 +756,11 @@ body.hh-dark-bg .container {
 }
 .hh-qr-glyph {
     position: absolute;
-    top: 46%;
+    /* Centro do quadrado desenhado pelos quatro cantos. */
+    top: 52%;
     left: 50%;
     transform: translate(-50%, -50%);
-    font-size: 40px;
+    font-size: clamp(30px, 10vw, 40px);
     color: rgba(255, 255, 255, 0.9);
     transition: opacity 0.3s ease;
 }
@@ -756,11 +829,11 @@ body.hh-dark-bg .container {
     right: 0;
     bottom: 16px;
     z-index: 8;
-    padding: 0 18px;
+    padding: 0 clamp(12px, 5vw, 18px);
     text-align: center;
 }
 .hh-cam-hint {
-    font-size: 14px;
+    font-size: clamp(12.5px, 3.8vw, 14px);
     color: rgba(240, 246, 252, 0.92);
     text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
     margin-bottom: 12px;
@@ -770,10 +843,11 @@ body.hh-dark-bg .container {
     align-items: center;
     justify-content: center;
     width: 100%;
-    padding: 14px 18px;
+    min-height: 48px;
+    padding: 14px clamp(12px, 5vw, 18px);
     border-radius: 14px;
     font-family: "Playfair Display", Georgia, serif;
-    font-size: 19px;
+    font-size: clamp(16px, 4.9vw, 19px);
     font-weight: 700;
     color: #17325A;
     background: linear-gradient(135deg, #E7CE9A 0%, #D6B274 55%, #C9A263 100%);
@@ -797,8 +871,9 @@ body.hh-dark-bg .container {
 
 /* Moldura de leitura sobreposta */
 .hh-cam .scanner-frame {
-    width: 220px;
-    height: 220px;
+    width: min(220px, 62%);
+    height: auto;
+    aspect-ratio: 1 / 1;
     border: 0;
     box-shadow: none;
     margin: 0 auto 18px;
@@ -920,9 +995,12 @@ body.hh-dark-bg .container {
 
 /* --- Medalhas --- */
 .hh-badges {
+    /* Tamanho do anel calculado a partir do ecra e reutilizado pelo
+       tracejado que liga as medalhas, para os dois nunca se separarem. */
+    --hh-ring-size: clamp(44px, 14.5vw, 58px);
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 4px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: clamp(2px, 1vw, 8px);
 }
 .hh-badge {
     position: relative;
@@ -934,7 +1012,7 @@ body.hh-dark-bg .container {
 .hh-badge + .hh-badge::before {
     content: "";
     position: absolute;
-    top: 29px;
+    top: calc(var(--hh-ring-size) / 2);
     right: 50%;
     left: -50%;
     height: 1px;
@@ -944,13 +1022,13 @@ body.hh-dark-bg .container {
 .hh-badge-ring {
     position: relative;
     z-index: 1;
-    width: 58px;
-    height: 58px;
+    width: var(--hh-ring-size);
+    height: var(--hh-ring-size);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 21px;
+    font-size: clamp(16px, 5.2vw, 21px);
     transition: transform 0.3s ease;
 }
 .hh-badge[data-threshold="25"] .hh-badge-ring {
@@ -987,10 +1065,11 @@ body.hh-dark-bg .container {
 }
 .hh-badge-name {
     margin-top: 6px;
-    padding: 4px 6px;
+    padding: 4px clamp(1px, 0.9vw, 6px);
     width: 100%;
-    font-size: 11px;
+    font-size: clamp(9.2px, 2.9vw, 11px);
     font-weight: 500;
+    letter-spacing: -0.2px;
     color: var(--hh-muted);
     border: 1px solid var(--hh-line);
     border-radius: 999px;
@@ -1030,6 +1109,8 @@ body.hh-dark-bg .container {
 
 /* --- Navegacao inferior (glass radio group) --- */
 nav.hh-nav {
+    z-index: 40;
+    padding-bottom: var(--hh-safe-bottom);
     background: linear-gradient(180deg, #0E2039, #0A1729);
     border-top: 1px solid var(--hh-line);
     box-shadow: 0 -8px 24px rgba(4, 12, 24, 0.5);
@@ -1038,7 +1119,7 @@ nav.hh-nav > .hh-nav-group {
     position: relative;
     display: flex;
     padding: 0;
-    margin: 10px 14px;
+    margin: 10px clamp(10px, 3.5vw, 14px);
     background: rgba(255, 255, 255, 0.06);
     border-radius: 1rem;
     backdrop-filter: blur(12px);
@@ -1054,7 +1135,9 @@ nav.hh-nav button {
     z-index: 2;
     flex: 1 1 0;
     min-width: 0;
-    padding: 10px 8px;
+    /* Alvo tactil confortavel mesmo no ecra mais estreito. */
+    min-height: 48px;
+    padding: 10px 4px;
     font-weight: 600;
     letter-spacing: 0.3px;
     background: transparent;
@@ -1110,13 +1193,6 @@ nav.hh-nav[data-active="none"] .glass-glider {
 }
 
 @media (max-width: 380px) {
-    .hh-brand-title {
-        font-size: 18px;
-    }
-    .hh-logo {
-        width: 52px;
-        height: 42px;
-    }
     .hh-icon-btn {
         width: 32px;
         height: 32px;
@@ -1124,9 +1200,6 @@ nav.hh-nav[data-active="none"] .glass-glider {
     }
     .hh-seal-script {
         font-size: 18px;
-    }
-    .hh-gold-btn {
-        font-size: 17px;
     }
 }
 
@@ -1221,13 +1294,16 @@ nav.hh-nav[data-active="none"] .glass-glider {
 }
 .hh-id-name {
     font-family: "Playfair Display", Georgia, serif;
-    font-size: 27px;
+    font-size: clamp(20px, 6.4vw, 27px);
     font-weight: 700;
     line-height: 1.1;
     color: #F5F8FC;
-    white-space: nowrap;
+    overflow-wrap: anywhere;
+    /* Ate duas linhas; so um nome mesmo invulgar chega a reticencia. */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
     overflow: hidden;
-    text-overflow: ellipsis;
 }
 .hh-id-level {
     margin-top: 4px;
@@ -1237,11 +1313,14 @@ nav.hh-nav[data-active="none"] .glass-glider {
 }
 .hh-id-email {
     margin-top: 3px;
-    font-size: 13px;
+    font-size: clamp(11.5px, 3.6vw, 13px);
+    line-height: 1.35;
     color: var(--hh-muted);
-    white-space: nowrap;
+    overflow-wrap: anywhere;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
     overflow: hidden;
-    text-overflow: ellipsis;
 }
 .hh-id-motto {
     flex-shrink: 0;
@@ -1267,45 +1346,52 @@ nav.hh-nav[data-active="none"] .glass-glider {
 }
 
 /* --- Mosaicos de estatisticas --- */
+/* Base movel: icone sobre o texto. Cabe de 320px ate ao limite do
+   contentor; a linha horizontal so volta quando ha mesmo espaco (>=480px). */
 .hh-stats {
     position: relative;
     z-index: 1;
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(6px, 2.4vw, 10px);
     margin-top: 18px;
 }
 .hh-stat {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 9px;
-    padding: 12px 10px;
+    justify-content: center;
+    text-align: center;
+    gap: 6px;
+    min-width: 0;
+    padding: 12px clamp(4px, 1.7vw, 10px);
     border-radius: 14px;
     border: 1px solid transparent;
 }
 .hh-stat-icon {
-    width: 36px;
-    height: 36px;
+    width: 32px;
+    height: 32px;
     flex-shrink: 0;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 15px;
+    font-size: 13px;
     border: 2px solid currentColor;
 }
 .hh-stat-body {
     min-width: 0;
+    max-width: 100%;
 }
 .hh-stat-value {
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 700;
     line-height: 1.1;
     white-space: nowrap;
 }
 .hh-stat-label {
     margin-top: 2px;
-    font-size: 11px;
+    font-size: clamp(10px, 3.2vw, 11px);
     color: rgba(233, 240, 249, 0.75);
     white-space: nowrap;
     overflow: hidden;
@@ -1396,6 +1482,7 @@ nav.hh-nav[data-active="none"] .glass-glider {
 }
 .hh-mon-card {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: 12px;
     padding: 12px;
@@ -1411,23 +1498,28 @@ nav.hh-nav[data-active="none"] .glass-glider {
     box-shadow: 0 12px 24px rgba(3, 10, 20, 0.5);
 }
 .hh-mon-thumb {
-    width: 76px;
-    height: 76px;
+    width: clamp(58px, 19vw, 76px);
+    height: auto;
+    aspect-ratio: 1 / 1;
     flex-shrink: 0;
     object-fit: cover;
     border-radius: 12px;
     border: 1px solid rgba(233, 240, 249, 0.14);
 }
 .hh-mon-info {
-    flex: 1;
+    /* Base minima abaixo da qual e preferivel quebrar a linha. */
+    flex: 1 1 104px;
     min-width: 0;
 }
 .hh-mon-name {
     font-family: "Playfair Display", Georgia, serif;
-    font-size: 17px;
+    font-size: clamp(15px, 4.4vw, 17px);
     font-weight: 700;
     line-height: 1.2;
     color: #F2F6FC;
+    /* Nomes longos ("Igreja Nossa Senhora da Luz") partem em vez de
+       alargarem o cartao. */
+    overflow-wrap: anywhere;
 }
 .hh-mon-desc {
     margin-top: 5px;
@@ -1440,9 +1532,10 @@ nav.hh-nav[data-active="none"] .glass-glider {
     overflow: hidden;
 }
 .hh-mon-points {
-    flex-shrink: 0;
+    flex: 0 0 auto;
+    margin-left: auto;
     text-align: center;
-    min-width: 54px;
+    min-width: clamp(44px, 13vw, 54px);
 }
 .hh-mon-pts {
     font-size: 19px;
@@ -1465,22 +1558,32 @@ nav.hh-nav[data-active="none"] .glass-glider {
     .hh-id-motto {
         display: none;
     }
-    .hh-stat {
-        flex-direction: column;
-        gap: 6px;
-        text-align: center;
-        padding: 12px 6px;
-    }
-    .hh-stat-icon {
-        width: 32px;
-        height: 32px;
-        font-size: 13px;
-    }
-    .hh-stat-value {
-        font-size: 18px;
-    }
     .hh-compass-text {
         display: none;
+    }
+}
+
+/* A aplicacao ja esta na sua largura maxima: ha espaco para os mosaicos
+   voltarem a linha horizontal desenhada originalmente. */
+@media (min-width: 480px) {
+    .hh-stats {
+        grid-template-columns: repeat(3, auto);
+    }
+    .hh-stat {
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-start;
+        text-align: left;
+        gap: 9px;
+        padding: 12px 10px;
+    }
+    .hh-stat-icon {
+        width: 36px;
+        height: 36px;
+        font-size: 15px;
+    }
+    .hh-stat-value {
+        font-size: 20px;
     }
 }
 
@@ -1643,7 +1746,8 @@ nav.hh-nav[data-active="none"] .glass-glider {
     color: #F87171;
 }
 .hh-mon-state {
-    flex-shrink: 0;
+    flex: 0 0 auto;
+    margin-left: auto;
     display: flex;
     align-items: center;
     gap: 8px;
@@ -2305,7 +2409,12 @@ body.hh-no-scroll {
     z-index: 70;
     display: flex;
     justify-content: center;
-    padding: 10px 8px 78px;
+    /* A folha ocupa o ecra todo: a navegacao fica por baixo do veu,
+       por isso nao ha razao para lhe reservar 78px. */
+    padding:
+        calc(10px + var(--hh-safe-top))
+        clamp(8px, 2.5vw, 12px)
+        calc(12px + var(--hh-safe-bottom));
     background: rgba(4, 10, 20, 0.72);
     backdrop-filter: blur(3px);
     overflow: hidden;
@@ -2317,6 +2426,7 @@ body.hh-no-scroll {
     width: 100%;
     max-width: 28rem;
     max-height: 100%;
+    min-height: 0;
     overflow-y: auto;
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
@@ -2337,7 +2447,12 @@ body.hh-no-scroll {
 /* --- Imagem de topo --- */
 .hh-mp-hero {
     position: relative;
-    height: 220px;
+    /* Proporcao em vez de altura fixa: a imagem acompanha a largura
+       da folha sem deformar nem comer o ecra em telefones baixos. */
+    height: auto;
+    aspect-ratio: 16 / 11;
+    max-height: 240px;
+    min-height: 150px;
     flex-shrink: 0;
 }
 .hh-mp-hero-img {
@@ -2407,7 +2522,7 @@ body.hh-no-scroll {
 .hh-mp-body {
     position: relative;
     margin-top: -34px;
-    padding: 0 16px 18px;
+    padding: 0 var(--hh-gutter) 18px;
 }
 .hh-mp-headline {
     display: flex;
@@ -2418,11 +2533,12 @@ body.hh-no-scroll {
 }
 .hh-mp-title {
     font-family: "Playfair Display", Georgia, "Times New Roman", serif;
-    font-size: 30px;
+    font-size: clamp(22px, 7vw, 30px);
     font-weight: 700;
     line-height: 1.12;
     letter-spacing: 0.2px;
     color: #F5F8FD;
+    overflow-wrap: anywhere;
     text-shadow: 0 2px 12px rgba(4, 10, 20, 0.8);
     min-width: 0;
     flex: 1 1 auto;
@@ -2524,6 +2640,9 @@ body.hh-no-scroll {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    /* Quando o titulo e o botao deixam de caber lado a lado, o botao
+       desce em vez de se sobrepor ao texto. */
+    flex-wrap: wrap;
     gap: 10px;
     margin-bottom: 12px;
 }
@@ -2531,9 +2650,10 @@ body.hh-no-scroll {
     display: flex;
     align-items: center;
     gap: 11px;
+    flex: 1 1 auto;
     min-width: 0;
     font-family: "Playfair Display", Georgia, serif;
-    font-size: 19px;
+    font-size: clamp(16px, 4.8vw, 19px);
     font-weight: 700;
     color: #F2F6FC;
 }
@@ -2624,8 +2744,8 @@ body.hh-no-scroll {
 /* --- Album de fotos --- */
 .hh-mp-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 9px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: clamp(6px, 2.2vw, 9px);
 }
 .hh-mp-photo {
     position: relative;
@@ -2698,7 +2818,7 @@ body.hh-no-scroll {
 }
 .hh-mp-actions {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
     margin-top: 11px;
 }
@@ -3015,7 +3135,7 @@ html:not(.dark) .hh-mp-sub {
     right: 0;
     bottom: 0;
     width: 100%;
-    height: 170px;
+    height: clamp(110px, 22vh, 170px);
     pointer-events: none;
 }
 
@@ -3025,7 +3145,12 @@ html:not(.dark) .hh-mp-sub {
     display: flex;
     flex-direction: column;
     width: 100%;
-    padding: 24px 22px 22px;
+    max-width: 30rem;
+    margin-inline: auto;
+    padding:
+        calc(24px + var(--hh-safe-top))
+        clamp(16px, 5.5vw, 22px)
+        calc(22px + var(--hh-safe-bottom));
 }
 
 /* ---------- Cabecalho decorativo ---------- */
@@ -3100,7 +3225,7 @@ html:not(.dark) .hh-mp-sub {
 .hh-auth-card {
     position: relative;
     margin-top: 22px;
-    padding: 26px 22px 24px;
+    padding: clamp(20px, 6vw, 26px) clamp(16px, 5.5vw, 22px) clamp(18px, 5.5vw, 24px);
     border-radius: 26px;
     border: 1px solid rgba(214, 178, 98, .55);
     background:
@@ -3252,7 +3377,7 @@ html .hh-auth .hh-auth-field input:-webkit-autofill {
 }
 .hh-auth-cta i {
     position: absolute;
-    right: 24px;
+    right: clamp(14px, 5vw, 24px);
     font-size: 17px;
     transition: transform .25s ease;
 }
@@ -3740,16 +3865,22 @@ html .hh-auth .hh-auth-field input:-webkit-autofill {
 /* --- Folha de detalhe de um dia --- */
 .hh-streak-overlay {
     align-items: center;
-    padding: 16px 12px 78px;
+    /* Mesma razao do .hh-mp-overlay: a folha cobre a navegacao, nao ha
+       nada a reservar em baixo alem da area segura do dispositivo. */
+    padding:
+        calc(16px + var(--hh-safe-top))
+        clamp(10px, 3vw, 14px)
+        calc(16px + var(--hh-safe-bottom));
 }
 .hh-streak-sheet {
     width: 100%;
     max-width: 26rem;
     max-height: 100%;
+    min-height: 0;
     overflow-y: auto;
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
-    padding: 18px 16px 20px;
+    padding: 18px clamp(12px, 4.5vw, 16px) 20px;
     border-radius: 20px;
     background: linear-gradient(180deg, #0C1C33 0%, #102544 55%, #0A1729 100%);
     border: 1px solid rgba(233, 240, 249, 0.14);
@@ -4309,13 +4440,13 @@ html:not(.dark) .hh-result-card .hh-streak-note-kicker {
 .hh-xp-toast {
     position: fixed;
     left: 50%;
-    bottom: 92px;
+    bottom: calc(var(--hh-nav-h) + var(--hh-safe-bottom) + 8px);
     z-index: 65;
     transform: translate(-50%, 10px);
     display: flex;
     align-items: center;
     gap: 10px;
-    max-width: calc(100vw - 32px);
+    max-width: min(26rem, calc(100vw - 32px));
     padding: 11px 16px;
     border-radius: 999px;
     background: linear-gradient(135deg, #16304F, #0E2039);
@@ -4526,7 +4657,6 @@ html:not(.dark) .hh-result-card .hh-streak-note-kicker {
         font-size: 15px;
     }
     .hh-xp-toast {
-        bottom: 86px;
         padding: 10px 14px;
     }
     .hh-zone-name {
@@ -4651,4 +4781,53 @@ html:not(.dark) .hh-xp-zone-total {
 }
 html:not(.dark) .hh-streak-celebration-xp {
     color: #8A6A2F;
+}
+
+/* ==========================================================
+   Heritage — modais construidos com utilitarios
+   (medalha, conquista, camara, monumento)
+   Estes quatro nao tinham limite de altura nem scroll proprio:
+   num ecra baixo o conteudo saia do viewport sem forma de o
+   alcancar. A correccao e partilhada pelos quatro.
+   ========================================================== */
+#badgeModal,
+#achievementModal,
+#cameraModal,
+#monumentModal {
+    padding:
+        calc(12px + var(--hh-safe-top))
+        var(--hh-gutter)
+        calc(12px + var(--hh-safe-bottom));
+}
+
+#badgeModal > div,
+#achievementModal > div,
+#cameraModal > div,
+#monumentModal > div {
+    width: 100%;
+    max-width: 24rem;
+    max-height: 100%;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    /* A goteira passou para o proprio veu; o mx-4 deixaria margem a dobrar. */
+    margin-inline: 0;
+}
+
+#badgeModal > div,
+#achievementModal > div {
+    padding: clamp(20px, 6vw, 32px);
+}
+
+/* Estes dois abrem por cima da pagina do monumento (z-index 70),
+   por isso tem de ficar acima dela. */
+#cameraModal {
+    z-index: 85;
+}
+
+#cameraModal video {
+    height: clamp(180px, 34dvh, 256px);
+}
+
+#monumentModal img {
+    height: clamp(140px, 26dvh, 192px);
 }
