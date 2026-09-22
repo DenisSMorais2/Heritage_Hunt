@@ -3355,3 +3355,1300 @@ html .hh-auth .hh-auth-field input:-webkit-autofill {
     .hh-auth-field { height: 48px; }
     .hh-auth-cta { height: 52px; font-size: 18px; }
 }
+
+/* ==========================================================
+   Heritage — Streak de exploracao
+   (cartao do perfil, semana, detalhe do dia e celebracao)
+   ========================================================== */
+
+/* --- Cabecalho do cartao --- */
+.hh-streak-crest {
+    flex-shrink: 0;
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    font-size: 17px;
+    color: var(--hh-gold);
+    background: rgba(214, 178, 116, 0.12);
+    border: 1px solid rgba(214, 178, 116, 0.3);
+}
+
+/* --- Estado principal --- */
+.hh-streak-hero {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    padding: 15px 14px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, rgba(214, 178, 116, 0.14), rgba(214, 178, 116, 0.04));
+    border: 1px solid rgba(214, 178, 116, 0.26);
+}
+.hh-streak-hero.is-empty {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: var(--hh-line);
+}
+.hh-streak-flame {
+    flex-shrink: 0;
+    width: 46px;
+    height: 46px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 20px;
+    color: var(--hh-gold);
+    background: rgba(214, 178, 116, 0.16);
+    border: 1px solid rgba(214, 178, 116, 0.42);
+}
+.hh-streak-flame.is-lit {
+    color: #17325A;
+    background: linear-gradient(135deg, #E7CE9A, #D6B274);
+    border-color: #D6B274;
+    box-shadow: 0 4px 14px rgba(214, 178, 116, 0.28);
+}
+.hh-streak-flame.is-off {
+    color: var(--hh-muted);
+    background: rgba(255, 255, 255, 0.05);
+    border-color: var(--hh-line);
+}
+.hh-streak-hero-text {
+    min-width: 0;
+}
+.hh-streak-count {
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 19px;
+    font-weight: 700;
+    line-height: 1.25;
+    color: #F2F6FC;
+}
+.hh-streak-state {
+    margin-top: 3px;
+    font-size: 13px;
+    line-height: 1.4;
+    color: var(--hh-cream);
+}
+.hh-streak-state.is-done {
+    color: #4ADE9B;
+}
+.hh-streak-state.is-done i {
+    font-size: 11px;
+}
+.hh-streak-note-line {
+    margin-top: 2px;
+    font-size: 12px;
+    line-height: 1.4;
+    color: var(--hh-muted);
+}
+
+/* --- Convite quando ainda nao ha sequencia --- */
+.hh-streak-cta {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    width: 100%;
+    margin-top: 12px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    font-size: 14.5px;
+    font-weight: 600;
+    color: #17325A;
+    background: linear-gradient(135deg, #E7CE9A 0%, #D6B274 55%, #C9A263 100%);
+    box-shadow: 0 8px 18px rgba(4, 12, 24, 0.3);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.hh-streak-cta:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 12px 22px rgba(4, 12, 24, 0.4);
+}
+
+/* --- Semana --- */
+.hh-streak-week {
+    margin-top: 16px;
+}
+.hh-streak-week-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+    color: var(--hh-muted);
+    margin-bottom: 10px;
+}
+.hh-streak-days {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 4px;
+}
+.hh-streak-day {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 7px;
+    min-width: 0;
+    padding: 9px 2px;
+    border-radius: 11px;
+    background: transparent;
+    border: 1px solid transparent;
+    cursor: default;
+    transition: background 0.25s ease, border-color 0.25s ease;
+}
+.hh-streak-day:not(:disabled) {
+    cursor: pointer;
+}
+.hh-streak-day:not(:disabled):hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+.hh-streak-day.is-today {
+    border-color: rgba(214, 178, 116, 0.42);
+    background: rgba(214, 178, 116, 0.07);
+}
+.hh-streak-dot {
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    background: transparent;
+    border: 1.5px solid var(--hh-line);
+    transition: background 0.25s ease, border-color 0.25s ease;
+}
+.hh-streak-day.is-on .hh-streak-dot {
+    background: linear-gradient(135deg, #E7CE9A, #C9A263);
+    border-color: #D6B274;
+}
+.hh-streak-day.is-future .hh-streak-dot {
+    opacity: 0.45;
+}
+.hh-streak-dow {
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    color: var(--hh-muted);
+    white-space: nowrap;
+}
+.hh-streak-day.is-on .hh-streak-dow,
+.hh-streak-day.is-today .hh-streak-dow {
+    color: var(--hh-gold-soft);
+}
+
+/* --- Proxima historia --- */
+.hh-streak-next {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    margin-top: 14px;
+    padding: 12px 13px;
+    border-radius: 13px;
+    background: rgba(127, 178, 255, 0.08);
+    border: 1px solid rgba(127, 178, 255, 0.2);
+}
+.hh-streak-next-icon {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9px;
+    font-size: 14px;
+    color: #7FB2FF;
+    background: rgba(127, 178, 255, 0.14);
+    border: 1px solid rgba(127, 178, 255, 0.3);
+}
+.hh-streak-next-text {
+    flex: 1;
+    min-width: 0;
+}
+.hh-streak-next-label {
+    font-size: 11.5px;
+    line-height: 1.4;
+    color: var(--hh-muted);
+}
+.hh-streak-next-name {
+    margin-top: 2px;
+    font-size: 13.5px;
+    font-weight: 600;
+    line-height: 1.3;
+    color: #F2F6FC;
+    overflow-wrap: anywhere;
+}
+.hh-streak-next-btn {
+    flex-shrink: 0;
+    padding: 8px 14px;
+    border-radius: 10px;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--hh-gold);
+    background: rgba(214, 178, 116, 0.12);
+    border: 1px solid rgba(214, 178, 116, 0.38);
+    transition: background 0.25s ease;
+}
+.hh-streak-next-btn:hover {
+    background: rgba(214, 178, 116, 0.24);
+}
+
+/* --- Mosaicos: actual / recorde / total --- */
+.hh-streak-stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 16px;
+}
+.hh-streak-stat {
+    min-width: 0;
+    padding: 11px 8px;
+    border-radius: 13px;
+    text-align: center;
+    border: 1px solid transparent;
+}
+.hh-streak-stat-value {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 5px;
+    flex-wrap: wrap;
+    font-size: 12px;
+    line-height: 1.2;
+}
+.hh-streak-stat-value i {
+    font-size: 12px;
+    align-self: center;
+}
+.hh-streak-stat-value b {
+    font-size: 19px;
+    font-weight: 700;
+}
+.hh-streak-stat-label {
+    margin-top: 5px;
+    font-size: 10px;
+    line-height: 1.35;
+    color: rgba(233, 240, 249, 0.72);
+    overflow-wrap: anywhere;
+}
+.hh-streak-stat.is-gold {
+    background: linear-gradient(150deg, rgba(214, 178, 116, 0.2), rgba(214, 178, 116, 0.06));
+    border-color: rgba(214, 178, 116, 0.3);
+}
+.hh-streak-stat.is-gold .hh-streak-stat-value,
+.hh-streak-stat.is-gold .hh-streak-stat-value i {
+    color: var(--hh-gold-soft);
+}
+.hh-streak-stat.is-trophy {
+    background: linear-gradient(150deg, rgba(196, 139, 250, 0.18), rgba(38, 28, 68, 0.4));
+    border-color: rgba(192, 132, 252, 0.26);
+}
+.hh-streak-stat.is-trophy .hh-streak-stat-value,
+.hh-streak-stat.is-trophy .hh-streak-stat-value i {
+    color: #C48BFA;
+}
+.hh-streak-stat.is-blue {
+    background: linear-gradient(150deg, rgba(41, 84, 143, 0.5), rgba(19, 44, 78, 0.55));
+    border-color: rgba(127, 178, 255, 0.26);
+}
+.hh-streak-stat.is-blue .hh-streak-stat-value,
+.hh-streak-stat.is-blue .hh-streak-stat-value i {
+    color: #7FB2FF;
+}
+
+/* --- Conquistas de sequencia --- */
+.hh-streak-badges-block {
+    margin-top: 18px;
+}
+.hh-streak-badges {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    scrollbar-width: none;
+}
+.hh-streak-badges::-webkit-scrollbar {
+    height: 0;
+}
+.hh-streak-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    flex-shrink: 0;
+    padding: 9px 12px;
+    border-radius: 11px;
+    font-size: 12px;
+    color: var(--hh-muted);
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--hh-line);
+    cursor: default;
+    transition: background 0.25s ease, border-color 0.25s ease;
+}
+.hh-streak-badge b {
+    font-size: 13.5px;
+    font-weight: 700;
+}
+.hh-streak-badge i {
+    font-size: 12.5px;
+    opacity: 0.8;
+}
+.hh-streak-badge.is-on {
+    color: #F2F6FC;
+    background: rgba(214, 178, 116, 0.14);
+    border-color: rgba(214, 178, 116, 0.42);
+    cursor: pointer;
+}
+.hh-streak-badge.is-on i,
+.hh-streak-badge.is-on b {
+    color: var(--hh-gold-soft);
+    opacity: 1;
+}
+.hh-streak-badge.is-on:hover {
+    background: rgba(214, 178, 116, 0.24);
+}
+
+/* Icone das conquistas de sequencia dentro do modal de medalhas */
+.hh-streak-badge-icon {
+    color: #17325A;
+    background: linear-gradient(135deg, #F7E8B8, #D2A947);
+}
+
+/* --- Nota da sequencia no cartao de descoberta --- */
+.hh-streak-note {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    margin: 0 auto 14px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    background: rgba(214, 178, 116, 0.14);
+    border: 1px solid rgba(214, 178, 116, 0.4);
+}
+.hh-streak-note.hidden {
+    display: none;
+}
+.hh-streak-note-kicker {
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 1.3px;
+    text-transform: uppercase;
+    color: var(--hh-gold-soft);
+}
+.hh-streak-note-count {
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: #F2F6FC;
+}
+
+/* --- Folha de detalhe de um dia --- */
+.hh-streak-overlay {
+    align-items: center;
+    padding: 16px 12px 78px;
+}
+.hh-streak-sheet {
+    width: 100%;
+    max-width: 26rem;
+    max-height: 100%;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    padding: 18px 16px 20px;
+    border-radius: 20px;
+    background: linear-gradient(180deg, #0C1C33 0%, #102544 55%, #0A1729 100%);
+    border: 1px solid rgba(233, 240, 249, 0.14);
+    box-shadow: 0 26px 60px rgba(3, 10, 20, 0.7);
+    animation: mpSlideUp 0.34s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.hh-streak-sheet::-webkit-scrollbar {
+    width: 0;
+}
+.hh-streak-sheet-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+.hh-streak-sheet-title {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    min-width: 0;
+}
+.hh-streak-sheet-title h3 {
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.2;
+    color: #F2F6FC;
+    overflow-wrap: anywhere;
+}
+.hh-streak-sheet .hh-mp-close {
+    position: static;
+    flex-shrink: 0;
+}
+.hh-streak-day-list {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+}
+.hh-streak-act {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 12px 13px;
+    border-radius: 13px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--hh-line);
+}
+.hh-streak-act-icon {
+    flex-shrink: 0;
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    font-size: 14px;
+}
+.hh-streak-act-icon.is-gold {
+    color: var(--hh-gold);
+    background: rgba(214, 178, 116, 0.14);
+    border: 1px solid rgba(214, 178, 116, 0.32);
+}
+.hh-streak-act-icon.is-blue {
+    color: #7FB2FF;
+    background: rgba(127, 178, 255, 0.14);
+    border: 1px solid rgba(127, 178, 255, 0.3);
+}
+.hh-streak-act-icon.is-green {
+    color: #4ADE9B;
+    background: rgba(74, 222, 155, 0.13);
+    border: 1px solid rgba(74, 222, 155, 0.3);
+}
+.hh-streak-act-body {
+    min-width: 0;
+}
+.hh-streak-act-name {
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.3;
+    color: #F2F6FC;
+    overflow-wrap: anywhere;
+}
+.hh-streak-act-meta {
+    margin-top: 2px;
+    font-size: 12px;
+    color: var(--hh-gold-soft);
+}
+
+/* --- Celebracao da sequencia --- */
+.hh-streak-celebration {
+    position: fixed;
+    inset: 0;
+    z-index: 80;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(4, 10, 20, 0.74);
+    backdrop-filter: blur(3px);
+}
+.hh-streak-celebration.hidden {
+    display: none;
+}
+.hh-streak-celebration-card {
+    width: 100%;
+    max-width: 20rem;
+    padding: 26px 22px 22px;
+    text-align: center;
+    border-radius: 20px;
+    background: linear-gradient(170deg, #12294A 0%, #0C1C33 100%);
+    border: 1px solid rgba(214, 178, 116, 0.32);
+    box-shadow: 0 26px 60px rgba(3, 10, 20, 0.7);
+}
+.hh-streak-celebration-flame {
+    width: 62px;
+    height: 62px;
+    margin: 0 auto 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 26px;
+    color: #17325A;
+    background: linear-gradient(135deg, #F7E8B8, #D2A947);
+    box-shadow: 0 8px 20px rgba(214, 178, 116, 0.28);
+}
+.hh-streak-celebration-kicker {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.6px;
+    text-transform: uppercase;
+    color: var(--hh-gold-soft);
+}
+.hh-streak-celebration-count {
+    margin-top: 8px;
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.25;
+    color: #F2F6FC;
+}
+.hh-streak-celebration-note {
+    margin: 8px 0 20px;
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--hh-muted);
+}
+
+/* --- Ecras muito estreitos (320px) --- */
+@media (max-width: 360px) {
+    .hh-streak-hero {
+        gap: 11px;
+        padding: 13px 11px;
+    }
+    .hh-streak-flame {
+        width: 40px;
+        height: 40px;
+        font-size: 17px;
+    }
+    .hh-streak-count {
+        font-size: 17px;
+    }
+    .hh-streak-state {
+        font-size: 12.5px;
+    }
+    .hh-streak-days {
+        gap: 2px;
+    }
+    .hh-streak-day {
+        padding: 8px 0;
+    }
+    .hh-streak-dow {
+        font-size: 8.5px;
+        letter-spacing: 0;
+    }
+    .hh-streak-stats {
+        gap: 6px;
+    }
+    .hh-streak-stat {
+        padding: 10px 5px;
+    }
+    .hh-streak-stat-value b {
+        font-size: 17px;
+    }
+    .hh-streak-stat-label {
+        font-size: 9.5px;
+    }
+    .hh-streak-next {
+        flex-wrap: wrap;
+    }
+    .hh-streak-next-text {
+        flex-basis: 0;
+    }
+    .hh-streak-next-btn {
+        padding: 7px 12px;
+    }
+    .hh-streak-crest {
+        width: 36px;
+        height: 36px;
+        font-size: 15px;
+    }
+}
+
+/* --- Variante do tema claro --- */
+html:not(.dark) .hh-streak-crest {
+    background: rgba(168, 129, 63, 0.12);
+    border-color: rgba(168, 129, 63, 0.35);
+}
+html:not(.dark) .hh-streak-hero {
+    background: linear-gradient(135deg, rgba(168, 129, 63, 0.12), rgba(168, 129, 63, 0.03));
+    border-color: rgba(168, 129, 63, 0.3);
+}
+html:not(.dark) .hh-streak-hero.is-empty {
+    background: #FAF8F2;
+    border-color: #E8E2D5;
+}
+html:not(.dark) .hh-streak-flame {
+    background: rgba(168, 129, 63, 0.14);
+    border-color: rgba(168, 129, 63, 0.4);
+}
+html:not(.dark) .hh-streak-flame.is-lit {
+    color: #FFFFFF;
+    background: linear-gradient(135deg, #C29A55, #A8813F);
+    border-color: #A8813F;
+    box-shadow: 0 4px 12px rgba(168, 129, 63, 0.3);
+}
+html:not(.dark) .hh-streak-flame.is-off {
+    background: #F4F1E9;
+    border-color: #E0D9C9;
+}
+html:not(.dark) .hh-streak-count,
+html:not(.dark) .hh-streak-next-name,
+html:not(.dark) .hh-streak-act-name,
+html:not(.dark) .hh-streak-sheet-title h3,
+html:not(.dark) .hh-streak-note-count {
+    color: #12294A;
+}
+html:not(.dark) .hh-streak-state {
+    color: #33445C;
+}
+html:not(.dark) .hh-streak-state.is-done {
+    color: #0F9D6B;
+}
+html:not(.dark) .hh-streak-note-line,
+html:not(.dark) .hh-streak-week-title,
+html:not(.dark) .hh-streak-dow,
+html:not(.dark) .hh-streak-next-label,
+html:not(.dark) .hh-streak-celebration-note {
+    color: #5D6E86;
+}
+html:not(.dark) .hh-streak-cta {
+    color: #FFFFFF;
+    background: linear-gradient(135deg, #C29A55, #A8813F);
+    box-shadow: 0 6px 16px rgba(168, 129, 63, 0.28);
+}
+html:not(.dark) .hh-streak-day:not(:disabled):hover {
+    background: rgba(18, 41, 74, 0.05);
+}
+html:not(.dark) .hh-streak-day.is-today {
+    background: rgba(168, 129, 63, 0.09);
+    border-color: rgba(168, 129, 63, 0.45);
+}
+html:not(.dark) .hh-streak-dot {
+    border-color: rgba(18, 41, 74, 0.2);
+}
+html:not(.dark) .hh-streak-day.is-on .hh-streak-dot {
+    background: linear-gradient(135deg, #C29A55, #A8813F);
+    border-color: #A8813F;
+}
+html:not(.dark) .hh-streak-day.is-on .hh-streak-dow,
+html:not(.dark) .hh-streak-day.is-today .hh-streak-dow {
+    color: #8A6A2F;
+}
+html:not(.dark) .hh-streak-next {
+    background: #EFF5FF;
+    border-color: #CBDFFB;
+}
+html:not(.dark) .hh-streak-next-icon {
+    color: #2563EB;
+    background: #FFFFFF;
+    border-color: #CBDFFB;
+}
+html:not(.dark) .hh-streak-next-btn {
+    color: #8A6A2F;
+    background: rgba(168, 129, 63, 0.12);
+    border-color: rgba(168, 129, 63, 0.4);
+}
+html:not(.dark) .hh-streak-next-btn:hover {
+    background: rgba(168, 129, 63, 0.24);
+}
+html:not(.dark) .hh-streak-stat.is-gold {
+    background: #FBF4E6;
+    border-color: #EBDCBE;
+}
+html:not(.dark) .hh-streak-stat.is-gold .hh-streak-stat-value,
+html:not(.dark) .hh-streak-stat.is-gold .hh-streak-stat-value i {
+    color: #8A6A2F;
+}
+html:not(.dark) .hh-streak-stat.is-trophy {
+    background: #F6F0FE;
+    border-color: #DECCF8;
+}
+html:not(.dark) .hh-streak-stat.is-trophy .hh-streak-stat-value,
+html:not(.dark) .hh-streak-stat.is-trophy .hh-streak-stat-value i {
+    color: #7C3AED;
+}
+html:not(.dark) .hh-streak-stat.is-blue {
+    background: #EFF5FF;
+    border-color: #CBDFFB;
+}
+html:not(.dark) .hh-streak-stat.is-blue .hh-streak-stat-value,
+html:not(.dark) .hh-streak-stat.is-blue .hh-streak-stat-value i {
+    color: #2563EB;
+}
+html:not(.dark) .hh-streak-stat-label {
+    color: #5D6E86;
+}
+html:not(.dark) .hh-streak-badge {
+    color: #5D6E86;
+    background: #FAF8F2;
+    border-color: #E8E2D5;
+}
+html:not(.dark) .hh-streak-badge.is-on {
+    color: #12294A;
+    background: rgba(168, 129, 63, 0.12);
+    border-color: rgba(168, 129, 63, 0.42);
+}
+html:not(.dark) .hh-streak-badge.is-on i,
+html:not(.dark) .hh-streak-badge.is-on b {
+    color: #8A6A2F;
+}
+html:not(.dark) .hh-streak-badge.is-on:hover {
+    background: rgba(168, 129, 63, 0.22);
+}
+html:not(.dark) .hh-streak-badge-icon {
+    color: #FFFFFF;
+    background: linear-gradient(135deg, #C29A55, #A8813F);
+}
+html:not(.dark) .hh-streak-note {
+    background: rgba(168, 129, 63, 0.14);
+    border-color: rgba(168, 129, 63, 0.42);
+}
+html:not(.dark) .hh-streak-note-kicker,
+html:not(.dark) .hh-streak-celebration-kicker {
+    color: #8A6A2F;
+}
+html:not(.dark) .hh-streak-overlay {
+    background: rgba(24, 40, 66, 0.45);
+}
+html:not(.dark) .hh-streak-sheet {
+    background: linear-gradient(180deg, #FBF8F2 0%, #F4F1E9 55%, #EFEBE1 100%);
+    border-color: #E0D9C9;
+    box-shadow: 0 24px 54px rgba(24, 40, 66, 0.28);
+}
+html:not(.dark) .hh-streak-act {
+    background: #FFFFFF;
+    border-color: #E8E2D5;
+}
+html:not(.dark) .hh-streak-act-meta {
+    color: #8A6A2F;
+}
+html:not(.dark) .hh-streak-celebration {
+    background: rgba(24, 40, 66, 0.55);
+}
+html:not(.dark) .hh-streak-celebration-card {
+    background: linear-gradient(170deg, #FFFFFF 0%, #F6F2E8 100%);
+    border-color: rgba(168, 129, 63, 0.35);
+    box-shadow: 0 24px 54px rgba(24, 40, 66, 0.3);
+}
+html:not(.dark) .hh-streak-celebration-flame {
+    color: #FFFFFF;
+    background: linear-gradient(135deg, #C29A55, #A8813F);
+    box-shadow: 0 8px 18px rgba(168, 129, 63, 0.3);
+}
+
+/* O cartao de descoberta do scanner mantem o fundo escuro nos dois
+   temas, por isso a nota da sequencia nao segue o tema claro. */
+html:not(.dark) .hh-result-card .hh-streak-note {
+    background: rgba(214, 178, 116, 0.16);
+    border-color: rgba(214, 178, 116, 0.42);
+}
+html:not(.dark) .hh-result-card .hh-streak-note-count {
+    color: #F2F6FC;
+}
+html:not(.dark) .hh-result-card .hh-streak-note-kicker {
+    color: #E7CE9A;
+}
+
+/* ==========================================================
+   Heritage — XP (progressao, historico, zonas e avisos)
+   ========================================================== */
+
+/* --- Selo dos cartoes de XP e de zonas --- */
+.hh-xp-crest {
+    flex-shrink: 0;
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    font-size: 17px;
+    color: var(--hh-gold);
+    background: rgba(214, 178, 116, 0.12);
+    border: 1px solid rgba(214, 178, 116, 0.3);
+}
+
+/* --- Total --- */
+.hh-xp-total {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.hh-xp-total-value {
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 38px;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--hh-gold-soft);
+    font-variant-numeric: tabular-nums;
+}
+.hh-xp-total-unit {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 1.6px;
+    color: var(--hh-muted);
+}
+.hh-xp-note {
+    margin-top: 6px;
+    font-size: 12.5px;
+    line-height: 1.45;
+    color: var(--hh-muted);
+}
+.hh-xp-body .hh-streak-week-title {
+    margin-top: 18px;
+}
+
+/* --- Linhas de actividade --- */
+.hh-xp-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.hh-xp-row {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 11px 12px;
+    border-radius: 13px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--hh-line);
+}
+.hh-xp-row-icon {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    font-size: 13px;
+}
+.hh-xp-row-icon.is-gold {
+    color: var(--hh-gold);
+    background: rgba(214, 178, 116, 0.14);
+    border: 1px solid rgba(214, 178, 116, 0.32);
+}
+.hh-xp-row-icon.is-blue {
+    color: #7FB2FF;
+    background: rgba(127, 178, 255, 0.14);
+    border: 1px solid rgba(127, 178, 255, 0.3);
+}
+.hh-xp-row-icon.is-green {
+    color: #4ADE9B;
+    background: rgba(74, 222, 155, 0.13);
+    border: 1px solid rgba(74, 222, 155, 0.3);
+}
+.hh-xp-row-icon.is-zone {
+    color: #C48BFA;
+    background: rgba(196, 139, 250, 0.14);
+    border: 1px solid rgba(192, 132, 252, 0.3);
+}
+.hh-xp-row-body {
+    flex: 1;
+    min-width: 0;
+}
+.hh-xp-row-title {
+    font-size: 13.5px;
+    font-weight: 600;
+    line-height: 1.3;
+    color: #F2F6FC;
+    overflow-wrap: anywhere;
+}
+.hh-xp-row-sub {
+    margin-top: 2px;
+    font-size: 11.5px;
+    line-height: 1.35;
+    color: var(--hh-muted);
+    overflow-wrap: anywhere;
+}
+.hh-xp-row-amount {
+    flex-shrink: 0;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--hh-gold-soft);
+    font-variant-numeric: tabular-nums;
+}
+
+/* --- Ver historico / carregar mais --- */
+.hh-xp-more {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+    margin-top: 12px;
+    padding: 11px 14px;
+    border-radius: 12px;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--hh-gold);
+    background: rgba(214, 178, 116, 0.1);
+    border: 1px solid rgba(214, 178, 116, 0.3);
+    transition: background 0.25s ease;
+}
+.hh-xp-more:hover {
+    background: rgba(214, 178, 116, 0.2);
+}
+.hh-xp-more-center {
+    justify-content: center;
+}
+.hh-xp-more.hidden {
+    display: none;
+}
+
+/* --- Historico completo --- */
+.hh-xp-history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.hh-xp-day {
+    margin-top: 8px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+    color: var(--hh-muted);
+}
+.hh-xp-day:first-child {
+    margin-top: 0;
+}
+
+/* --- Aviso discreto (toast) --- */
+.hh-xp-toast {
+    position: fixed;
+    left: 50%;
+    bottom: 92px;
+    z-index: 65;
+    transform: translate(-50%, 10px);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    max-width: calc(100vw - 32px);
+    padding: 11px 16px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #16304F, #0E2039);
+    border: 1px solid rgba(214, 178, 116, 0.4);
+    box-shadow: 0 12px 28px rgba(3, 10, 20, 0.5);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.24s ease, transform 0.24s ease;
+}
+.hh-xp-toast.hidden {
+    display: none;
+}
+.hh-xp-toast.is-on {
+    opacity: 1;
+    transform: translate(-50%, 0);
+}
+.hh-xp-toast-amount {
+    flex-shrink: 0;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--hh-gold-soft);
+    font-variant-numeric: tabular-nums;
+}
+.hh-xp-toast-text {
+    font-size: 13px;
+    color: #E9F0F9;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* --- Cartao de descoberta: kicker, progresso e zona --- */
+.hh-result-kicker {
+    margin-bottom: 6px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.6px;
+    text-transform: uppercase;
+    color: var(--hh-gold-soft);
+}
+.hh-result-progress {
+    margin-bottom: 12px;
+    font-size: 12px;
+    color: #9DB0C8;
+}
+.hh-xp-zone-note {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    margin: 0 auto 12px;
+    padding: 11px 14px;
+    border-radius: 12px;
+    background: rgba(196, 139, 250, 0.12);
+    border: 1px solid rgba(192, 132, 252, 0.36);
+}
+.hh-xp-zone-note.hidden {
+    display: none;
+}
+.hh-xp-zone-kicker {
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 1.3px;
+    text-transform: uppercase;
+    color: #D6B4FD;
+}
+.hh-xp-zone-name {
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: #F2F6FC;
+}
+.hh-xp-zone-amount {
+    font-size: 14px;
+    font-weight: 700;
+    color: #D6B4FD;
+}
+.hh-xp-zone-total {
+    margin-top: 2px;
+    font-size: 11.5px;
+    color: #9DB0C8;
+}
+
+/* --- Zonas --- */
+.hh-zones-sub {
+    margin: -8px 0 14px;
+    font-size: 12.5px;
+    line-height: 1.45;
+    color: var(--hh-muted);
+}
+.hh-zone-list {
+    display: flex;
+    flex-direction: column;
+    gap: 11px;
+}
+.hh-zone {
+    padding: 13px 14px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--hh-line);
+}
+.hh-zone.is-done {
+    background: rgba(214, 178, 116, 0.1);
+    border-color: rgba(214, 178, 116, 0.34);
+}
+.hh-zone-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+.hh-zone-name {
+    min-width: 0;
+    font-size: 14.5px;
+    font-weight: 600;
+    line-height: 1.3;
+    color: #F2F6FC;
+    overflow-wrap: anywhere;
+}
+.hh-zone-count {
+    flex-shrink: 0;
+    font-size: 12px;
+    color: var(--hh-muted);
+    white-space: nowrap;
+}
+.hh-zone-state {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    flex-shrink: 0;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--hh-gold-soft);
+    white-space: nowrap;
+}
+.hh-zone-track {
+    height: 6px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    overflow: hidden;
+}
+.hh-zone-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #C9A263, #E7CE9A);
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.hh-zone-reward {
+    margin-top: 9px;
+    font-size: 12px;
+    color: var(--hh-muted);
+}
+.hh-zone-reward.is-done {
+    color: var(--hh-gold-soft);
+    font-weight: 600;
+}
+
+/* --- Pistas de XP na pagina do monumento --- */
+.hh-xp-hint {
+    margin: -6px 0 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--hh-gold-soft);
+}
+.hh-xp-hint.is-done {
+    font-weight: 500;
+    color: var(--hh-muted);
+}
+.hh-xp-hint:empty {
+    display: none;
+}
+.hh-mp-chip.is-earned {
+    border-color: rgba(214, 178, 116, 0.42);
+    background: rgba(214, 178, 116, 0.12);
+}
+.hh-mp-chip.is-earned::after {
+    content: "\f00c";
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    font-size: 11px;
+    color: #4ADE9B;
+}
+
+/* --- Ecras muito estreitos (320px) --- */
+@media (max-width: 360px) {
+    .hh-xp-total-value {
+        font-size: 32px;
+    }
+    .hh-xp-row {
+        gap: 9px;
+        padding: 10px;
+    }
+    .hh-xp-row-icon {
+        width: 28px;
+        height: 28px;
+        font-size: 12px;
+    }
+    .hh-xp-row-title {
+        font-size: 12.5px;
+    }
+    .hh-xp-row-amount {
+        font-size: 12px;
+    }
+    .hh-xp-crest {
+        width: 36px;
+        height: 36px;
+        font-size: 15px;
+    }
+    .hh-xp-toast {
+        bottom: 86px;
+        padding: 10px 14px;
+    }
+    .hh-zone-name {
+        font-size: 13.5px;
+    }
+}
+
+/* --- Variante do tema claro --- */
+html:not(.dark) .hh-xp-crest {
+    background: rgba(168, 129, 63, 0.12);
+    border-color: rgba(168, 129, 63, 0.35);
+}
+html:not(.dark) .hh-xp-total-value {
+    color: #8A6A2F;
+}
+html:not(.dark) .hh-xp-total-unit,
+html:not(.dark) .hh-xp-note,
+html:not(.dark) .hh-xp-row-sub,
+html:not(.dark) .hh-xp-day,
+html:not(.dark) .hh-zones-sub,
+html:not(.dark) .hh-zone-count,
+html:not(.dark) .hh-zone-reward {
+    color: #5D6E86;
+}
+html:not(.dark) .hh-xp-row {
+    background: #FFFFFF;
+    border-color: #E8E2D5;
+}
+html:not(.dark) .hh-xp-row-title,
+html:not(.dark) .hh-zone-name {
+    color: #12294A;
+}
+html:not(.dark) .hh-xp-row-amount,
+html:not(.dark) .hh-zone-state,
+html:not(.dark) .hh-zone-reward.is-done,
+html:not(.dark) .hh-xp-hint {
+    color: #8A6A2F;
+}
+html:not(.dark) .hh-xp-row-icon.is-blue {
+    color: #2563EB;
+    background: #EFF5FF;
+    border-color: #CBDFFB;
+}
+html:not(.dark) .hh-xp-row-icon.is-green {
+    color: #0F9D6B;
+    background: #ECFAF3;
+    border-color: #BCE9D3;
+}
+html:not(.dark) .hh-xp-row-icon.is-zone {
+    color: #7C3AED;
+    background: #F6F0FE;
+    border-color: #DECCF8;
+}
+html:not(.dark) .hh-xp-more {
+    color: #8A6A2F;
+    background: rgba(168, 129, 63, 0.1);
+    border-color: rgba(168, 129, 63, 0.35);
+}
+html:not(.dark) .hh-xp-more:hover {
+    background: rgba(168, 129, 63, 0.2);
+}
+html:not(.dark) .hh-zone {
+    background: #FFFFFF;
+    border-color: #E8E2D5;
+}
+html:not(.dark) .hh-zone.is-done {
+    background: #FBF4E6;
+    border-color: #EBDCBE;
+}
+html:not(.dark) .hh-zone-track {
+    background: #EDE8DC;
+}
+html:not(.dark) .hh-zone-fill {
+    background: linear-gradient(90deg, #A8813F, #C29A55);
+}
+html:not(.dark) .hh-xp-hint.is-done {
+    color: #5D6E86;
+}
+html:not(.dark) .hh-mp-chip.is-earned {
+    background: rgba(168, 129, 63, 0.12);
+    border-color: rgba(168, 129, 63, 0.42);
+}
+html:not(.dark) .hh-mp-chip.is-earned::after {
+    color: #0F9D6B;
+}
+html:not(.dark) .hh-xp-toast {
+    background: #FFFFFF;
+    border-color: rgba(168, 129, 63, 0.42);
+    box-shadow: 0 12px 28px rgba(24, 40, 66, 0.2);
+}
+html:not(.dark) .hh-xp-toast-amount {
+    color: #8A6A2F;
+}
+html:not(.dark) .hh-xp-toast-text {
+    color: #22344E;
+}
+
+/* O cartao de descoberta do scanner e escuro nos dois temas */
+html:not(.dark) .hh-result-progress {
+    color: #9DB0C8;
+}
+html:not(.dark) .hh-xp-zone-note {
+    background: rgba(196, 139, 250, 0.16);
+    border-color: rgba(192, 132, 252, 0.4);
+}
+html:not(.dark) .hh-xp-zone-name {
+    color: #F2F6FC;
+}
+html:not(.dark) .hh-xp-zone-total {
+    color: #9DB0C8;
+}
+
+/* Linha de XP dentro da celebracao da sequencia */
+.hh-streak-celebration-xp {
+    margin: -12px 0 18px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--hh-gold-soft);
+}
+.hh-streak-celebration-xp.hidden {
+    display: none;
+}
+html:not(.dark) .hh-streak-celebration-xp {
+    color: #8A6A2F;
+}

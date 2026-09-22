@@ -134,6 +134,109 @@ const translations = {
         "saveExperience": "Guardar experiência",
         "experienceSaved": "Experiência guardada!",
         "photoLimitReached": "Já atingiste o limite de {max} fotos para este monumento.",
+        "saveError": "Não foi possível guardar. Tenta novamente.",
+        "xpLabel": "XP",
+        "xpTotalLabel": "XP total",
+        "xpAmount": "+{n} XP",
+        "xpObtained": "{n} XP obtidos",
+        "xpCardTitle": "O teu XP",
+        "xpRecentTitle": "Últimas atividades",
+        "xpViewHistory": "Ver histórico",
+        "xpHistoryTitle": "Histórico de XP",
+        "xpHistoryEmpty": "Ainda não há atividade registada. Descobre um monumento para começar a tua história.",
+        "xpLoadMore": "Carregar mais",
+        "xpToday": "Hoje",
+        "xpYesterday": "Ontem",
+        "xpMonumentDiscovered": "Monumento descoberto",
+        "xpPhotoAdded": "Nova memória visual",
+        "xpExperienceAdded": "Experiência registada",
+        "xpZoneCompleted": "Zona concluída",
+        "xpDiscoveryTitle": "NOVO MONUMENTO DESCOBERTO",
+        "xpZoneTitle": "ZONA CONCLUÍDA",
+        "xpDiscoveryTotal": "Total desta descoberta: +{n} XP",
+        "xpProgressMonuments": "Progresso: {done}/{total} monumentos",
+        "xpJourneyNote": "Cada descoberta faz parte da tua história.",
+        "xpPhotoHint": "+{n} XP por fotografia",
+        "xpPhotoRewardsUsed": "{used}/{max} recompensas de fotografia obtidas",
+        "xpPhotoRewardsDone": "Recompensas de fotografia completas",
+        "xpExperienceHint": "+{n} XP na primeira experiência",
+        "xpExperienceDone": "{n} XP obtidos",
+        "xpMonumentEarned": "{n} XP obtidos",
+        "zonesTitle": "Zonas de Mindelo",
+        "zonesSubtitle": "Completa uma zona e ganha +{n} XP.",
+        "zoneProgress": "{done}/{total} monumentos",
+        "zoneReward": "Recompensa: +{n} XP",
+        "zoneDone": "Zona concluída",
+        "zones": {
+            "centro_historico": "Centro Histórico",
+            "frente_mar": "Frente de Mar",
+            "colinas": "Colinas e Fortificações",
+            "cultura_viva": "Cultura Viva"
+        },
+        "streakTitle": "Sequência de exploração",
+        "streakDayOne": "1 dia de exploração",
+        "streakDayMany": "{n} dias de exploração",
+        "streakJourneyContinues": "A tua jornada continua.",
+        "streakTodayDone": "Exploração de hoje concluída",
+        "streakTomorrow": "A tua jornada continua amanhã.",
+        "streakContinueToday": "Continua a tua jornada hoje.",
+        "streakEmptyTitle": "Começa a tua sequência",
+        "streakEmptySub": "Descobre um monumento para iniciar a tua jornada.",
+        "streakEmptyCta": "Explorar monumentos",
+        "streakCurrentLabel": "Sequência atual",
+        "streakBestLabel": "Melhor sequência",
+        "streakTotalLabel": "Dias de exploração",
+        "streakUnitDay": "dia",
+        "streakUnitDays": "dias",
+        "streakDaysShort": "{n} dias",
+        "streakDayShortOne": "1 dia",
+        "streakBestLine": "Melhor sequência: {n} dias",
+        "streakBestLineOne": "Melhor sequência: 1 dia",
+        "streakThisWeek": "Esta semana",
+        "streakTapDayHint": "Toca num dia com exploração para ver o que aconteceu.",
+        "streakNextStory": "A tua próxima história está a {d}.",
+        "streakExplore": "Explorar",
+        "streakKept": "SEQUÊNCIA MANTIDA",
+        "streakNew": "NOVA SEQUÊNCIA",
+        "streakCelebrationNote": "Mais um dia, mais uma história.",
+        "streakDayEmpty": "Ainda não há exploração registada neste dia.",
+        "streakActivityDiscovery": "Monumento descoberto",
+        "streakActivityPhotoOne": "1 fotografia adicionada",
+        "streakActivityPhotoMany": "{n} fotografias adicionadas",
+        "streakActivityExperience": "Experiência registada",
+        "streakActivityMission": "Missão cultural concluída",
+        "streakXp": "+{n} XP",
+        "streakBadgesTitle": "Conquistas de sequência",
+        "streakBadgeLocked": "Por desbloquear",
+        "streakMilestoneGoal": "{n} dias seguidos",
+        "weekdaysShort": ["SEG", "TER", "QUA", "QUI", "SEX", "SÁB", "DOM"],
+        "monthsLong": ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"],
+        "streakBadges": {
+            "curious": {
+                "name": "Explorador Curioso",
+                "short": "Curioso",
+                "description": "3 dias seguidos a explorar",
+                "message": "Três dias, três histórias. A curiosidade é o primeiro passo de qualquer descoberta."
+            },
+            "persistent": {
+                "name": "Explorador Persistente",
+                "short": "Persistente",
+                "description": "7 dias seguidos a explorar",
+                "message": "Uma semana inteira a descobrir Cabo Verde. Mindelo já te conhece pelo nome."
+            },
+            "mindelo": {
+                "name": "Conhecedor de Mindelo",
+                "short": "Conhecedor",
+                "description": "14 dias seguidos a explorar",
+                "message": "Duas semanas de histórias. Poucos conhecem esta cidade tão bem como tu."
+            },
+            "guardian": {
+                "name": "Guardião do Património",
+                "short": "Guardião",
+                "description": "30 dias seguidos a explorar",
+                "message": "Um mês a guardar a memória de Cabo Verde. Agora também fazes parte desta história."
+            }
+        },
         "monthsShort": ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"],
         "monuments": {
             "1": "Antigo palácio do governo colonial, construído em 1874, hoje serve como centro cultural e um dos símbolos mais importantes da história de Cabo Verde.",
@@ -304,6 +407,109 @@ const translations = {
         "saveExperience": "Save experience",
         "experienceSaved": "Experience saved!",
         "photoLimitReached": "You have reached the limit of {max} photos for this monument.",
+        "saveError": "Could not save. Please try again.",
+        "xpLabel": "XP",
+        "xpTotalLabel": "Total XP",
+        "xpAmount": "+{n} XP",
+        "xpObtained": "{n} XP earned",
+        "xpCardTitle": "Your XP",
+        "xpRecentTitle": "Recent activity",
+        "xpViewHistory": "View history",
+        "xpHistoryTitle": "XP history",
+        "xpHistoryEmpty": "No activity yet. Discover a monument to start your story.",
+        "xpLoadMore": "Load more",
+        "xpToday": "Today",
+        "xpYesterday": "Yesterday",
+        "xpMonumentDiscovered": "Monument discovered",
+        "xpPhotoAdded": "New visual memory",
+        "xpExperienceAdded": "Experience recorded",
+        "xpZoneCompleted": "Zone completed",
+        "xpDiscoveryTitle": "NEW MONUMENT DISCOVERED",
+        "xpZoneTitle": "ZONE COMPLETED",
+        "xpDiscoveryTotal": "Total for this discovery: +{n} XP",
+        "xpProgressMonuments": "Progress: {done}/{total} monuments",
+        "xpJourneyNote": "Every discovery is part of your story.",
+        "xpPhotoHint": "+{n} XP per photo",
+        "xpPhotoRewardsUsed": "{used}/{max} photo rewards earned",
+        "xpPhotoRewardsDone": "Photo rewards complete",
+        "xpExperienceHint": "+{n} XP for your first experience",
+        "xpExperienceDone": "{n} XP earned",
+        "xpMonumentEarned": "{n} XP earned",
+        "zonesTitle": "Zones of Mindelo",
+        "zonesSubtitle": "Complete a zone and earn +{n} XP.",
+        "zoneProgress": "{done}/{total} monuments",
+        "zoneReward": "Reward: +{n} XP",
+        "zoneDone": "Zone completed",
+        "zones": {
+            "centro_historico": "Historic Centre",
+            "frente_mar": "Waterfront",
+            "colinas": "Hills and Forts",
+            "cultura_viva": "Living Culture"
+        },
+        "streakTitle": "Exploration streak",
+        "streakDayOne": "1 day of exploration",
+        "streakDayMany": "{n} days of exploration",
+        "streakJourneyContinues": "Your journey continues.",
+        "streakTodayDone": "Today's exploration complete",
+        "streakTomorrow": "Your journey continues tomorrow.",
+        "streakContinueToday": "Continue your journey today.",
+        "streakEmptyTitle": "Start your streak",
+        "streakEmptySub": "Discover a monument to begin your journey.",
+        "streakEmptyCta": "Explore monuments",
+        "streakCurrentLabel": "Current streak",
+        "streakBestLabel": "Best streak",
+        "streakTotalLabel": "Exploration days",
+        "streakUnitDay": "day",
+        "streakUnitDays": "days",
+        "streakDaysShort": "{n} days",
+        "streakDayShortOne": "1 day",
+        "streakBestLine": "Best streak: {n} days",
+        "streakBestLineOne": "Best streak: 1 day",
+        "streakThisWeek": "This week",
+        "streakTapDayHint": "Tap a day with exploration to see what happened.",
+        "streakNextStory": "Your next story is {d} away.",
+        "streakExplore": "Explore",
+        "streakKept": "STREAK KEPT",
+        "streakNew": "NEW STREAK",
+        "streakCelebrationNote": "One more day, one more story.",
+        "streakDayEmpty": "No exploration recorded on this day yet.",
+        "streakActivityDiscovery": "Monument discovered",
+        "streakActivityPhotoOne": "1 photo added",
+        "streakActivityPhotoMany": "{n} photos added",
+        "streakActivityExperience": "Experience recorded",
+        "streakActivityMission": "Cultural mission completed",
+        "streakXp": "+{n} XP",
+        "streakBadgesTitle": "Streak achievements",
+        "streakBadgeLocked": "Locked",
+        "streakMilestoneGoal": "{n} days in a row",
+        "weekdaysShort": ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"],
+        "monthsLong": ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+        "streakBadges": {
+            "curious": {
+                "name": "Curious Explorer",
+                "short": "Curious",
+                "description": "3 days of exploring in a row",
+                "message": "Three days, three stories. Curiosity is the first step of every discovery."
+            },
+            "persistent": {
+                "name": "Persistent Explorer",
+                "short": "Persistent",
+                "description": "7 days of exploring in a row",
+                "message": "A whole week discovering Cape Verde. Mindelo already knows you by name."
+            },
+            "mindelo": {
+                "name": "Mindelo Connoisseur",
+                "short": "Connoisseur",
+                "description": "14 days of exploring in a row",
+                "message": "Two weeks of stories. Few people know this city as well as you do."
+            },
+            "guardian": {
+                "name": "Heritage Guardian",
+                "short": "Guardian",
+                "description": "30 days of exploring in a row",
+                "message": "A month keeping Cape Verde's memory alive. You are part of this story now."
+            }
+        },
         "monthsShort": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
         "monuments": {
             "1": "Former colonial government palace, built in 1874, today a cultural centre and one of the most important symbols of Cape Verde's history.",
@@ -474,6 +680,109 @@ const translations = {
         "saveExperience": "Enregistrer l'expérience",
         "experienceSaved": "Expérience enregistrée !",
         "photoLimitReached": "Vous avez atteint la limite de {max} photos pour ce monument.",
+        "saveError": "Impossible d'enregistrer. Veuillez réessayer.",
+        "xpLabel": "XP",
+        "xpTotalLabel": "XP total",
+        "xpAmount": "+{n} XP",
+        "xpObtained": "{n} XP obtenus",
+        "xpCardTitle": "Votre XP",
+        "xpRecentTitle": "Activité récente",
+        "xpViewHistory": "Voir l'historique",
+        "xpHistoryTitle": "Historique d'XP",
+        "xpHistoryEmpty": "Aucune activité pour l'instant. Découvrez un monument pour commencer votre histoire.",
+        "xpLoadMore": "Charger plus",
+        "xpToday": "Aujourd'hui",
+        "xpYesterday": "Hier",
+        "xpMonumentDiscovered": "Monument découvert",
+        "xpPhotoAdded": "Nouveau souvenir visuel",
+        "xpExperienceAdded": "Expérience enregistrée",
+        "xpZoneCompleted": "Zone terminée",
+        "xpDiscoveryTitle": "NOUVEAU MONUMENT DÉCOUVERT",
+        "xpZoneTitle": "ZONE TERMINÉE",
+        "xpDiscoveryTotal": "Total de cette découverte : +{n} XP",
+        "xpProgressMonuments": "Progression : {done}/{total} monuments",
+        "xpJourneyNote": "Chaque découverte fait partie de votre histoire.",
+        "xpPhotoHint": "+{n} XP par photo",
+        "xpPhotoRewardsUsed": "{used}/{max} récompenses photo obtenues",
+        "xpPhotoRewardsDone": "Récompenses photo terminées",
+        "xpExperienceHint": "+{n} XP pour la première expérience",
+        "xpExperienceDone": "{n} XP obtenus",
+        "xpMonumentEarned": "{n} XP obtenus",
+        "zonesTitle": "Zones de Mindelo",
+        "zonesSubtitle": "Terminez une zone et gagnez +{n} XP.",
+        "zoneProgress": "{done}/{total} monuments",
+        "zoneReward": "Récompense : +{n} XP",
+        "zoneDone": "Zone terminée",
+        "zones": {
+            "centro_historico": "Centre historique",
+            "frente_mar": "Front de mer",
+            "colinas": "Collines et forts",
+            "cultura_viva": "Culture vivante"
+        },
+        "streakTitle": "Série d'exploration",
+        "streakDayOne": "1 jour d'exploration",
+        "streakDayMany": "{n} jours d'exploration",
+        "streakJourneyContinues": "Votre voyage continue.",
+        "streakTodayDone": "Exploration du jour terminée",
+        "streakTomorrow": "Votre voyage continue demain.",
+        "streakContinueToday": "Poursuivez votre voyage aujourd'hui.",
+        "streakEmptyTitle": "Commencez votre série",
+        "streakEmptySub": "Découvrez un monument pour commencer votre voyage.",
+        "streakEmptyCta": "Explorer les monuments",
+        "streakCurrentLabel": "Série actuelle",
+        "streakBestLabel": "Meilleure série",
+        "streakTotalLabel": "Jours d'exploration",
+        "streakUnitDay": "jour",
+        "streakUnitDays": "jours",
+        "streakDaysShort": "{n} jours",
+        "streakDayShortOne": "1 jour",
+        "streakBestLine": "Meilleure série : {n} jours",
+        "streakBestLineOne": "Meilleure série : 1 jour",
+        "streakThisWeek": "Cette semaine",
+        "streakTapDayHint": "Touchez un jour avec exploration pour voir le détail.",
+        "streakNextStory": "Votre prochaine histoire est à {d}.",
+        "streakExplore": "Explorer",
+        "streakKept": "SÉRIE MAINTENUE",
+        "streakNew": "NOUVELLE SÉRIE",
+        "streakCelebrationNote": "Un jour de plus, une histoire de plus.",
+        "streakDayEmpty": "Aucune exploration enregistrée ce jour-là.",
+        "streakActivityDiscovery": "Monument découvert",
+        "streakActivityPhotoOne": "1 photo ajoutée",
+        "streakActivityPhotoMany": "{n} photos ajoutées",
+        "streakActivityExperience": "Expérience enregistrée",
+        "streakActivityMission": "Mission culturelle terminée",
+        "streakXp": "+{n} XP",
+        "streakBadgesTitle": "Succès de série",
+        "streakBadgeLocked": "À débloquer",
+        "streakMilestoneGoal": "{n} jours d'affilée",
+        "weekdaysShort": ["LUN", "MAR", "MER", "JEU", "VEN", "SAM", "DIM"],
+        "monthsLong": ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"],
+        "streakBadges": {
+            "curious": {
+                "name": "Explorateur curieux",
+                "short": "Curieux",
+                "description": "3 jours d'exploration d'affilée",
+                "message": "Trois jours, trois histoires. La curiosité est le premier pas de toute découverte."
+            },
+            "persistent": {
+                "name": "Explorateur persévérant",
+                "short": "Persévérant",
+                "description": "7 jours d'exploration d'affilée",
+                "message": "Une semaine entière à découvrir le Cap-Vert. Mindelo vous connaît déjà par votre nom."
+            },
+            "mindelo": {
+                "name": "Connaisseur de Mindelo",
+                "short": "Connaisseur",
+                "description": "14 jours d'exploration d'affilée",
+                "message": "Deux semaines d'histoires. Peu de gens connaissent cette ville aussi bien que vous."
+            },
+            "guardian": {
+                "name": "Gardien du patrimoine",
+                "short": "Gardien",
+                "description": "30 jours d'exploration d'affilée",
+                "message": "Un mois à préserver la mémoire du Cap-Vert. Vous faites désormais partie de cette histoire."
+            }
+        },
         "monthsShort": ["janv.", "févr.", "mars", "avr.", "mai", "juin", "juil.", "août", "sept.", "oct.", "nov.", "déc."],
         "monuments": {
             "1": "Ancien palais du gouvernement colonial, construit en 1874, aujourd'hui centre culturel et l'un des symboles les plus importants de l'histoire du Cap-Vert.",
@@ -557,4 +866,59 @@ function badgeText(id, field) {
     const dict = translations[currentLanguage] || translations.pt;
     const entry = (dict.badges && dict.badges[id]) || translations.pt.badges[id];
     return entry ? entry[field] : '';
+}
+
+// --- Streak de exploracao -----------------------------------
+
+// Nomes curtos dos dias da semana, de segunda a domingo
+function weekdayShortLabels() {
+    const dict = translations[currentLanguage] || translations.pt;
+    return dict.weekdaysShort || translations.pt.weekdaysShort;
+}
+
+// Formata uma data como "21 Setembro" no idioma activo.
+// Uma chave "YYYY-MM-DD" e interpretada como dia LOCAL: new Date("2026-09-21")
+// seria lido como meia-noite UTC e, em Cabo Verde (UTC-1), daria o dia anterior.
+function formatDayMonth(value) {
+    if (!value) return '';
+
+    let date;
+    if (value instanceof Date) {
+        date = value;
+    } else if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+        const parts = value.split('-');
+        date = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+    } else {
+        date = new Date(value);
+    }
+
+    if (isNaN(date.getTime())) return '';
+    const dict = translations[currentLanguage] || translations.pt;
+    const months = dict.monthsLong || translations.pt.monthsLong;
+    return date.getDate() + ' ' + months[date.getMonth()];
+}
+
+// Texto das conquistas de sequencia (ver STREAK_MILESTONES em streak.js)
+function streakBadgeText(id, field) {
+    const dict = translations[currentLanguage] || translations.pt;
+    const entry = (dict.streakBadges && dict.streakBadges[id]) || translations.pt.streakBadges[id];
+    return entry ? entry[field] : '';
+}
+
+// "1 dia de exploracao" / "N dias de exploracao"
+function streakDaysText(days) {
+    return days === 1 ? t('streakDayOne') : t('streakDayMany', { n: days });
+}
+
+// --- Sistema de XP ------------------------------------------
+
+// Nome traduzido de uma zona (ver state.zones em script.js)
+function zoneName(id) {
+    const dict = translations[currentLanguage] || translations.pt;
+    return (dict.zones && dict.zones[id]) || (translations.pt.zones && translations.pt.zones[id]) || id;
+}
+
+// "+50 XP"
+function xpAmountText(amount) {
+    return t('xpAmount', { n: amount });
 }

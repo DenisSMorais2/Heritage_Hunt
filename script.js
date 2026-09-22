@@ -6,6 +6,7 @@ const state = {
     qrScanner: null,
     currentMonumentForMap: null,
     userLocation: null,
+    userLocationIsPrecise: false,
     userLocationMarker: null,
     userLocationCircle: null,
     currentMonumentForPhotos: null,
@@ -110,7 +111,7 @@ const state = {
             points: 40,
             lat: 16.8918,
             lng: -24.9874,
-            image: "imagens/casa_da_cultura.jpg",
+            image: "imagens/casa_da_cultura.png",
             qrCode: "CASA_CULTURA_CV"
         },
         {
@@ -179,6 +180,14 @@ const state = {
             unlocked: false,
             message: "Parabéns! Você conquistou Mindelo como um verdadeiro herói cultural! Agora você é um embaixador da história desta bela cidade! 👑"
         }
+    ],
+    // Zonas de exploracao. Descobrir todos os monumentos de uma zona
+    // vale XP_CONFIG.ZONE_COMPLETED.amount, uma unica vez.
+    zones: [
+        { id: 'centro_historico', monumentIds: [1, 3, 4, 8] },
+        { id: 'frente_mar', monumentIds: [5, 6, 11] },
+        { id: 'colinas', monumentIds: [2, 12] },
+        { id: 'cultura_viva', monumentIds: [7, 9, 10] }
     ]
 };
 
@@ -299,6 +308,19 @@ const MEMORY_TAGS = [
 ];
 let noteEditing = false;
 
+// Streak de exploracao
+const scannerStreakNote = document.getElementById('scannerStreakNote');
+
+// XP
+const scannerProgress = document.getElementById('scannerProgress');
+const monumentPageXpChip = document.getElementById('monumentPageXpChip');
+const monumentPagePhotoXp = document.getElementById('monumentPagePhotoXp');
+const monumentPageExperienceXp = document.getElementById('monumentPageExperienceXp');
+const zonesSubtitle = document.getElementById('zonesSubtitle');
+
+// Uma experiencia so vale XP se tiver mesmo conteudo (ponto 13)
+const MIN_EXPERIENCE_LENGTH = 10;
+
 // Camera Modal elements
 const cameraModal = document.getElementById('cameraModal');
 const cameraVideo = document.getElementById('cameraVideo');
@@ -403,6 +425,7 @@ function getUserLocation() {
                 const lng = position.coords.longitude;
                 
                 state.userLocation = { lat, lng };
+                state.userLocationIsPrecise = true;
                 
                 // Add user location marker
                 if (state.userLocationMarker) {
@@ -435,6 +458,7 @@ function getUserLocation() {
                 console.log("Erro ao obter localização:", error);
                 // Use default location (Mindelo center) if geolocation fails
                 state.userLocation = { lat: 16.8907, lng: -24.9874 };
+                state.userLocationIsPrecise = false;
             },
             {
                 enableHighAccuracy: true,
@@ -445,7 +469,36 @@ function getUserLocation() {
     } else {
         // Use default location if geolocation not supported
         state.userLocation = { lat: 16.8907, lng: -24.9874 };
+        state.userLocationIsPrecise = false;
     }
+}
+
+// Monumento por descobrir mais proximo. Devolve null quando nao ha
+// uma localizacao fiavel — nao inventamos distancias (ponto 14).
+function findNearestUndiscoveredMonument() {
+    if (!state.userLocation || !state.userLocationIsPrecise) return null;
+
+    let nearest = null;
+    let minDistance = Infinity;
+
+    state.monuments.forEach(monument => {
+        const alreadyFound = state.scannedMonuments.some(m => m.id === monument.id);
+        if (alreadyFound) return;
+
+        const distance = calculateDistance(
+            state.userLocation.lat,
+            state.userLocation.lng,
+            monument.lat,
+            monument.lng
+        );
+
+        if (distance < minDistance) {
+            minDistance = distance;
+            nearest = { monument, distance };
+        }
+    });
+
+    return nearest;
 }
 
 function createUserLocationPopup() {
@@ -577,7 +630,9 @@ function register() {
         password,
         photo: null,
         points: 0,
-        scannedMonuments: []
+        scannedMonuments: [],
+        xp: XP.createEmptyWallet(),
+        explorationStreak: ExplorationStreak.createEmptyStreak()
     };
     
     // Save user data
@@ -593,6 +648,8 @@ function logout() {
         state.user = null;
         state.points = 0;
         state.scannedMonuments = [];
+        StreakUI.render();
+        XPUI.render();
         document.body.classList.remove('hh-dark-bg');
         authScreen.classList.remove('hidden');
         mainApp.classList.add('hidden');
@@ -604,14 +661,22 @@ function showMainApp() {
     authScreen.classList.add('hidden');
     mainApp.classList.remove('hidden');
     updateUserInterface();
+    StreakUI.render();
+    XPUI.render();
+    renderZonesView();
     showScannerView();
 }
 
 function loadUserData() {
     if (state.user) {
-        state.points = state.user.points || 0;
         state.scannedMonuments = state.user.scannedMonuments || [];
-        
+
+        // Pontos antigos passam a XP (uma unica vez) e as zonas ja
+        // completas antes deste sistema recebem a recompensa.
+        migrateUserToXP();
+        syncZoneCompletions();
+        state.points = XP.getTotalXP();
+                
         // Update badges based on current progress
         const progress = (state.scannedMonuments.length / state.monuments.length) * 100;
         state.badges.forEach(badge => {
@@ -625,10 +690,265 @@ function loadUserData() {
 
 function saveUserData() {
     if (state.user) {
-        state.user.points = state.points;
+        // `points` fica como espelho do XP, para que qualquer codigo
+        // (ou perfil) antigo continue a ler um valor correcto.
+        state.user.points = state.user.xp ? state.user.xp.total : state.points;
         state.user.scannedMonuments = state.scannedMonuments;
         localStorage.setItem('heritageUser', JSON.stringify(state.user));
     }
+}
+
+// ============================================================
+// XP — ligacao entre o dominio (xp.js), a persistencia do
+// utilizador e a interface (xp-ui.js)
+//
+// O XP vive dentro do perfil autenticado, ao lado dos monumentos
+// descobertos, por isso e gravado na mesma escrita.
+// ============================================================
+function initXPSystem() {
+    XP.configureStorage({
+        exists: () => !!state.user,
+        load: () => (state.user ? state.user.xp : null),
+        save: (wallet) => {
+            if (!state.user) throw new Error('sem utilizador autenticado');
+
+            // Se a escrita falhar, a memoria volta atras: o total em
+            // memoria nunca fica a frente do que esta guardado.
+            const previousWallet = state.user.xp;
+            const previousPoints = state.user.points;
+            state.user.xp = wallet;
+
+            try {
+                // Uma unica escrita cobre XP, monumentos e pontos (ponto 28)
+                saveUserData();
+            } catch (error) {
+                state.user.xp = previousWallet;
+                state.user.points = previousPoints;
+                throw error;
+            }
+        }
+    });
+
+    XPUI.init({
+        resolveMonument: (id) => state.monuments.find(m => m.id === id) || null,
+        resolveZone: (id) => state.zones.find(z => z.id === id) || null,
+        getMonumentProgress: () => ({
+            done: state.scannedMonuments.length,
+            total: state.monuments.length
+        })
+    });
+
+    // A UI reage a qualquer mudanca de XP, venha de onde vier (ponto 52)
+    XP.subscribeToXPChanges((change) => {
+        state.points = XP.getTotalXP();
+        XPUI.applyChange(change);
+        updateLevelDisplay();
+    });
+}
+
+// Ponto unico de entrada para XP na aplicacao.
+// Nenhum componente chama XP.awardMany directamente (ponto 4).
+function awardXP(events) {
+    if (!state.user) return null;
+
+    const batch = XP.awardMany(Array.isArray(events) ? events : [events]);
+
+    // Os erros sao sempre registados; o detalhe de cada recompensa so
+    // aparece com window.HH_DEBUG_XP = true na consola (ponto 44).
+    if (!batch.persisted) {
+        console.error('[xp] recompensa nao guardada', batch.results);
+    } else if (batch.totalAwarded > 0 && window.HH_DEBUG_XP) {
+        batch.awarded.forEach(result => {
+            console.info('[xp] +' + result.amount + ' ' + result.action, result.rewardKey);
+        });
+    }
+
+    return batch;
+}
+
+// Uma accao nunca produz dois avisos sobrepostos: quando a sequencia
+// abre um novo dia, e a celebracao que mostra tambem o XP; nos restantes
+// casos basta o aviso discreto (ponto 23).
+function announceReward(xpBatch, streakResult, fallbackText) {
+    if (streakResult && streakResult.isNewDay) {
+        StreakUI.showCelebration(streakResult, XPUI.summaryText(xpBatch));
+        return;
+    }
+    XPUI.toast(xpBatch, fallbackText);
+}
+
+// O nivel continua a ser derivado do total (100 XP por nivel)
+function updateLevelDisplay() {
+    userLevel.textContent = Math.floor(state.points / 100) + 1;
+}
+
+// Ponto 40 — lista de zonas no mapa
+function renderZonesView() {
+    if (zonesSubtitle) {
+        zonesSubtitle.textContent = t('zonesSubtitle', {
+            n: XP.getActionAmount(XP.ACTION.ZONE_COMPLETED)
+        });
+    }
+    XPUI.renderZones(state.zones, discoveredMonumentIds());
+}
+
+// Ponto 38 — quantas recompensas de fotografia ainda restam
+function renderPhotoXpHint(monumentId) {
+    if (!monumentPagePhotoXp) return;
+
+    const used = XP.getPhotoRewardsUsed(monumentId);
+    const max = XP.getPhotoRewardLimit();
+    const done = used >= max;
+
+    monumentPagePhotoXp.textContent = done
+        ? t('xpPhotoRewardsUsed', { used: used, max: max })
+        : t('xpPhotoHint', { n: XP.getActionAmount(XP.ACTION.PHOTO_ADDED) });
+    monumentPagePhotoXp.classList.toggle('is-done', done);
+}
+
+// Ponto 39 — a experiencia so promete XP enquanto nao foi paga
+function renderExperienceXpHint(monumentId) {
+    if (!monumentPageExperienceXp) return;
+
+    const amount = XP.getActionAmount(XP.ACTION.EXPERIENCE_ADDED);
+    const earned = XP.hasMonumentReward(XP.ACTION.EXPERIENCE_ADDED, monumentId);
+
+    monumentPageExperienceXp.textContent = earned
+        ? t('xpExperienceDone', { n: amount })
+        : t('xpExperienceHint', { n: amount });
+    monumentPageExperienceXp.classList.toggle('is-done', earned);
+}
+
+// Passa os pontos ja existentes para XP sem perder nada (ponto 18)
+function migrateUserToXP() {
+    if (!state.user) return;
+
+    XP.migrateLegacyPoints({
+        legacyPoints: state.user.points || 0,
+        discoveredMonuments: state.scannedMonuments
+    });
+
+    state.points = XP.getTotalXP();
+}
+
+// Ids dos monumentos ja descobertos
+function discoveredMonumentIds() {
+    return state.scannedMonuments.map(m => m.id);
+}
+
+// Zonas que ficam completas com a lista de descobertas indicada e
+// que ainda nao foram recompensadas.
+function pendingZoneCompletions(discoveredIds) {
+    const discovered = discoveredIds || discoveredMonumentIds();
+
+    return state.zones.filter(zone => {
+        const complete = zone.monumentIds.every(id => discovered.indexOf(id) !== -1);
+        if (!complete) return false;
+        return !XP.hasReward(XP.ACTION.ZONE_COMPLETED, zone.id);
+    });
+}
+
+function zoneEvents(zones) {
+    return zones.map(zone => ({
+        action: XP.ACTION.ZONE_COMPLETED,
+        zoneId: zone.id,
+        entityId: zone.id
+    }));
+}
+
+// Zonas ja concluidas antes de este sistema existir (ou concluidas
+// noutra sessao) recebem a recompensa em silencio no arranque.
+function syncZoneCompletions() {
+    if (!state.user) return null;
+
+    const pending = pendingZoneCompletions();
+    if (!pending.length) return null;
+
+    return XP.awardMany(zoneEvents(pending));
+}
+
+// ============================================================
+// Streak de exploracao — ligacao entre o dominio (streak.js),
+// a persistencia do utilizador e a interface (streak-ui.js)
+// ============================================================
+
+// A sequencia vive dentro do perfil autenticado, por isso e gravada
+// pelo mesmo caminho que os pontos e os monumentos descobertos.
+// Trocar de utilizador troca automaticamente de sequencia.
+function initExplorationStreak() {
+    ExplorationStreak.configureStorage({
+        load: () => (state.user ? state.user.explorationStreak : null),
+        save: (data) => {
+            if (!state.user) return;
+
+            const previous = state.user.explorationStreak;
+            state.user.explorationStreak = data;
+
+            try {
+                saveUserData();
+            } catch (error) {
+                state.user.explorationStreak = previous;
+                throw error;
+            }
+        }
+    });
+
+    StreakUI.init({
+        onExplore: showMapView,
+        onMilestone: showStreakMilestone,
+        resolveMonument: (id) => state.monuments.find(m => m.id === id) || null,
+        getNextStory: findNearestUndiscoveredMonument
+    });
+}
+
+// Ponto unico de entrada para qualquer accao que conte como exploracao
+function registerExploration(type, monumentId, metadata) {
+    if (!state.user) return null;
+
+    const result = ExplorationStreak.registerExplorationActivity({
+        type: type,
+        monumentId: monumentId === undefined ? null : monumentId,
+        metadata: metadata || {}
+    });
+
+    if (result.registered) {
+        StreakUI.render();
+        queueStreakMilestones(result.newMilestones);
+    }
+
+    return result;
+}
+
+// Conquistas de sequencia reutilizam o modal de medalhas existente
+function streakMilestoneBadge(milestoneId) {
+    const milestone = ExplorationStreak.MILESTONES.filter(m => m.id === milestoneId)[0];
+    if (!milestone) return null;
+
+    return {
+        id: milestone.id,
+        days: milestone.days,
+        icon: milestone.icon,
+        color: 'hh-streak-badge-icon',
+        iconColor: '',
+        name: streakBadgeText(milestone.id, 'name'),
+        description: streakBadgeText(milestone.id, 'description'),
+        message: streakBadgeText(milestone.id, 'message')
+    };
+}
+
+function queueStreakMilestones(milestones) {
+    if (!milestones || !milestones.length) return;
+    if (state.settings && !state.settings.achievementAlerts) return;
+
+    milestones.forEach(milestone => {
+        const badge = streakMilestoneBadge(milestone.id);
+        if (badge) enqueueBadge(badge);
+    });
+}
+
+function showStreakMilestone(milestoneId) {
+    const badge = streakMilestoneBadge(milestoneId);
+    if (badge) showAchievementDetails(badge);
 }
 
 function updateUserInterface() {
@@ -779,6 +1099,13 @@ function applyLanguage() {
         renderMonumentPage();
     }
 
+    // Cartao da sequencia (textos e dias da semana)
+    StreakUI.render();
+
+    // Cartao de XP e zonas
+    XPUI.render();
+    renderZonesView();
+
     // Botão do scanner (só quando está em repouso, para não interromper uma leitura)
     if (!state.qrScanner) {
         startScannerBtn.innerHTML = `<i class="fas fa-qrcode mr-3 text-xl"></i> <span data-i18n="scanQr">${t('scanQr')}</span>`;
@@ -847,6 +1174,7 @@ function showMapView() {
     profileView.classList.add('hidden');
     settingsView.classList.add('hidden');
     mapView.classList.remove('hidden');
+    renderZonesView();
     initMap();
     updateNavButtons('map');
     setTimeout(() => {
@@ -968,7 +1296,38 @@ function handleQRResult(qrData) {
     // Add to scanned monuments
     monument.discoveredAt = new Date().toISOString();
     state.scannedMonuments.push(monument);
-    state.points += monument.points;
+
+    // XP: a descoberta e a zona que ela eventualmente conclui ficam
+    // guardadas na mesma escrita (ponto 28).
+    const xpBatch = awardXP([{
+        action: XP.ACTION.MONUMENT_DISCOVERED,
+        monumentId: monument.id,
+        entityId: monument.id,
+        entityAmount: monument.points
+    }].concat(zoneEvents(pendingZoneCompletions())));
+
+    // Se o XP nao ficou guardado, a descoberta tambem nao conta:
+    // nunca anunciamos XP que nao foi persistido (ponto 43).
+    if (!xpBatch || !xpBatch.persisted) {
+        state.scannedMonuments.pop();
+        delete monument.discoveredAt;
+        alert(t('saveError'));
+        closeScanner();
+        return;
+    }
+
+    state.points = XP.getTotalXP();
+
+    const discoveryAward = xpBatch.awarded.filter(
+        result => result.action === XP.ACTION.MONUMENT_DISCOVERED
+    )[0];
+
+    // Sequencia de exploracao: a descoberta conta como actividade do dia
+    const streakResult = registerExploration(
+        ExplorationStreak.ACTIVITY.MONUMENT_DISCOVERY,
+        monument.id,
+        { points: monument.points }
+    );
     
     // Stop scanner
     stopScanner();
@@ -978,13 +1337,23 @@ function handleQRResult(qrData) {
     scannerResult.classList.remove('hidden');
     scannedMonumentName.textContent = monument.name;
     scannedMonumentDesc.textContent = monument.description;
-    pointsEarned.textContent = monument.points;
+    pointsEarned.textContent = discoveryAward ? discoveryAward.amount : monument.points;
+    scannerProgress.textContent = t('xpProgressMonuments', {
+        done: state.scannedMonuments.length,
+        total: state.monuments.length
+    });
     monumentImage.src = monument.image;
     monumentImage.alt = monument.name;
     monumentImage.onerror = function() {
         this.src = 'imagens/placeholder.jpg';
         this.onerror = null;
     };
+
+    // Zona concluida, quando for o caso (ponto 24)
+    XPUI.renderDiscovery(xpBatch);
+
+    // So celebramos a sequencia na primeira actividade valida do dia
+    StreakUI.renderDiscoveryNote(scannerStreakNote, streakResult);
     
     // Update UI and save data
     updateProgress();
@@ -1016,6 +1385,8 @@ function resetScanner() {
 
 function closeResult() {
     scannerResult.classList.add('hidden');
+    XPUI.clearDiscovery();
+    StreakUI.renderDiscoveryNote(scannerStreakNote, null);
     resetScanner();
 }
 
@@ -1028,12 +1399,10 @@ function updateProgress() {
     // Update stats
     monumentsScanned.textContent = state.scannedMonuments.length;
     totalMonuments.textContent = state.monuments.length;
-    totalPoints.textContent = state.points;
-    totalPointsHeader.textContent = state.points;
-    
-    // Update user level
-    const level = Math.floor(state.points / 100) + 1;
-    userLevel.textContent = level;
+
+    // Totais e cartao de XP (a camada de XP e a fonte de verdade)
+    XPUI.render();
+    updateLevelDisplay();
     
     // Update badges earned count
     const earnedBadges = state.badges.filter(badge => badge.unlocked).length;
@@ -1043,6 +1412,7 @@ function updateProgress() {
     updateDiscoveredMonumentsList();
     updateMonumentsList();
     updateMapMarkers();
+    renderZonesView();
 }
 
 function checkForBadges() {
@@ -1052,12 +1422,33 @@ function checkForBadges() {
         if (!badge.unlocked && progress >= badge.threshold) {
             badge.unlocked = true;
             if (!state.settings || state.settings.achievementAlerts) {
-                setTimeout(() => showBadge(badge), 1000);
+                enqueueBadge(badge);
             }
         }
     });
     
     renderBadges();
+}
+
+// Uma conquista de cada vez: as medalhas de progresso e as de
+// sequencia partilham o mesmo modal.
+const badgeQueue = [];
+let badgeQueueTimer = null;
+
+function enqueueBadge(badge) {
+    badgeQueue.push(badge);
+    scheduleNextBadge(1000);
+}
+
+function scheduleNextBadge(delay) {
+    if (badgeQueueTimer !== null) return;
+    if (!badgeQueue.length) return;
+
+    badgeQueueTimer = setTimeout(() => {
+        badgeQueueTimer = null;
+        const next = badgeQueue.shift();
+        if (next) showBadge(next);
+    }, delay);
 }
 
 function showBadge(badge) {
@@ -1073,6 +1464,7 @@ function showBadge(badge) {
 
 function closeBadge() {
     badgeModal.classList.add('hidden');
+    scheduleNextBadge(400);
 }
 
 function showAchievementDetails(badge) {
@@ -1224,6 +1616,7 @@ function updateMapMarkers() {
 
 function updateProfileView() {
     updateProgress();
+    StreakUI.render();
 }
 
 // ============================================================
@@ -1285,6 +1678,15 @@ function renderMonumentPage() {
     monumentPageVisit.textContent = visitDate
         ? t('visitedOn', { d: visitDate })
         : t('visitDateUnknown');
+
+    // XP ja obtido por este monumento (ponto 37)
+    if (monumentPageXpChip) {
+        monumentPageXpChip.classList.toggle(
+            'is-earned',
+            XP.hasReward(XP.ACTION.MONUMENT_DISCOVERED, monument.id)
+        );
+    }
+    renderExperienceXpHint(monument.id);
 
     setNoteEditing(noteEditing);
     renderMemoryTags();
@@ -1355,13 +1757,40 @@ function toggleMemoryTag(tagId) {
 }
 
 // --- Album de fotos ---
+//
+// Cada fotografia passa a ser { id, data, createdAt }. Os albuns
+// antigos eram arrays de data URLs; sao convertidos ao serem lidos,
+// sem perder nada.
+function createPhotoId() {
+    return 'photo_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8);
+}
+
+function normalizeMonumentPhoto(entry) {
+    if (typeof entry === 'string') {
+        return { id: createPhotoId(), data: entry, createdAt: null };
+    }
+    if (entry && typeof entry === 'object' && typeof entry.data === 'string') {
+        return {
+            id: typeof entry.id === 'string' ? entry.id : createPhotoId(),
+            data: entry.data,
+            createdAt: typeof entry.createdAt === 'string' ? entry.createdAt : null
+        };
+    }
+    return null;
+}
+
 function getMonumentPhotos(monumentId) {
     try {
         const saved = JSON.parse(localStorage.getItem(`monument_photos_${monumentId}`));
-        return Array.isArray(saved) ? saved : [];
+        if (!Array.isArray(saved)) return [];
+        return saved.map(normalizeMonumentPhoto).filter(Boolean);
     } catch (e) {
         return [];
     }
+}
+
+function saveMonumentPhotos(monumentId, photos) {
+    localStorage.setItem(`monument_photos_${monumentId}`, JSON.stringify(photos));
 }
 
 function updateUserPhotosGrid() {
@@ -1381,11 +1810,13 @@ function updateUserPhotosGrid() {
 
     userPhotosGrid.innerHTML = '';
 
+    renderPhotoXpHint(monumentId);
+
     savedPhotos.forEach((photo, index) => {
         const photoElement = document.createElement('div');
         photoElement.className = 'hh-mp-photo';
         photoElement.innerHTML = `
-            <img src="${photo}" alt="${t('photoAlt')} ${index + 1}">
+            <img src="${photo.data}" alt="${t('photoAlt')} ${index + 1}">
             <button type="button" class="hh-mp-photo-del" title="${t('close')}">
                 <i class="fas fa-times"></i>
             </button>
@@ -1429,7 +1860,30 @@ function saveExperience() {
     }
 
     setNoteEditing(false);
-    alert(t('experienceSaved'));
+
+    // XP: so a primeira experiencia com conteudo real rende, e editar
+    // ou voltar a guardar nao rende outra vez (pontos 12 e 13).
+    let xpBatch = null;
+    if (note.length >= MIN_EXPERIENCE_LENGTH) {
+        xpBatch = awardXP([{
+            action: XP.ACTION.EXPERIENCE_ADDED,
+            monumentId: monumentId,
+            entityId: 'experience_' + monumentId
+        }]);
+    }
+    renderExperienceXpHint(monumentId);
+
+    // So conta como exploracao se houver mesmo uma memoria registada
+    let streakResult = null;
+    if (note || state.monumentTagsDraft.length) {
+        streakResult = registerExploration(
+            ExplorationStreak.ACTIVITY.EXPERIENCE_SAVED,
+            monumentId,
+            { hasNote: !!note, tags: state.monumentTagsDraft.length }
+        );
+    }
+
+    announceReward(xpBatch, streakResult, t('experienceSaved'));
 }
 
 function takePhoto() {
@@ -1503,11 +1957,30 @@ function savePhoto(photoData) {
         return;
     }
 
-    savedPhotos.push(photoData);
-    localStorage.setItem(`monument_photos_${monumentId}`, JSON.stringify(savedPhotos));
-    
+    const photo = { id: createPhotoId(), data: photoData, createdAt: new Date().toISOString() };
+    savedPhotos.push(photo);
+    saveMonumentPhotos(monumentId, savedPhotos);
+
     updateUserPhotosGrid();
-    alert(t('photoSaved'));
+
+    // XP: so as primeiras fotografias de cada monumento rendem, e os
+    // lugares gastos nunca sao devolvidos ao apagar (pontos 10 e 11).
+    const xpBatch = awardXP([{
+        action: XP.ACTION.PHOTO_ADDED,
+        monumentId: monumentId,
+        entityId: photo.id
+    }]);
+
+    // A pista tem de reflectir o lugar que esta atribuicao acabou de gastar
+    renderPhotoXpHint(monumentId);
+
+    // Varias fotos no mesmo dia continuam a valer um unico dia
+    const streakResult = registerExploration(
+        ExplorationStreak.ACTIVITY.PHOTO_ADDED,
+        monumentId
+    );
+
+    announceReward(xpBatch, streakResult, t('photoSaved'));
 }
 
 function deletePhoto(index) {
@@ -1517,8 +1990,10 @@ function deletePhoto(index) {
     const savedPhotos = getMonumentPhotos(monumentId);
 
     if (confirm(t('confirmDeletePhoto'))) {
+        // O XP ja atribuido nao e devolvido nem o lugar libertado:
+        // apagar e voltar a adicionar nao rende XP outra vez.
         savedPhotos.splice(index, 1);
-        localStorage.setItem(`monument_photos_${monumentId}`, JSON.stringify(savedPhotos));
+        saveMonumentPhotos(monumentId, savedPhotos);
         updateUserPhotosGrid();
     }
 }
@@ -1603,6 +2078,8 @@ document.getElementById('registerPassword').addEventListener('keypress', functio
 // Initialize app
 function initApp() {
     initSettings();
+    initXPSystem();
+    initExplorationStreak();
 
     const savedUser = localStorage.getItem('heritageUser');
     if (savedUser) {
@@ -1617,6 +2094,8 @@ function initApp() {
     renderBadges();
     updateProgress();
     updateMonumentsList();
+    StreakUI.render();
+    XPUI.render();
 }
 
 // Start the app

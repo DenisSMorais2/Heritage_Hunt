@@ -245,11 +245,15 @@
                                 <div class="mb-4">
                                     <img id="monumentImage" src="" alt="" class="w-full h-32 object-cover rounded-lg mb-3">
                                 </div>
+                                <p class="hh-result-kicker" data-i18n="xpDiscoveryTitle">NOVO MONUMENTO DESCOBERTO</p>
                                 <h3 class="hh-result-title" id="scannedMonumentName"></h3>
                                 <p class="hh-result-desc" id="scannedMonumentDesc"></p>
                                 <div class="hh-result-points">
-                                    <p>+<span id="pointsEarned">0</span> <span data-i18n="pointsExclaim">pontos!</span></p>
+                                    <p>+<span id="pointsEarned">0</span> <span data-i18n="xpLabel">XP</span></p>
                                 </div>
+                                <p id="scannerProgress" class="hh-result-progress"></p>
+                                <div id="scannerZoneNote" class="hh-xp-zone-note hidden"></div>
+                                <div id="scannerStreakNote" class="hh-streak-note hidden"></div>
                                 <button id="closeResultBtn" class="hh-gold-btn hh-gold-btn-sm" data-i18n="keepExploring">Continuar Explorando</button>
                             </div>
                         </div>
@@ -283,7 +287,7 @@
                             <div class="hh-points">
                                 <i class="fas fa-star"></i>
                                 <span id="totalPointsHeader">0</span>
-                                <span class="hh-points-word" data-i18n="pointsWord">pontos</span>
+                                <span class="hh-points-word" data-i18n="xpLabel">XP</span>
                             </div>
                         </div>
                         <div class="hh-bar-row">
@@ -343,7 +347,7 @@
                                 <span class="hh-stat-icon"><i class="fas fa-star"></i></span>
                                 <div class="hh-stat-body">
                                     <div class="hh-stat-value"><span id="totalPoints">0</span></div>
-                                    <p class="hh-stat-label" data-i18n="pointsLabel">Pontos</p>
+                                    <p class="hh-stat-label" data-i18n="xpLabel">XP</p>
                                 </div>
                             </div>
                             <div class="hh-stat hh-stat-purple">
@@ -353,6 +357,32 @@
                                     <p class="hh-stat-label" data-i18n="achievementsLabel">Conquistas</p>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Progressao de XP -->
+                    <div class="hh-card hh-xp-card">
+                        <div class="hh-discover-head">
+                            <h3 class="hh-section-title hh-underlined" data-i18n="xpCardTitle">O teu XP</h3>
+                            <span class="hh-xp-crest" aria-hidden="true">
+                                <i class="fas fa-award"></i>
+                            </span>
+                        </div>
+                        <div id="xpCardBody" class="hh-xp-body">
+                            <!-- Desenhado por xp-ui.js -->
+                        </div>
+                    </div>
+
+                    <!-- Sequencia de exploracao -->
+                    <div class="hh-card hh-streak-card">
+                        <div class="hh-discover-head">
+                            <h3 class="hh-section-title hh-underlined" data-i18n="streakTitle">Sequência de exploração</h3>
+                            <span class="hh-streak-crest" aria-hidden="true">
+                                <i class="fas fa-fire"></i>
+                            </span>
+                        </div>
+                        <div id="streakCard" class="hh-streak-body">
+                            <!-- Desenhado por streak-ui.js -->
                         </div>
                     </div>
 
@@ -561,6 +591,17 @@
                         </div>
                     </div>
 
+                    <div class="hh-card hh-zones-card">
+                        <div class="hh-discover-head">
+                            <h3 class="hh-section-title hh-underlined" data-i18n="zonesTitle">Zonas de Mindelo</h3>
+                            <span class="hh-xp-crest" aria-hidden="true">
+                                <i class="fas fa-map-marked-alt"></i>
+                            </span>
+                        </div>
+                        <p id="zonesSubtitle" class="hh-zones-sub"></p>
+                        <div id="zonesList" class="hh-zone-list"></div>
+                    </div>
+
                     <div class="hh-card hh-discover">
                         <div class="hh-discover-head">
                             <h3 class="hh-section-title hh-underlined" data-i18n="mindeloMonuments">Monumentos de Mindelo</h3>
@@ -686,10 +727,10 @@
 
                     <!-- Chips de resumo -->
                     <div class="hh-mp-chips">
-                        <span class="hh-mp-chip">
+                        <span class="hh-mp-chip" id="monumentPageXpChip">
                             <i class="fas fa-star hh-chip-gold"></i>
                             <b id="monumentPagePoints">0</b>
-                            <span data-i18n="pts">pts</span>
+                            <span data-i18n="xpLabel">XP</span>
                         </span>
                         <span class="hh-mp-chip">
                             <i class="fas fa-images hh-chip-blue"></i>
@@ -713,6 +754,7 @@
                                 <span id="editNoteBtnLabel" data-i18n="edit">Editar</span>
                             </button>
                         </div>
+                        <p id="monumentPageExperienceXp" class="hh-xp-hint"></p>
                         <div class="hh-mp-note">
                             <p id="monumentNoteText" class="hh-mp-note-text is-empty"></p>
                             <textarea id="monumentNote" class="hh-mp-note-input hidden" data-i18n-placeholder="notePlaceholder" placeholder="Escreva suas impressões sobre este monumento..."></textarea>
@@ -728,6 +770,7 @@
                             </h3>
                             <span id="monumentPageAlbumCount" class="hh-mp-count"></span>
                         </div>
+                        <p id="monumentPagePhotoXp" class="hh-xp-hint"></p>
                         <div id="userPhotosGrid" class="hh-mp-grid"></div>
                         <div class="hh-mp-actions">
                             <button id="takePhotoBtn" class="hh-mp-action is-blue">
@@ -758,6 +801,57 @@
                         <span data-i18n="saveExperience">Guardar experiência</span>
                     </button>
                 </div>
+            </div>
+        </div>
+
+        <!-- Historico de XP -->
+        <div id="xpHistoryModal" class="hh-mp-overlay hh-streak-overlay hidden">
+            <div class="hh-streak-sheet" role="dialog" aria-modal="true" aria-labelledby="xpHistoryTitle">
+                <div class="hh-streak-sheet-head">
+                    <div class="hh-streak-sheet-title">
+                        <span class="hh-mp-card-icon"><i class="fas fa-award"></i></span>
+                        <h3 id="xpHistoryTitle" data-i18n="xpHistoryTitle">Histórico de XP</h3>
+                    </div>
+                    <button id="closeXpHistory" class="hh-mp-close" data-i18n-title="close" title="Fechar">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div id="xpHistoryList" class="hh-xp-history-list"></div>
+                <button id="xpHistoryMore" class="hh-xp-more hh-xp-more-center hidden">
+                    <span data-i18n="xpLoadMore">Carregar mais</span>
+                    <i class="fas fa-chevron-down" aria-hidden="true"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Aviso discreto de XP -->
+        <div id="xpToast" class="hh-xp-toast hidden" role="status" aria-live="polite"></div>
+
+        <!-- Detalhe de um dia da sequencia -->
+        <div id="streakDayModal" class="hh-mp-overlay hh-streak-overlay hidden">
+            <div class="hh-streak-sheet" role="dialog" aria-modal="true" aria-labelledby="streakDayTitle">
+                <div class="hh-streak-sheet-head">
+                    <div class="hh-streak-sheet-title">
+                        <span class="hh-mp-card-icon"><i class="fas fa-calendar-day"></i></span>
+                        <h3 id="streakDayTitle"></h3>
+                    </div>
+                    <button id="closeStreakDayModal" class="hh-mp-close" data-i18n-title="close" title="Fechar">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div id="streakDayList" class="hh-streak-day-list"></div>
+            </div>
+        </div>
+
+        <!-- Celebracao da sequencia -->
+        <div id="streakCelebrationModal" class="hh-streak-celebration hidden">
+            <div class="hh-streak-celebration-card modal-animation">
+                <span class="hh-streak-celebration-flame"><i class="fas fa-fire"></i></span>
+                <p id="streakCelebrationKicker" class="hh-streak-celebration-kicker"></p>
+                <p id="streakCelebrationCount" class="hh-streak-celebration-count"></p>
+                <p id="streakCelebrationNote" class="hh-streak-celebration-note"></p>
+                <p id="streakCelebrationXp" class="hh-streak-celebration-xp hidden"></p>
+                <button id="closeStreakCelebration" class="hh-gold-btn hh-gold-btn-sm" data-i18n="keepExploring">Continuar Explorando</button>
             </div>
         </div>
 
@@ -796,7 +890,7 @@
                     <div class="grid grid-cols-2 gap-4 mb-4">
                         <div class="bg-blue-50 p-3 rounded-lg text-center">
                             <div class="text-lg font-bold text-blue-600" id="monumentModalPoints">+0</div>
-                            <p class="text-xs text-gray-600" data-i18n="pointsLabel">Pontos</p>
+                            <p class="text-xs text-gray-600" data-i18n="xpLabel">XP</p>
                         </div>
                         <div class="bg-green-50 p-3 rounded-lg text-center cursor-pointer hover:bg-green-100 transition" id="monumentLocation">
                             <div class="text-lg font-bold text-green-600">
@@ -818,6 +912,10 @@
         </div>
     </div>
 <script src="i18n.js"></script>
+<script src="streak.js"></script>
+<script src="streak-ui.js"></script>
+<script src="xp.js"></script>
+<script src="xp-ui.js"></script>
 <script src="script.js"></script>
 </body>
 </html>
