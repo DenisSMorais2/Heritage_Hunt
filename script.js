@@ -564,7 +564,7 @@ function calculateDistance(lat1, lng1, lat2, lng2) {
 
 function locateUser() {
     if (!map) return;
-    
+
     if (state.userLocation) {
         map.setView([state.userLocation.lat, state.userLocation.lng], 17);
         if (state.userLocationMarker) {
@@ -574,6 +574,148 @@ function locateUser() {
         getUserLocation();
     }
 }
+
+// ============================================================
+// Mapa em ecra inteiro
+//
+// O mapa e SEMPRE a mesma instancia Leaflet: o que muda e a caixa
+// que o envolve. Por isso o centro, o zoom, os marcadores, os
+// baloes abertos, a localizacao e os circulos sobrevivem a abrir e
+// a fechar — nada e recriado.
+// ============================================================
+const mapCard = document.querySelector('.hh-map-card');
+const mapFullscreenBtn = document.getElementById('mapFullscreenBtn');
+
+// Guardamos se fomos nos a empilhar a entrada de historico, para o
+// botao Voltar do Android fechar o ecra inteiro em vez de sair.
+let mapFullscreenPushed = false;
+
+function isMapFullscreen() {
+    return !!mapCard && mapCard.classList.contains('is-fullscreen');
+}
+
+// O Leaflet nao sabe que a caixa mudou de tamanho: se ninguem lhe
+// disser, fica com as tiles do tamanho antigo. Corremos depois de o
+// CSS ser aplicado (dois frames) e outra vez mais tarde, porque em
+// mobile a barra do browser ainda pode mexer na altura.
+function refreshMapSize() {
+    if (!map) return;
+
+    const center = map.getCenter();
+    const zoom = map.getZoom();
+
+    const apply = function () {
+        if (!map) return;
+        map.invalidateSize({ animate: false, pan: false });
+        // Explicito de proposito: o enunciado exige que nem o centro
+        // nem o zoom se percam ao entrar ou sair do ecra inteiro.
+        map.setView(center, zoom, { animate: false });
+    };
+
+    requestAnimationFrame(function () {
+        requestAnimationFrame(apply);
+    });
+    setTimeout(apply, 220);
+}
+
+// O rotulo e o icone descrevem a accao, nao o estado actual
+function updateMapFullscreenButton() {
+    if (!mapFullscreenBtn) return;
+
+    const open = isMapFullscreen();
+    const label = t(open ? 'mapFullscreenClose' : 'mapFullscreenOpen');
+
+    mapFullscreenBtn.setAttribute('aria-label', label);
+    mapFullscreenBtn.setAttribute('aria-pressed', open ? 'true' : 'false');
+    mapFullscreenBtn.title = label;
+
+    const icon = mapFullscreenBtn.querySelector('i');
+    if (icon) icon.className = open ? 'fas fa-compress' : 'fas fa-expand';
+}
+
+// Qualquer folha que possa estar aberta POR CIMA do mapa. A pagina do
+// monumento, por exemplo, abre ao tocar num marcador ja descoberto.
+const OVERLAY_IDS = [
+    'monumentPhotosModal', 'monumentModal', 'cameraModal',
+    'badgeModal', 'achievementModal', 'levelUpModal',
+    'xpHistoryModal', 'journeyModal', 'levelJourneyModal',
+    'streakDayModal', 'streakCelebrationModal', 'discoveryModal'
+];
+
+function hasOverlayOpen() {
+    return OVERLAY_IDS.some(function (id) {
+        const element = document.getElementById(id);
+        return element && !element.classList.contains('hidden');
+    });
+}
+
+// Esc fecha — excepto quando ha uma folha por cima, que trata do seu
+// proprio Esc.
+//
+// Corre na fase de CAPTURA de proposito: os modais fecham-se a si
+// proprios na fase de bolha, e se esperassemos por eles ja nao
+// veriamos que estavam abertos — o Esc fechava a folha E o ecra
+// inteiro de uma so vez.
+function handleMapFullscreenKey(event) {
+    if (event.key !== 'Escape') return;
+    if (hasOverlayOpen()) return;
+    closeMapFullscreen();
+}
+
+function openMapFullscreen() {
+    if (!mapCard || isMapFullscreen()) return;
+
+    mapCard.classList.add('is-fullscreen');
+    document.body.classList.add('map-fullscreen-open');
+    updateMapFullscreenButton();
+    refreshMapSize();
+
+    document.addEventListener('keydown', handleMapFullscreenKey, true);
+    window.addEventListener('resize', refreshMapSize);
+    window.addEventListener('orientationchange', refreshMapSize);
+
+    // Uma entrada de historico so para o Voltar fechar o ecra inteiro
+    try {
+        history.pushState({ hhMapFullscreen: true }, '');
+        mapFullscreenPushed = true;
+    } catch (e) {
+        mapFullscreenPushed = false;
+    }
+
+    if (mapFullscreenBtn) mapFullscreenBtn.focus();
+}
+
+// `fromHistory` evita voltar a mexer no historico quando ja foi o
+// proprio Voltar a fechar.
+function closeMapFullscreen(options) {
+    if (!isMapFullscreen()) return;
+
+    mapCard.classList.remove('is-fullscreen');
+    document.body.classList.remove('map-fullscreen-open');
+    updateMapFullscreenButton();
+    refreshMapSize();
+
+    document.removeEventListener('keydown', handleMapFullscreenKey, true);
+    window.removeEventListener('resize', refreshMapSize);
+    window.removeEventListener('orientationchange', refreshMapSize);
+
+    const fromHistory = !!(options && options.fromHistory);
+    const pushed = mapFullscreenPushed;
+    mapFullscreenPushed = false;
+
+    // Fechar pelo botao consome a entrada que empilhamos, para o
+    // historico nao ficar com um passo morto.
+    if (pushed && !fromHistory) history.back();
+}
+
+function toggleMapFullscreen() {
+    if (isMapFullscreen()) closeMapFullscreen();
+    else openMapFullscreen();
+}
+
+window.addEventListener('popstate', function () {
+    if (isMapFullscreen()) closeMapFullscreen({ fromHistory: true });
+});
 
 // Authentication functions
 function showRegisterForm() {
@@ -654,6 +796,7 @@ function logout() {
         state.points = 0;
         state.scannedMonuments = [];
         levelCelebrationsReady = false;
+        closeMapFullscreen();
         StreakUI.render();
         XPUI.render();
         LevelsUI.render();
@@ -1252,6 +1395,9 @@ function applyLanguage() {
         DiscoveryUI.refresh();
     }
 
+    // Botao de ecra inteiro do mapa (o rotulo muda com o estado)
+    updateMapFullscreenButton();
+
     // Cartao da sequencia (textos e dias da semana)
     StreakUI.render();
 
@@ -1344,6 +1490,10 @@ function showMapView() {
 }
 
 function updateNavButtons(activeView) {
+    // Sair do mapa fecha o ecra inteiro: um elemento fixo nunca pode
+    // ficar por cima de outra vista.
+    if (activeView !== 'map') closeMapFullscreen();
+
     if (settingsBtn) settingsBtn.classList.toggle('is-active', activeView === 'settings');
 
     // Desliza o indicador do glass radio group para a aba activa
@@ -2314,6 +2464,7 @@ closeBadgeModal.addEventListener('click', closeBadge);
 closeAchievementModal.addEventListener('click', closeAchievementDetails);
 closeMonumentModal.addEventListener('click', closeMonumentDetails);
 locateUserBtn.addEventListener('click', locateUser);
+if (mapFullscreenBtn) mapFullscreenBtn.addEventListener('click', toggleMapFullscreen);
 
 // Monument page listeners
 closeMonumentPhotosModal.addEventListener('click', closeMonumentPhotos);

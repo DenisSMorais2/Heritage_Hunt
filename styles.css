@@ -6706,3 +6706,209 @@ html:not(.dark) .hh-dc-cta {
         transform: none;
     }
 }
+
+/* ============================================================
+   MAPA EM ECRA INTEIRO
+
+   Nao ha um segundo mapa: e o mesmo .hh-map-card que passa a
+   position: fixed. O Leaflet fica na mesma arvore, por isso todo
+   o tema ja definido em .hh-map-wrap continua a aplicar-se.
+   ============================================================ */
+
+/* --- Botao de expandir / fechar --- */
+.hh-map-fs-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    /* Acima do #map (z-index 1); os controlos Leaflet vivem dentro
+       do proprio mapa, por isso nunca competem com este botao. */
+    z-index: 1100;
+    /* Area de toque confortavel (>= 44x44) */
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Mesmo peso visual do botao de localizar, que ja vive no mapa */
+    font-size: 19px;
+    border-radius: 12px;
+    color: #F2F6FC;
+    background: rgba(10, 23, 41, 0.94);
+    border: 2px solid rgba(214, 178, 116, 0.75);
+    box-shadow: 0 8px 20px rgba(3, 10, 20, 0.65);
+    backdrop-filter: blur(6px);
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+.hh-map-fs-btn:hover {
+    background: rgba(214, 178, 116, 0.9);
+    border-color: rgba(214, 178, 116, 0.9);
+    color: #12294A;
+}
+.hh-map-fs-btn:focus-visible {
+    outline: 2px solid var(--hh-gold-soft);
+    outline-offset: 2px;
+}
+
+/* --- Estado de ecra inteiro --- */
+body.map-fullscreen-open {
+    overflow: hidden;
+}
+.hh-map-card.is-fullscreen {
+    position: fixed;
+    inset: 0;
+    /* Acima da navegacao (40), abaixo da pagina do monumento (70):
+       tocar num marcador descoberto abre o album POR CIMA do mapa. */
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100vh;
+    height: 100dvh;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: #0A1729;
+    animation: hhMapFsIn 0.22s ease;
+}
+/* Nunca escalar o mapa: o Leaflet desenha artefactos nas tiles. */
+@keyframes hhMapFsIn {
+    from { opacity: 0.55; }
+    to   { opacity: 1; }
+}
+.hh-map-card.is-fullscreen .hh-map-wrap {
+    flex: 1 1 auto;
+    min-height: 0;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+}
+.hh-map-card.is-fullscreen .hh-map-wrap #map {
+    height: 100%;
+    min-height: 100%;
+}
+
+/* --- Titulo e legenda: faixa compacta sobre o mapa --- */
+.hh-map-card.is-fullscreen .hh-map-head {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1200;
+    flex-direction: column;
+    align-items: flex-start;
+    flex-wrap: nowrap;
+    gap: 6px;
+    margin: 0;
+    /* A direita fica livre para o botao de fechar */
+    padding: calc(10px + var(--hh-safe-top)) 66px 14px var(--hh-gutter);
+    /* A faixa nao rouba gestos ao mapa que esta por baixo */
+    pointer-events: none;
+    background: linear-gradient(
+        180deg,
+        rgba(10, 23, 41, 0.94) 0%,
+        rgba(10, 23, 41, 0.74) 52%,
+        rgba(10, 23, 41, 0) 100%
+    );
+}
+/* O subtitulo e prescindivel quando o mapa e o foco */
+.hh-map-card.is-fullscreen .hh-map-sub {
+    display: none;
+}
+.hh-map-card.is-fullscreen .hh-map-head {
+    justify-content: flex-start;
+}
+/* Em linha, o flex-basis de 190px e largura; em coluna passava a ser
+   ALTURA e abria um vazio entre o titulo e a legenda. */
+.hh-map-card.is-fullscreen .hh-map-title {
+    flex: 0 0 auto;
+    gap: 8px;
+}
+.hh-map-card.is-fullscreen .hh-legend {
+    flex: 0 0 auto;
+}
+.hh-map-card.is-fullscreen .hh-section-title {
+    font-size: 16px;
+}
+.hh-map-card.is-fullscreen .hh-legend {
+    gap: 8px;
+}
+
+/* --- Controlos, ja a contar com a faixa e a area segura --- */
+.hh-map-card.is-fullscreen .hh-map-fs-btn {
+    top: calc(12px + var(--hh-safe-top));
+    right: 12px;
+}
+/* Zoom do Leaflet desce para nao ficar debaixo da faixa (ponto 15) */
+.hh-map-card.is-fullscreen .hh-map-wrap .leaflet-top {
+    top: calc(78px + var(--hh-safe-top));
+}
+/* Atribuicao acima da barra inferior do telemovel (ponto 22: nunca escondida) */
+.hh-map-card.is-fullscreen .hh-map-wrap .leaflet-bottom {
+    bottom: var(--hh-safe-bottom);
+}
+.hh-map-card.is-fullscreen .hh-locate {
+    right: 14px;
+    bottom: calc(26px + var(--hh-safe-bottom));
+}
+
+/* --- Ecras estreitos --- */
+@media (max-width: 360px) {
+    .hh-map-card.is-fullscreen .hh-map-head {
+        padding-right: 60px;
+    }
+    .hh-map-card.is-fullscreen .hh-section-title {
+        font-size: 15px;
+    }
+    .hh-map-fs-btn {
+        top: 10px;
+        right: 10px;
+    }
+}
+
+/* --- Landscape: a faixa encolhe para o mapa respirar --- */
+@media (orientation: landscape) and (max-height: 480px) {
+    .hh-map-card.is-fullscreen .hh-map-head {
+        padding-top: calc(6px + var(--hh-safe-top));
+        padding-bottom: 10px;
+        gap: 4px;
+    }
+    .hh-map-card.is-fullscreen .hh-map-wrap .leaflet-top {
+        top: calc(64px + var(--hh-safe-top));
+    }
+}
+
+/* --- Tema claro --- */
+html:not(.dark) .hh-map-fs-btn {
+    color: #12294A;
+    background: rgba(255, 255, 255, 0.92);
+    border-color: rgba(168, 129, 63, 0.7);
+    box-shadow: 0 6px 16px rgba(24, 40, 66, 0.22);
+}
+html:not(.dark) .hh-map-fs-btn:hover {
+    color: #FFFFFF;
+    background: #A8813F;
+    border-color: #A8813F;
+}
+html:not(.dark) .hh-map-card.is-fullscreen {
+    background: #FBF8F2;
+}
+html:not(.dark) .hh-map-card.is-fullscreen .hh-map-head {
+    background: linear-gradient(
+        180deg,
+        rgba(251, 248, 242, 0.96) 0%,
+        rgba(251, 248, 242, 0.78) 52%,
+        rgba(251, 248, 242, 0) 100%
+    );
+}
+
+/* --- Movimento reduzido --- */
+@media (prefers-reduced-motion: reduce) {
+    .hh-map-card.is-fullscreen {
+        animation: none;
+    }
+    .hh-map-fs-btn {
+        transition: none;
+    }
+}
