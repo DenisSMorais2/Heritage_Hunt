@@ -678,10 +678,19 @@ body.hh-dark-bg .container {
     max-height: min(450px, 56dvh);
     /* Faixa reservada ao rodape: dica (2 linhas) + margem + botao + folga. */
     --hh-cam-foot-h: 132px;
-    border-radius: 18px;
+    /* Sangra ate a borda do ecra: anula a goteira lateral da .hh-page.
+       Sem cantos nem contorno laterais, que so fariam sentido num cartao.
+       A largura e explicita de proposito: com `width: auto`, o max-height
+       acima faz o aspect-ratio derivar a largura a partir da altura ja
+       limitada, e a camara encolhia nos ecras baixos. */
+    width: calc(100% + var(--hh-gutter) * 2);
+    margin-left: calc(var(--hh-gutter) * -1);
+    margin-right: calc(var(--hh-gutter) * -1);
+    border-radius: 0;
     overflow: hidden;
     background: #071120;
-    border: 1px solid var(--hh-line);
+    border-top: 1px solid var(--hh-line);
+    border-bottom: 1px solid var(--hh-line);
     box-shadow: 0 18px 38px rgba(4, 12, 24, 0.55);
 }
 .hh-cam-video {
@@ -701,8 +710,7 @@ body.hh-dark-bg .container {
     z-index: 2;
     transition: opacity 0.4s ease;
 }
-#scannerOverlay:not(.hidden) ~ .hh-cam-idle,
-#scannerResult:not(.hidden) ~ .hh-cam-idle {
+#scannerOverlay:not(.hidden) ~ .hh-cam-idle {
     opacity: 0;
 }
 .hh-cam-shade {
@@ -764,12 +772,7 @@ body.hh-dark-bg .container {
     color: rgba(255, 255, 255, 0.9);
     transition: opacity 0.3s ease;
 }
-#scannerOverlay:not(.hidden) ~ .hh-brackets .hh-qr-glyph,
-#scannerResult:not(.hidden) ~ .hh-brackets .hh-qr-glyph {
-    opacity: 0;
-}
-#scannerResult:not(.hidden) ~ .hh-brackets .hh-bracket,
-#scannerResult:not(.hidden) ~ .hh-cam-shade {
+#scannerOverlay:not(.hidden) ~ .hh-brackets .hh-qr-glyph {
     opacity: 0;
 }
 .hh-cam-close {
@@ -2081,7 +2084,8 @@ html:not(.dark) .hh-badge.is-unlocked .hh-badge-ring {
     box-shadow: 0 4px 12px rgba(24, 40, 66, 0.18), 0 0 0 2px rgba(168, 129, 63, 0.45);
 }
 html:not(.dark) .hh-cam {
-    border-color: rgba(18, 41, 74, 0.18);
+    border-top-color: rgba(18, 41, 74, 0.18);
+    border-bottom-color: rgba(18, 41, 74, 0.18);
     box-shadow: 0 14px 30px rgba(24, 40, 66, 0.22);
 }
 
