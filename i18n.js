@@ -189,6 +189,38 @@ const translations = {
         "journeyCompleteTitle": "Jornada concluída",
         "journeyCompleteNote": "Conheces agora uma parte importante da história de Mindelo.",
         "journeyOtherZone": "Outros lugares",
+        "cities": { "mindelo": "Mindelo" },
+        "islands": { "sao_vicente": "São Vicente" },
+        "discovery.aria": "Celebração de descoberta",
+        "discovery.newMonument": "Novo monumento descoberto",
+        "discovery.firstDiscovery": "A tua jornada começa",
+        "discovery.journeyComplete": "Jornada concluída",
+        "discovery.xpMonument": "Monumento",
+        "discovery.xpZone": "Zona concluída",
+        "discovery.xpTotalEarned": "Total desta descoberta",
+        "discovery.xpWallet": "{n} XP no total",
+        "discovery.progress": "{done} de {total} monumentos",
+        "discovery.progressOf": "{n}% da {journey}",
+        "discovery.streakKept": "Sequência mantida",
+        "discovery.streakStarted": "Sequência iniciada",
+        "discovery.newBadge": "Nova conquista",
+        "discovery.newLevel": "Novo nível",
+        "discovery.zoneCompleted": "Zona concluída",
+        "discovery.zoneProgress": "{done} de {total} monumentos",
+        "discovery.nextStory": "Próxima história",
+        "discovery.addToAlbum": "Adicionar ao meu álbum",
+        "discovery.saveMemory": "Guardar esta memória",
+        "discovery.viewAlbum": "Ver o meu álbum",
+        "discovery.reviewJourney": "Rever o percurso",
+        "discovery.notNow": "Agora não",
+        "discovery.completeNote": "Agora conheces todas as histórias desta jornada.",
+        "discovery.completeEmblem": "Percurso completo",
+        "discovery.tone.first": "Este é o primeiro lugar da tua história no Heritage Hunt.",
+        "discovery.tone.quarter": "Já começaste a revelar as histórias de Mindelo.",
+        "discovery.tone.half": "Metade da jornada já faz parte da tua história.",
+        "discovery.tone.threeQuarters": "Estás cada vez mais perto de conhecer todo o percurso.",
+        "discovery.tone.onward": "Mais uma história faz parte da tua jornada.",
+        "discovery.tone.complete": "A próxima história já não é um lugar: é tudo o que guardaste.",
         "journeys": {
             "mindelo_historico": {
                 "name": "Jornada de Mindelo",
@@ -523,6 +555,38 @@ const translations = {
         "journeyCompleteTitle": "Journey complete",
         "journeyCompleteNote": "You now know an important part of Mindelo's history.",
         "journeyOtherZone": "Other places",
+        "cities": { "mindelo": "Mindelo" },
+        "islands": { "sao_vicente": "São Vicente" },
+        "discovery.aria": "Discovery celebration",
+        "discovery.newMonument": "New monument discovered",
+        "discovery.firstDiscovery": "Your journey begins",
+        "discovery.journeyComplete": "Journey complete",
+        "discovery.xpMonument": "Monument",
+        "discovery.xpZone": "Area completed",
+        "discovery.xpTotalEarned": "Total from this discovery",
+        "discovery.xpWallet": "{n} XP in total",
+        "discovery.progress": "{done} of {total} monuments",
+        "discovery.progressOf": "{n}% of the {journey}",
+        "discovery.streakKept": "Streak kept",
+        "discovery.streakStarted": "Streak started",
+        "discovery.newBadge": "New achievement",
+        "discovery.newLevel": "New level",
+        "discovery.zoneCompleted": "Area completed",
+        "discovery.zoneProgress": "{done} of {total} monuments",
+        "discovery.nextStory": "Next story",
+        "discovery.addToAlbum": "Add to my album",
+        "discovery.saveMemory": "Save this memory",
+        "discovery.viewAlbum": "View my album",
+        "discovery.reviewJourney": "Revisit the route",
+        "discovery.notNow": "Not now",
+        "discovery.completeNote": "You now know every story on this journey.",
+        "discovery.completeEmblem": "Route complete",
+        "discovery.tone.first": "This is the first place in your Heritage Hunt story.",
+        "discovery.tone.quarter": "Mindelo is starting to reveal its stories to you.",
+        "discovery.tone.half": "Half of the journey is already part of your story.",
+        "discovery.tone.threeQuarters": "You are getting closer to knowing the whole route.",
+        "discovery.tone.onward": "One more story is now part of your journey.",
+        "discovery.tone.complete": "The next story is not a place: it is everything you kept.",
         "journeys": {
             "mindelo_historico": {
                 "name": "Mindelo Journey",
@@ -857,6 +921,38 @@ const translations = {
         "journeyCompleteTitle": "Parcours terminé",
         "journeyCompleteNote": "Vous connaissez désormais une part importante de l'histoire de Mindelo.",
         "journeyOtherZone": "Autres lieux",
+        "cities": { "mindelo": "Mindelo" },
+        "islands": { "sao_vicente": "São Vicente" },
+        "discovery.aria": "Célébration de découverte",
+        "discovery.newMonument": "Nouveau monument découvert",
+        "discovery.firstDiscovery": "Votre parcours commence",
+        "discovery.journeyComplete": "Parcours terminé",
+        "discovery.xpMonument": "Monument",
+        "discovery.xpZone": "Zone terminée",
+        "discovery.xpTotalEarned": "Total de cette découverte",
+        "discovery.xpWallet": "{n} XP au total",
+        "discovery.progress": "{done} sur {total} monuments",
+        "discovery.progressOf": "{n}% du {journey}",
+        "discovery.streakKept": "Série maintenue",
+        "discovery.streakStarted": "Série commencée",
+        "discovery.newBadge": "Nouvel accomplissement",
+        "discovery.newLevel": "Nouveau niveau",
+        "discovery.zoneCompleted": "Zone terminée",
+        "discovery.zoneProgress": "{done} sur {total} monuments",
+        "discovery.nextStory": "Prochaine histoire",
+        "discovery.addToAlbum": "Ajouter à mon album",
+        "discovery.saveMemory": "Garder ce souvenir",
+        "discovery.viewAlbum": "Voir mon album",
+        "discovery.reviewJourney": "Revoir le parcours",
+        "discovery.notNow": "Pas maintenant",
+        "discovery.completeNote": "Vous connaissez désormais toutes les histoires de ce parcours.",
+        "discovery.completeEmblem": "Parcours complet",
+        "discovery.tone.first": "C'est le premier lieu de votre histoire dans Heritage Hunt.",
+        "discovery.tone.quarter": "Mindelo commence à vous révéler ses histoires.",
+        "discovery.tone.half": "La moitié du parcours fait déjà partie de votre histoire.",
+        "discovery.tone.threeQuarters": "Vous approchez de la découverte de tout le parcours.",
+        "discovery.tone.onward": "Une histoire de plus fait partie de votre parcours.",
+        "discovery.tone.complete": "La prochaine histoire n'est plus un lieu : c'est tout ce que vous avez gardé.",
         "journeys": {
             "mindelo_historico": {
                 "name": "Parcours de Mindelo",
@@ -1149,4 +1245,27 @@ function journeyName(id) {
 // "Cada descoberta revela uma nova parte da historia."
 function journeySubtitle(id) {
     return journeyText(id, 'subtitle');
+}
+
+// --- Lugares ------------------------------------------------
+//
+// A cidade e a ilha vivem na configuracao da jornada (cityId e
+// islandId em JOURNEY_CONFIG), nunca no monumento. Acrescentar
+// outra ilha e acrescentar a entrada aqui.
+
+// "Mindelo"
+function cityName(id) {
+    const dict = translations[currentLanguage] || translations.pt;
+    return (dict.cities && dict.cities[id]) || (translations.pt.cities && translations.pt.cities[id]) || '';
+}
+
+// "Sao Vicente"
+function islandName(id) {
+    const dict = translations[currentLanguage] || translations.pt;
+    return (dict.islands && dict.islands[id]) || (translations.pt.islands && translations.pt.islands[id]) || '';
+}
+
+// "Mindelo · Sao Vicente" — sem separador quando falta um dos lados
+function placeLabel(cityId, islandId) {
+    return [cityName(cityId), islandName(islandId)].filter(Boolean).join(' · ');
 }

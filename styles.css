@@ -889,43 +889,6 @@ body.hh-dark-bg .container {
     text-shadow: 0 1px 8px rgba(0, 0, 0, 0.7);
 }
 
-/* Cartao do resultado da leitura */
-.hh-result-card {
-    max-width: 19rem;
-    margin: 0 1rem;
-    padding: 22px;
-    text-align: center;
-    border-radius: 18px;
-    background: linear-gradient(160deg, #16304F, #0E2039);
-    border: 1px solid rgba(214, 178, 116, 0.35);
-    box-shadow: 0 22px 44px rgba(3, 10, 20, 0.7);
-}
-.hh-result-title {
-    font-family: "Playfair Display", Georgia, serif;
-    font-size: 20px;
-    font-weight: 700;
-    color: #F2F6FC;
-    margin-bottom: 6px;
-}
-.hh-result-desc {
-    font-size: 13px;
-    line-height: 1.5;
-    color: var(--hh-muted);
-    margin-bottom: 14px;
-}
-.hh-result-points {
-    padding: 10px;
-    margin-bottom: 16px;
-    border-radius: 12px;
-    background: rgba(214, 178, 116, 0.14);
-    border: 1px solid rgba(214, 178, 116, 0.3);
-}
-.hh-result-points p {
-    font-size: 17px;
-    font-weight: 700;
-    color: #E7CE9A;
-}
-
 /* --- Cartao de progresso --- */
 .hh-card {
     margin-top: 18px;
@@ -3833,35 +3796,6 @@ html .hh-auth .hh-auth-field input:-webkit-autofill {
     background: linear-gradient(135deg, #F7E8B8, #D2A947);
 }
 
-/* --- Nota da sequencia no cartao de descoberta --- */
-.hh-streak-note {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-    margin: 0 auto 14px;
-    padding: 10px 14px;
-    border-radius: 12px;
-    background: rgba(214, 178, 116, 0.14);
-    border: 1px solid rgba(214, 178, 116, 0.4);
-}
-.hh-streak-note.hidden {
-    display: none;
-}
-.hh-streak-note-kicker {
-    font-size: 10.5px;
-    font-weight: 700;
-    letter-spacing: 1.3px;
-    text-transform: uppercase;
-    color: var(--hh-gold-soft);
-}
-.hh-streak-note-count {
-    font-family: "Playfair Display", Georgia, serif;
-    font-size: 16px;
-    font-weight: 700;
-    color: #F2F6FC;
-}
-
 /* --- Folha de detalhe de um dia --- */
 .hh-streak-overlay {
     align-items: center;
@@ -4115,8 +4049,7 @@ html:not(.dark) .hh-streak-flame.is-off {
 html:not(.dark) .hh-streak-count,
 html:not(.dark) .hh-streak-next-name,
 html:not(.dark) .hh-streak-act-name,
-html:not(.dark) .hh-streak-sheet-title h3,
-html:not(.dark) .hh-streak-note-count {
+html:not(.dark) .hh-streak-sheet-title h3 {
     color: #12294A;
 }
 html:not(.dark) .hh-streak-state {
@@ -4220,11 +4153,6 @@ html:not(.dark) .hh-streak-badge-icon {
     color: #FFFFFF;
     background: linear-gradient(135deg, #C29A55, #A8813F);
 }
-html:not(.dark) .hh-streak-note {
-    background: rgba(168, 129, 63, 0.14);
-    border-color: rgba(168, 129, 63, 0.42);
-}
-html:not(.dark) .hh-streak-note-kicker,
 html:not(.dark) .hh-streak-celebration-kicker {
     color: #8A6A2F;
 }
@@ -4255,19 +4183,6 @@ html:not(.dark) .hh-streak-celebration-flame {
     color: #FFFFFF;
     background: linear-gradient(135deg, #C29A55, #A8813F);
     box-shadow: 0 8px 18px rgba(168, 129, 63, 0.3);
-}
-
-/* O cartao de descoberta do scanner mantem o fundo escuro nos dois
-   temas, por isso a nota da sequencia nao segue o tema claro. */
-html:not(.dark) .hh-result-card .hh-streak-note {
-    background: rgba(214, 178, 116, 0.16);
-    border-color: rgba(214, 178, 116, 0.42);
-}
-html:not(.dark) .hh-result-card .hh-streak-note-count {
-    color: #F2F6FC;
-}
-html:not(.dark) .hh-result-card .hh-streak-note-kicker {
-    color: #E7CE9A;
 }
 
 /* ==========================================================
@@ -4476,58 +4391,6 @@ html:not(.dark) .hh-result-card .hh-streak-note-kicker {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-}
-
-/* --- Cartao de descoberta: kicker, progresso e zona --- */
-.hh-result-kicker {
-    margin-bottom: 6px;
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 1.6px;
-    text-transform: uppercase;
-    color: var(--hh-gold-soft);
-}
-.hh-result-progress {
-    margin-bottom: 12px;
-    font-size: 12px;
-    color: #9DB0C8;
-}
-.hh-xp-zone-note {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 3px;
-    margin: 0 auto 12px;
-    padding: 11px 14px;
-    border-radius: 12px;
-    background: rgba(196, 139, 250, 0.12);
-    border: 1px solid rgba(192, 132, 252, 0.36);
-}
-.hh-xp-zone-note.hidden {
-    display: none;
-}
-.hh-xp-zone-kicker {
-    font-size: 10.5px;
-    font-weight: 700;
-    letter-spacing: 1.3px;
-    text-transform: uppercase;
-    color: #D6B4FD;
-}
-.hh-xp-zone-name {
-    font-family: "Playfair Display", Georgia, serif;
-    font-size: 16px;
-    font-weight: 700;
-    color: #F2F6FC;
-}
-.hh-xp-zone-amount {
-    font-size: 14px;
-    font-weight: 700;
-    color: #D6B4FD;
-}
-.hh-xp-zone-total {
-    margin-top: 2px;
-    font-size: 11.5px;
-    color: #9DB0C8;
 }
 
 /* --- Zonas --- */
@@ -4752,21 +4615,6 @@ html:not(.dark) .hh-xp-toast-amount {
 }
 html:not(.dark) .hh-xp-toast-text {
     color: #22344E;
-}
-
-/* O cartao de descoberta do scanner e escuro nos dois temas */
-html:not(.dark) .hh-result-progress {
-    color: #9DB0C8;
-}
-html:not(.dark) .hh-xp-zone-note {
-    background: rgba(196, 139, 250, 0.16);
-    border-color: rgba(192, 132, 252, 0.4);
-}
-html:not(.dark) .hh-xp-zone-name {
-    color: #F2F6FC;
-}
-html:not(.dark) .hh-xp-zone-total {
-    color: #9DB0C8;
 }
 
 /* Linha de XP dentro da celebracao da sequencia */
@@ -5066,17 +4914,6 @@ html:not(.dark) .hh-streak-celebration-xp {
     color: var(--hh-muted);
 }
 
-/* --- Nota no cartao da descoberta (ponto 42) --- */
-.hh-result-level {
-    margin: -6px 0 12px;
-    font-size: 12px;
-    color: var(--hh-gold-soft);
-    overflow-wrap: anywhere;
-}
-.hh-result-level.hidden {
-    display: none;
-}
-
 /* --- Segunda linha do aviso discreto (ponto 42) --- */
 .hh-xp-toast.has-note {
     flex-wrap: wrap;
@@ -5371,12 +5208,6 @@ html:not(.dark) .hh-level-celebration-check {
 }
 html:not(.dark) .hh-xp-toast-note {
     color: #46586F;
-}
-
-/* O cartao de descoberta do scanner mantem o fundo escuro nos dois
-   temas, por isso a nota de nivel nao segue o tema claro. */
-html:not(.dark) .hh-result-card .hh-result-level {
-    color: var(--hh-gold-soft);
 }
 
 /* ==========================================================
@@ -6088,4 +5919,786 @@ html:not(.dark) .hh-jp-next-btn {
 html:not(.dark) .hh-jp-cta:hover,
 html:not(.dark) .hh-jp-next-btn:hover {
     background: rgba(168, 129, 63, 0.2);
+}
+
+/* ============================================================
+   CELEBRACAO DE DESCOBERTA (#discoveryModal)
+
+   Uma folha unica que conta tudo o que acabou de acontecer.
+   Hierarquia: monumento -> XP -> progresso -> recompensa
+   especial -> proxima historia -> album.
+
+   Navy profundo e dourado nos dois temas; o verde so confirma.
+   ============================================================ */
+.hh-dc {
+    position: fixed;
+    inset: 0;
+    z-index: 85;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding:
+        calc(12px + var(--hh-safe-top))
+        var(--hh-gutter)
+        calc(12px + var(--hh-safe-bottom));
+    background: rgba(4, 10, 20, 0.8);
+    backdrop-filter: blur(4px);
+}
+.hh-dc.hidden {
+    display: none;
+}
+
+/* A folha e o unico elemento que rola: o rodape fica colado nela */
+.hh-dc-sheet {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 26rem;
+    max-height: 100%;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 22px;
+    background: linear-gradient(180deg, #0C1C33 0%, #102544 46%, #0A1729 100%);
+    border: 1px solid rgba(214, 178, 116, 0.28);
+    box-shadow: 0 28px 64px rgba(3, 10, 20, 0.72);
+    animation: hhDcEnter 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.hh-dc-sheet::-webkit-scrollbar {
+    width: 0;
+}
+
+/* Entrada: fade + leve escala + subida discreta (ponto 6) */
+@keyframes hhDcEnter {
+    from { opacity: 0; transform: translateY(26px) scale(0.975); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* --- Heroi: a revelacao do monumento --- */
+.hh-dc-hero {
+    position: relative;
+    flex-shrink: 0;
+    aspect-ratio: 16 / 11;
+    overflow: hidden;
+    border-radius: 22px 22px 0 0;
+    background: #0A1729;
+}
+.hh-dc-hero-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    /* Desfocado -> nitido: o monumento "descobre-se" (ponto 7) */
+    filter: blur(18px) saturate(0.8);
+    transform: scale(1.09);
+    transition: filter 0.78s ease-out, transform 0.95s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.hh-dc-hero-img.is-revealed {
+    filter: blur(0) saturate(1);
+    transform: scale(1);
+}
+.hh-dc-hero-shade {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        180deg,
+        rgba(10, 23, 41, 0.62) 0%,
+        rgba(10, 23, 41, 0.12) 32%,
+        rgba(12, 28, 51, 0.72) 74%,
+        #0C1C33 100%
+    );
+}
+.hh-dc-hero-text {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 0 20px 16px;
+}
+.hh-dc-kicker {
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 1.7px;
+    text-transform: uppercase;
+    color: var(--hh-gold-soft);
+}
+.hh-dc-name {
+    margin-top: 6px;
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: clamp(20px, 5.6vw, 25px);
+    font-weight: 700;
+    line-height: 1.2;
+    color: #F4F8FD;
+    text-shadow: 0 2px 14px rgba(4, 10, 20, 0.6);
+}
+.hh-dc-place {
+    margin-top: 5px;
+    font-family: "Cormorant Garamond", Georgia, serif;
+    font-style: italic;
+    font-size: 14px;
+    color: #C8D6E8;
+}
+
+/* Coroa da jornada concluida (ponto 26) */
+.hh-dc-crown {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    border-radius: 50%;
+    color: #17325A;
+    background: linear-gradient(135deg, #F7E8B8, #D2A947);
+    box-shadow: 0 8px 22px rgba(214, 178, 116, 0.34);
+}
+
+/* --- Conteudo --- */
+.hh-dc-content {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 18px 18px 16px;
+}
+
+/* Cada bloco entra escalonado (ponto 6) */
+.hh-dc-content [data-dc-step] {
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.44s ease-out, transform 0.44s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.hh-dc-content [data-dc-step].is-in {
+    opacity: 1;
+    transform: none;
+}
+
+/* --- XP --- */
+.hh-dc-xp {
+    text-align: center;
+}
+.hh-dc-xp-main {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 7px;
+}
+.hh-dc-xp-value {
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 40px;
+    font-weight: 700;
+    line-height: 1;
+    background: linear-gradient(135deg, #F7E8B8 0%, #D2A947 55%, #E7CE9A 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: #E7CE9A;
+}
+.hh-dc-xp-unit {
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    color: var(--hh-gold-soft);
+}
+.hh-dc-xp-wallet {
+    margin-top: 6px;
+    font-size: 12px;
+    letter-spacing: 0.3px;
+    color: var(--hh-muted);
+}
+
+/* Com zona concluida, os dois valores aparecem antes do total */
+.hh-dc-xp.is-split .hh-dc-xp-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    margin-bottom: 12px;
+}
+.hh-dc-xp-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 9px 12px;
+    font-size: 13px;
+    border-radius: 12px;
+    color: var(--hh-cream);
+    background: rgba(233, 240, 249, 0.05);
+    border: 1px solid var(--hh-line);
+}
+.hh-dc-xp-row-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-width: 0;
+    color: var(--hh-muted);
+}
+.hh-dc-xp-row-label i {
+    color: var(--hh-gold);
+}
+.hh-dc-xp-row b {
+    flex-shrink: 0;
+    font-weight: 700;
+    color: var(--hh-gold-soft);
+}
+.hh-dc-xp-total-label {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+    color: var(--hh-muted);
+}
+
+/* --- Sequencia (compacta: nunca compete com o monumento) --- */
+.hh-dc-streak {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 10px 13px;
+    border-radius: 14px;
+    background: rgba(214, 178, 116, 0.09);
+    border: 1px solid rgba(214, 178, 116, 0.26);
+}
+.hh-dc-streak-flame {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    border-radius: 50%;
+    color: #17325A;
+    background: linear-gradient(135deg, #F7E8B8, #D2A947);
+}
+.hh-dc-streak-text {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+}
+.hh-dc-streak-text b {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--hh-cream);
+}
+.hh-dc-streak-text span {
+    font-size: 12px;
+    color: var(--hh-muted);
+}
+
+/* --- Progresso da jornada --- */
+.hh-dc-progress {
+    padding: 14px;
+    border-radius: 16px;
+    background: rgba(233, 240, 249, 0.04);
+    border: 1px solid var(--hh-line);
+}
+.hh-dc-progress-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+}
+.hh-dc-progress-journey {
+    /* Encolhe e quebra: o nome da jornada varia com o idioma */
+    flex: 1;
+    min-width: 0;
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.25;
+    color: var(--hh-cream);
+}
+.hh-dc-progress-percent {
+    flex-shrink: 0;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--hh-gold-soft);
+    transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.hh-dc-progress-percent.is-bumped {
+    transform: scale(1.12);
+}
+.hh-dc-progress-count {
+    margin-top: 3px;
+    font-size: 12.5px;
+    color: var(--hh-muted);
+}
+.hh-dc-track {
+    margin-top: 10px;
+    height: 8px;
+    border-radius: 999px;
+    overflow: hidden;
+    background: rgba(157, 176, 200, 0.18);
+}
+.hh-dc-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #C9A263 0%, #E7CE9A 55%, #F7E8B8 100%);
+    box-shadow: 0 0 14px rgba(214, 178, 116, 0.34);
+}
+/* A barra so anima depois de abrir no valor anterior (ponto 11) */
+.hh-dc-fill.is-animated {
+    transition: width 0.95s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.hh-dc-tone {
+    margin-top: 11px;
+    text-align: center;
+    font-family: "Cormorant Garamond", Georgia, serif;
+    font-style: italic;
+    font-size: 14.5px;
+    line-height: 1.4;
+    color: #C8D6E8;
+}
+
+/* --- Blocos especiais: nivel, zona, medalha --- */
+.hh-dc-specials {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.hh-dc-special {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 13px;
+    border-radius: 16px;
+    background: rgba(233, 240, 249, 0.045);
+    border: 1px solid var(--hh-line);
+}
+.hh-dc-special-mark {
+    flex-shrink: 0;
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    border-radius: 13px;
+    color: var(--hh-gold-soft);
+    background: rgba(214, 178, 116, 0.14);
+    border: 1px solid rgba(214, 178, 116, 0.3);
+}
+.hh-dc-special-text {
+    min-width: 0;
+    flex: 1;
+}
+.hh-dc-special-kicker {
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--hh-muted);
+}
+.hh-dc-special-title {
+    margin-top: 2px;
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.25;
+    color: var(--hh-cream);
+}
+.hh-dc-special-sub {
+    margin-top: 2px;
+    font-size: 12px;
+    line-height: 1.35;
+    color: var(--hh-muted);
+}
+.hh-dc-special-note {
+    margin-top: 5px;
+    font-size: 12px;
+    font-style: italic;
+    line-height: 1.4;
+    color: #A9BBD2;
+}
+.hh-dc-special-xp {
+    flex-shrink: 0;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--hh-gold-soft);
+}
+
+/* A subida de nivel pesa mais do que tudo o resto (ponto 25) */
+.hh-dc-special.is-level {
+    align-items: flex-start;
+    background: linear-gradient(135deg, rgba(214, 178, 116, 0.15), rgba(233, 240, 249, 0.04));
+    border-color: rgba(214, 178, 116, 0.4);
+}
+.hh-dc-special.is-level .hh-dc-special-kicker {
+    color: var(--hh-gold-soft);
+}
+/* A medalha ganha um brilho dourado discreto (ponto 13) */
+.hh-dc-special.is-badge .hh-dc-special-mark {
+    color: #17325A;
+    background: linear-gradient(135deg, #F7E8B8, #D2A947);
+    border-color: transparent;
+    box-shadow: 0 6px 18px rgba(214, 178, 116, 0.28);
+}
+/* Verde apenas para confirmar (ponto 34) */
+.hh-dc-special-mark.is-zone {
+    color: #7FD6A8;
+    background: rgba(127, 214, 168, 0.13);
+    border-color: rgba(127, 214, 168, 0.34);
+}
+
+/* Acentos de nivel, reutilizando os tokens existentes */
+.hh-dc-special-mark.is-bronze { color: var(--hh-lv-bronze); background: var(--hh-lv-bronze-bg); border-color: var(--hh-lv-bronze-line); }
+.hh-dc-special-mark.is-blue   { color: var(--hh-lv-blue);   background: var(--hh-lv-blue-bg);   border-color: var(--hh-lv-blue-line); }
+.hh-dc-special-mark.is-violet { color: var(--hh-lv-violet); background: var(--hh-lv-violet-bg); border-color: var(--hh-lv-violet-line); }
+.hh-dc-special-mark.is-gold   { color: var(--hh-lv-gold);   background: var(--hh-lv-gold-bg);   border-color: var(--hh-lv-gold-line); }
+
+/* --- Jornada concluida --- */
+.hh-dc-complete {
+    padding: 15px;
+    text-align: center;
+    border-radius: 16px;
+    background: linear-gradient(160deg, rgba(214, 178, 116, 0.16), rgba(233, 240, 249, 0.04));
+    border: 1px solid rgba(214, 178, 116, 0.38);
+}
+.hh-dc-complete-kicker {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.6px;
+    text-transform: uppercase;
+    color: var(--hh-gold-soft);
+}
+.hh-dc-complete-count {
+    margin-top: 5px;
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--hh-cream);
+}
+.hh-dc-complete-note {
+    margin-top: 6px;
+    font-family: "Cormorant Garamond", Georgia, serif;
+    font-style: italic;
+    font-size: 14px;
+    line-height: 1.4;
+    color: #C8D6E8;
+}
+
+/* --- Proxima historia --- */
+.hh-dc-next {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 12px 13px;
+    border-radius: 16px;
+    background: rgba(233, 240, 249, 0.045);
+    border: 1px dashed rgba(214, 178, 116, 0.34);
+}
+.hh-dc-next-icon {
+    flex-shrink: 0;
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    border-radius: 50%;
+    color: var(--hh-gold-soft);
+    background: rgba(214, 178, 116, 0.13);
+}
+.hh-dc-next-text {
+    flex: 1;
+    min-width: 0;
+}
+.hh-dc-next-kicker {
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--hh-muted);
+}
+.hh-dc-next-name {
+    margin-top: 2px;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.25;
+    color: var(--hh-cream);
+}
+.hh-dc-next-xp {
+    margin-top: 1px;
+    font-size: 11.5px;
+    color: var(--hh-gold-soft);
+}
+.hh-dc-next-btn {
+    flex-shrink: 0;
+    padding: 7px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: 999px;
+    color: var(--hh-gold-soft);
+    background: rgba(214, 178, 116, 0.12);
+    border: 1px solid rgba(214, 178, 116, 0.38);
+    transition: background 0.2s ease;
+}
+.hh-dc-next-btn:hover {
+    background: rgba(214, 178, 116, 0.22);
+}
+
+/* --- Rodape colado: o CTA principal nunca sai do ecra (ponto 37) --- */
+.hh-dc-foot {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 14px 18px calc(16px + var(--hh-safe-bottom));
+    background: #0A1729;
+    border-top: 1px solid var(--hh-line);
+    box-shadow: 0 -14px 26px rgba(10, 23, 41, 0.92);
+}
+.hh-dc-cta {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    width: 100%;
+    min-height: 48px;
+    padding: 13px 16px;
+    font-size: 14.5px;
+    font-weight: 700;
+    border-radius: 14px;
+    color: #17325A;
+    background: linear-gradient(135deg, #F7E8B8 0%, #E0BE7E 50%, #C9A263 100%);
+    box-shadow: 0 10px 26px rgba(214, 178, 116, 0.26);
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.hh-dc-cta:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 14px 30px rgba(214, 178, 116, 0.34);
+}
+.hh-dc-cta:active {
+    transform: translateY(0);
+}
+.hh-dc-cta.is-ghost {
+    color: var(--hh-gold-soft);
+    background: transparent;
+    border: 1px solid rgba(214, 178, 116, 0.4);
+    box-shadow: none;
+}
+.hh-dc-cta.is-ghost:hover {
+    background: rgba(214, 178, 116, 0.12);
+    box-shadow: none;
+}
+.hh-dc-dismiss {
+    padding: 6px;
+    font-size: 12.5px;
+    color: var(--hh-muted);
+    transition: color 0.18s ease;
+}
+.hh-dc-dismiss:hover {
+    color: var(--hh-cream);
+}
+.hh-dc-cta:focus-visible,
+.hh-dc-dismiss:focus-visible,
+.hh-dc-next-btn:focus-visible {
+    outline: 2px solid var(--hh-gold-soft);
+    outline-offset: 2px;
+}
+
+/* --- Ecras muito estreitos (320px) --- */
+@media (max-width: 360px) {
+    .hh-dc {
+        padding:
+            calc(8px + var(--hh-safe-top))
+            10px
+            calc(8px + var(--hh-safe-bottom));
+    }
+    .hh-dc-hero-text { padding: 0 15px 13px; }
+    .hh-dc-content { padding: 15px 14px 14px; gap: 12px; }
+    .hh-dc-foot { padding: 12px 14px calc(13px + var(--hh-safe-bottom)); }
+    .hh-dc-xp-value { font-size: 34px; }
+    .hh-dc-special { padding: 11px; gap: 10px; }
+    .hh-dc-special-mark { width: 38px; height: 38px; font-size: 15px; }
+    .hh-dc-next { flex-wrap: wrap; }
+    .hh-dc-next-btn { width: 100%; }
+}
+
+/* Ecras baixos: a folha usa a altura toda e rola por dentro */
+@media (max-height: 680px) {
+    .hh-dc-hero { aspect-ratio: 16 / 8; }
+}
+
+/* ============================================================
+   CELEBRACAO DE DESCOBERTA — tema claro
+   Continua premium: pergaminho quente e dourado velho, nunca
+   um branco generico (ponto 40).
+   ============================================================ */
+html:not(.dark) .hh-dc {
+    background: rgba(24, 40, 66, 0.6);
+}
+html:not(.dark) .hh-dc-sheet {
+    background: linear-gradient(180deg, #FBF8F2 0%, #F4F1E9 55%, #EFEBE1 100%);
+    border-color: rgba(168, 129, 63, 0.34);
+    box-shadow: 0 26px 58px rgba(24, 40, 66, 0.32);
+}
+html:not(.dark) .hh-dc-hero {
+    background: #F4F1E9;
+}
+html:not(.dark) .hh-dc-hero-shade {
+    background: linear-gradient(
+        180deg,
+        rgba(24, 40, 66, 0.45) 0%,
+        rgba(24, 40, 66, 0.05) 30%,
+        rgba(251, 248, 242, 0.55) 70%,
+        rgba(251, 248, 242, 0.96) 90%,
+        #FBF8F2 100%
+    );
+}
+html:not(.dark) .hh-dc-name {
+    color: #12294A;
+    text-shadow: none;
+}
+html:not(.dark) .hh-dc-place,
+html:not(.dark) .hh-dc-tone,
+html:not(.dark) .hh-dc-complete-note,
+html:not(.dark) .hh-dc-special-note {
+    color: #5D6E86;
+}
+html:not(.dark) .hh-dc-kicker,
+html:not(.dark) .hh-dc-complete-kicker {
+    color: #8A6A2F;
+}
+html:not(.dark) .hh-dc-crown {
+    color: #FFFFFF;
+    background: linear-gradient(135deg, #C29A55, #A8813F);
+    box-shadow: 0 8px 20px rgba(168, 129, 63, 0.3);
+}
+html:not(.dark) .hh-dc-xp-value {
+    background: linear-gradient(135deg, #B8903F 0%, #8A6A2F 60%, #A8813F 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: #8A6A2F;
+}
+html:not(.dark) .hh-dc-xp-unit,
+html:not(.dark) .hh-dc-xp-row b,
+html:not(.dark) .hh-dc-special-xp,
+html:not(.dark) .hh-dc-progress-percent,
+html:not(.dark) .hh-dc-next-xp {
+    color: #8A6A2F;
+}
+html:not(.dark) .hh-dc-xp-row,
+html:not(.dark) .hh-dc-progress,
+html:not(.dark) .hh-dc-special,
+html:not(.dark) .hh-dc-next {
+    background: #FFFFFF;
+    border-color: #E3DCCB;
+}
+html:not(.dark) .hh-dc-xp-row,
+html:not(.dark) .hh-dc-progress-journey,
+html:not(.dark) .hh-dc-special-title,
+html:not(.dark) .hh-dc-next-name,
+html:not(.dark) .hh-dc-streak-text b,
+html:not(.dark) .hh-dc-complete-count {
+    color: #12294A;
+}
+html:not(.dark) .hh-dc-track {
+    background: rgba(18, 41, 74, 0.12);
+}
+html:not(.dark) .hh-dc-fill {
+    background: linear-gradient(90deg, #A8813F 0%, #C29A55 55%, #E0BE7E 100%);
+    box-shadow: none;
+}
+html:not(.dark) .hh-dc-streak {
+    background: rgba(168, 129, 63, 0.1);
+    border-color: rgba(168, 129, 63, 0.32);
+}
+html:not(.dark) .hh-dc-streak-flame,
+html:not(.dark) .hh-dc-special.is-badge .hh-dc-special-mark {
+    color: #FFFFFF;
+    background: linear-gradient(135deg, #C29A55, #A8813F);
+}
+html:not(.dark) .hh-dc-special-mark {
+    color: #8A6A2F;
+    background: rgba(168, 129, 63, 0.12);
+    border-color: rgba(168, 129, 63, 0.32);
+}
+html:not(.dark) .hh-dc-special-mark.is-zone {
+    color: #2F8F5F;
+    background: rgba(47, 143, 95, 0.12);
+    border-color: rgba(47, 143, 95, 0.32);
+}
+html:not(.dark) .hh-dc-special.is-level {
+    background: linear-gradient(135deg, rgba(168, 129, 63, 0.14), #FFFFFF);
+    border-color: rgba(168, 129, 63, 0.4);
+}
+html:not(.dark) .hh-dc-special.is-level .hh-dc-special-kicker {
+    color: #8A6A2F;
+}
+html:not(.dark) .hh-dc-complete {
+    background: linear-gradient(160deg, rgba(168, 129, 63, 0.14), #FFFFFF);
+    border-color: rgba(168, 129, 63, 0.4);
+}
+html:not(.dark) .hh-dc-next {
+    border-style: dashed;
+    border-color: rgba(168, 129, 63, 0.4);
+}
+html:not(.dark) .hh-dc-next-icon {
+    color: #8A6A2F;
+    background: rgba(168, 129, 63, 0.12);
+}
+html:not(.dark) .hh-dc-next-btn,
+html:not(.dark) .hh-dc-cta.is-ghost {
+    color: #8A6A2F;
+    background: rgba(168, 129, 63, 0.1);
+    border-color: rgba(168, 129, 63, 0.4);
+}
+html:not(.dark) .hh-dc-next-btn:hover,
+html:not(.dark) .hh-dc-cta.is-ghost:hover {
+    background: rgba(168, 129, 63, 0.2);
+}
+html:not(.dark) .hh-dc-foot {
+    background: #EFEBE1;
+    border-top-color: #E0D9C9;
+    box-shadow: 0 -14px 26px rgba(239, 235, 225, 0.95);
+}
+html:not(.dark) .hh-dc-cta {
+    color: #FFFFFF;
+    background: linear-gradient(135deg, #C29A55 0%, #A8813F 60%, #8A6A2F 100%);
+    box-shadow: 0 10px 24px rgba(168, 129, 63, 0.3);
+}
+
+/* ============================================================
+   CELEBRACAO DE DESCOBERTA — movimento reduzido (ponto 43)
+   A informacao e exactamente a mesma, sem movimento nenhum.
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+    .hh-dc-sheet {
+        animation: none;
+    }
+    .hh-dc-hero-img {
+        filter: none;
+        transform: none;
+        transition: none;
+    }
+    .hh-dc-content [data-dc-step] {
+        opacity: 1;
+        transform: none;
+        transition: none;
+    }
+    .hh-dc-fill,
+    .hh-dc-fill.is-animated,
+    .hh-dc-progress-percent,
+    .hh-dc-cta,
+    .hh-dc-next-btn {
+        transition: none;
+    }
+    .hh-dc-progress-percent.is-bumped {
+        transform: none;
+    }
+    .hh-dc-cta:hover {
+        transform: none;
+    }
 }

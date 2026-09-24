@@ -193,29 +193,6 @@ const LevelsUI = (function () {
         });
     }
 
-    // Linha discreta no cartao da descoberta
-    function renderDiscoveryNote(target) {
-        const element = target || elements.scannerNote;
-        if (!element) return;
-
-        const hint = nextLevelHint();
-        if (!hint) {
-            element.classList.add('hidden');
-            element.textContent = '';
-            return;
-        }
-
-        element.textContent = hint;
-        element.classList.remove('hidden');
-    }
-
-    function clearDiscoveryNote(target) {
-        const element = target || elements.scannerNote;
-        if (!element) return;
-        element.classList.add('hidden');
-        element.textContent = '';
-    }
-
     // ==========================================================
     // Folha "A tua jornada" (pontos 24, 25 e 26)
     // ==========================================================
@@ -373,8 +350,7 @@ const LevelsUI = (function () {
             levelUpRank: document.getElementById('levelUpRank'),
             levelUpDesc: document.getElementById('levelUpDesc'),
             levelUpUnlocked: document.getElementById('levelUpUnlocked'),
-            levelUpClose: document.getElementById('closeLevelUp'),
-            scannerNote: document.getElementById('scannerLevelNote')
+            levelUpClose: document.getElementById('closeLevelUp')
         };
 
         if (elements.levelLine) elements.levelLine.addEventListener('click', openJourney);
@@ -398,8 +374,6 @@ const LevelsUI = (function () {
         render: render,
         applyChange: applyChange,
         nextLevelHint: nextLevelHint,
-        renderDiscoveryNote: renderDiscoveryNote,
-        clearDiscoveryNote: clearDiscoveryNote,
         openJourney: openJourney,
         closeJourney: closeJourney,
         isJourneyOpen: isJourneyOpen,

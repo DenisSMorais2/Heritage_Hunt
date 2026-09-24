@@ -324,23 +324,6 @@ const StreakUI = (function () {
         };
     }
 
-    // Bloco compacto mostrado dentro do cartao de descoberta do scanner
-    function renderDiscoveryNote(target, result) {
-        if (!target) return;
-
-        if (!result || !result.isNewDay) {
-            target.classList.add('hidden');
-            target.innerHTML = '';
-            return;
-        }
-
-        const texts = celebrationTexts(result);
-        target.innerHTML = '' +
-            '<span class="hh-streak-note-kicker"><i class="fas fa-fire"></i> ' + escapeHtml(texts.kicker) + '</span>' +
-            '<span class="hh-streak-note-count">' + escapeHtml(texts.count) + '</span>';
-        target.classList.remove('hidden');
-    }
-
     // Modal usado pelas accoes fora do scanner (foto / experiencia).
     // `extraLine` e texto ja formatado por quem chama — o streak nao
     // sabe de onde vem (hoje e o XP da accao).
@@ -419,7 +402,6 @@ const StreakUI = (function () {
     return {
         init: init,
         render: renderCard,
-        renderDiscoveryNote: renderDiscoveryNote,
         showCelebration: showCelebration,
         closeCelebration: closeCelebration,
         openDay: openDay,

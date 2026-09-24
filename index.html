@@ -240,24 +240,7 @@
                                 <p class="hh-scanning-label" data-i18n="searchingQr">Procurando por QR Code...</p>
                             </div>
                         </div>
-                        <div id="scannerResult" class="scanner-overlay hidden">
-                            <div class="hh-result-card modal-animation">
-                                <div class="mb-4">
-                                    <img id="monumentImage" src="" alt="" class="w-full h-32 object-cover rounded-lg mb-3">
-                                </div>
-                                <p class="hh-result-kicker" data-i18n="xpDiscoveryTitle">NOVO MONUMENTO DESCOBERTO</p>
-                                <h3 class="hh-result-title" id="scannedMonumentName"></h3>
-                                <p class="hh-result-desc" id="scannedMonumentDesc"></p>
-                                <div class="hh-result-points">
-                                    <p>+<span id="pointsEarned">0</span> <span data-i18n="xpLabel">XP</span></p>
-                                </div>
-                                <p id="scannerProgress" class="hh-result-progress"></p>
-                                <p id="scannerLevelNote" class="hh-result-level hidden"></p>
-                                <div id="scannerZoneNote" class="hh-xp-zone-note hidden"></div>
-                                <div id="scannerStreakNote" class="hh-streak-note hidden"></div>
-                                <button id="closeResultBtn" class="hh-gold-btn hh-gold-btn-sm" data-i18n="keepExploring">Continuar Explorando</button>
-                            </div>
-                        </div>
+                        <!-- O resultado da descoberta e mostrado em #discoveryModal -->
                         <img class="hh-cam-idle" src="imagens/igreja_nossa_senhora_luz.jpg" alt="" aria-hidden="true">
                         <div class="hh-cam-shade"></div>
                         <div class="hh-brackets" aria-hidden="true">
@@ -943,6 +926,15 @@
             </div>
         </div>
 
+        <!-- Celebracao de descoberta (desenhada por discovery-ui.js) -->
+        <div id="discoveryModal" class="hh-dc hidden" role="dialog" aria-modal="true"
+             aria-labelledby="discoveryTitle">
+            <div class="hh-dc-sheet" id="discoverySheet">
+                <div id="discoveryBody"></div>
+                <div class="hh-dc-foot" id="discoveryActions"></div>
+            </div>
+        </div>
+
         <!-- Camera Modal for Taking Photos -->
         <div id="cameraModal" class="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-60 hidden">
             <div class="bg-white rounded-2xl max-w-sm mx-4 modal-animation shadow-2xl overflow-hidden">
@@ -1008,6 +1000,8 @@
 <script src="levels-ui.js"></script>
 <script src="journey.js"></script>
 <script src="journey-ui.js"></script>
+<script src="discovery.js"></script>
+<script src="discovery-ui.js"></script>
 <script src="script.js"></script>
 </body>
 </html>

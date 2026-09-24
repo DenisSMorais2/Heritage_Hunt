@@ -212,12 +212,6 @@ const closeScannerBtn = document.getElementById('closeScannerBtn');
 const torchBtn = document.getElementById('torchBtn');
 const scannerVideo = document.getElementById('scannerVideo');
 const scannerOverlay = document.getElementById('scannerOverlay');
-const scannerResult = document.getElementById('scannerResult');
-const closeResultBtn = document.getElementById('closeResultBtn');
-const scannedMonumentName = document.getElementById('scannedMonumentName');
-const scannedMonumentDesc = document.getElementById('scannedMonumentDesc');
-const pointsEarned = document.getElementById('pointsEarned');
-const monumentImage = document.getElementById('monumentImage');
 const progressBar = document.getElementById('progressBar');
 const progressPercent = document.getElementById('progressPercent');
 const badgesContainer = document.getElementById('badgesContainer');
@@ -307,11 +301,7 @@ const MEMORY_TAGS = [
 ];
 let noteEditing = false;
 
-// Streak de exploracao
-const scannerStreakNote = document.getElementById('scannerStreakNote');
-
 // XP
-const scannerProgress = document.getElementById('scannerProgress');
 const monumentPageXpChip = document.getElementById('monumentPageXpChip');
 const monumentPagePhotoXp = document.getElementById('monumentPagePhotoXp');
 const monumentPageExperienceXp = document.getElementById('monumentPageExperienceXp');
@@ -1256,6 +1246,12 @@ function applyLanguage() {
         renderMonumentPage();
     }
 
+    // Celebracao de descoberta, caso esteja aberta: volta a desenhar
+    // a partir do MESMO resultado, sem recontar o XP (ponto 41).
+    if (DiscoveryUI.isOpen()) {
+        DiscoveryUI.refresh();
+    }
+
     // Cartao da sequencia (textos e dias da semana)
     StreakUI.render();
 
@@ -1458,79 +1454,166 @@ function handleQRResult(qrData) {
         return;
     }
     
-    // Add to scanned monuments
-    monument.discoveredAt = new Date().toISOString();
-    state.scannedMonuments.push(monument);
-
-    // XP: a descoberta e a zona que ela eventualmente conclui ficam
-    // guardadas na mesma escrita (ponto 28).
-    const xpBatch = awardXP([{
-        action: XP.ACTION.MONUMENT_DISCOVERED,
-        monumentId: monument.id,
-        entityId: monument.id,
-        entityAmount: monument.points
-    }].concat(zoneEvents(pendingZoneCompletions())));
-
-    // Se o XP nao ficou guardado, a descoberta tambem nao conta:
-    // nunca anunciamos XP que nao foi persistido (ponto 43).
-    if (!xpBatch || !xpBatch.persisted) {
-        state.scannedMonuments.pop();
-        delete monument.discoveredAt;
-        alert(t('saveError'));
-        closeScanner();
-        return;
-    }
-
-    state.points = XP.getTotalXP();
-
-    const discoveryAward = xpBatch.awarded.filter(
-        result => result.action === XP.ACTION.MONUMENT_DISCOVERED
-    )[0];
-
-    // Sequencia de exploracao: a descoberta conta como actividade do dia
-    const streakResult = registerExploration(
-        ExplorationStreak.ACTIVITY.MONUMENT_DISCOVERY,
-        monument.id,
-        { points: monument.points }
-    );
-    
-    // Stop scanner
-    stopScanner();
-    
-    // Show result
-    scannerOverlay.classList.add('hidden');
-    scannerResult.classList.remove('hidden');
-    scannedMonumentName.textContent = monument.name;
-    scannedMonumentDesc.textContent = monument.description;
-    pointsEarned.textContent = discoveryAward ? discoveryAward.amount : monument.points;
-    scannerProgress.textContent = t('xpProgressMonuments', {
-        done: state.scannedMonuments.length,
+    // O progresso ANTES da descoberta: a barra da celebracao anima
+    // de onde estava, nunca de zero (ponto 11).
+    const previousProgress = {
+        discovered: state.scannedMonuments.length,
         total: state.monuments.length
-    });
-    monumentImage.src = monument.image;
-    monumentImage.alt = monument.name;
-    monumentImage.onerror = function() {
-        this.src = 'imagens/placeholder.jpg';
-        this.onerror = null;
     };
 
-    // Zona concluida, quando for o caso (ponto 24)
-    XPUI.renderDiscovery(xpBatch);
+    // A partir daqui, as recompensas que forem desbloqueadas ficam
+    // retidas para a celebracao em vez de abrirem modais proprios
+    // (pontos 13, 14 e 28). O portao fecha-se em qualquer saida.
+    openDiscoveryCapture();
 
-    // Quanto falta para o proximo nivel, sem abrir modal nenhum
-    LevelsUI.renderDiscoveryNote();
+    let celebration = null;
 
-    // A jornada assinala a etapa acabada de percorrer: o no anima
-    // uma unica vez, quando o percurso for aberto (ponto 54).
-    JourneyUI.markDiscovery(monument.id);
+    try {
+        // Add to scanned monuments
+        monument.discoveredAt = new Date().toISOString();
+        state.scannedMonuments.push(monument);
 
-    // So celebramos a sequencia na primeira actividade valida do dia
-    StreakUI.renderDiscoveryNote(scannerStreakNote, streakResult);
-    
-    // Update UI and save data
-    updateProgress();
-    checkForBadges();
-    saveUserData();
+        // XP: a descoberta e a zona que ela eventualmente conclui ficam
+        // guardadas na mesma escrita (ponto 28).
+        const xpBatch = awardXP([{
+            action: XP.ACTION.MONUMENT_DISCOVERED,
+            monumentId: monument.id,
+            entityId: monument.id,
+            entityAmount: monument.points
+        }].concat(zoneEvents(pendingZoneCompletions())));
+
+        // Se o XP nao ficou guardado, a descoberta tambem nao conta:
+        // nunca anunciamos XP que nao foi persistido (ponto 43).
+        if (!xpBatch || !xpBatch.persisted) {
+            state.scannedMonuments.pop();
+            delete monument.discoveredAt;
+            alert(t('saveError'));
+            closeScanner();
+            return;
+        }
+
+        state.points = XP.getTotalXP();
+
+        // Sequencia de exploracao: a descoberta conta como actividade do dia
+        const streakResult = registerExploration(
+            ExplorationStreak.ACTIVITY.MONUMENT_DISCOVERY,
+            monument.id,
+            { points: monument.points }
+        );
+
+        // A jornada assinala a etapa acabada de percorrer: o no anima
+        // uma unica vez, quando o percurso for aberto (ponto 54).
+        JourneyUI.markDiscovery(monument.id);
+
+        // Update UI and save data
+        updateProgress();
+        checkForBadges();
+        saveUserData();
+
+        // Tudo ja esta gravado e contabilizado: so agora se constroi o
+        // que a celebracao vai mostrar (pontos 3 e 46).
+        celebration = buildDiscoveryCelebration({
+            monument: monument,
+            xpBatch: xpBatch,
+            streakResult: streakResult,
+            previousProgress: previousProgress
+        });
+    } finally {
+        closeDiscoveryCapture();
+    }
+
+    // A camara e sempre libertada e o botao volta ao estado de
+    // repouso: ao fechar a celebracao pode voltar a ler outro QR.
+    resetScanner();
+
+    // Uma celebracao de cada vez: enquanto a folha estiver aberta a
+    // fila de conquistas fica parada (ponto 28).
+    if (!celebration || !DiscoveryUI.show(celebration)) {
+        // Sem celebracao possivel, a fila segue o seu caminho normal
+        scheduleNextBadge(400);
+    }
+}
+
+// ============================================================
+// Celebracao da descoberta — ligacao entre o dominio
+// (discovery.js), os resultados reais e a interface
+// (discovery-ui.js)
+//
+// A celebracao NAO calcula recompensas nem guarda nada: recebe o
+// que os dominios ja decidiram e ja persistiram. Por isso um
+// refresh nunca a repete (ponto 30).
+// ============================================================
+
+// Enquanto uma descoberta esta a ser processada, as medalhas e a
+// subida de nivel que ela desbloquear ficam aqui em vez de irem
+// para a fila de modais. A celebracao mostra-as no proprio ecra.
+let discoveryCapture = null;
+
+function openDiscoveryCapture() {
+    discoveryCapture = { badges: [], levelUp: null };
+}
+
+function closeDiscoveryCapture() {
+    discoveryCapture = null;
+}
+
+function buildDiscoveryCelebration(input) {
+    const journeyId = Journey.getDefaultJourneyId();
+    const journeyConfig = Journey.getJourneys().filter(j => j.id === journeyId)[0] || null;
+
+    return Discovery.buildCelebration({
+        monument: input.monument,
+        zones: state.zones,
+        actions: XP.ACTION,
+
+        journeyId: journeyId,
+        cityId: journeyConfig ? journeyConfig.cityId : null,
+        islandId: journeyConfig ? journeyConfig.islandId : null,
+
+        xpBatch: input.xpBatch,
+        streakResult: input.streakResult,
+
+        // O progresso real da jornada, ja actualizado
+        progress: Journey.getJourneyProgress(journeyId),
+        previousProgress: input.previousProgress,
+        nextStep: Journey.getCurrentJourneyStep(journeyId),
+
+        // Recompensas retidas durante esta descoberta
+        badges: discoveryCapture ? discoveryCapture.badges : [],
+        levelUp: discoveryCapture ? discoveryCapture.levelUp : null
+    });
+}
+
+function initDiscoveryCelebration() {
+    DiscoveryUI.init({
+        // O CTA principal abre o album que ja existe (ponto 18)
+        onOpenAlbum: (monumentId) => openMonumentPhotos(monumentId),
+
+        // Continuar: a proxima etapa no mapa, ou o percurso completo
+        // quando a jornada ja esta fechada (ponto 19)
+        onContinueJourney: (result) => {
+            if (result.next) {
+                focusMonumentFromJourney(result.next.monumentId);
+                return;
+            }
+            JourneyUI.openJourney();
+        },
+
+        onShowOnMap: (monumentId) => focusMonumentFromJourney(monumentId),
+
+        // Fechar devolve o lugar a fila de conquistas
+        onClosed: () => scheduleNextBadge(400)
+    });
+}
+
+// Leva ao mapa existente, centrado no monumento (ponto 23 da
+// jornada: nunca ha um segundo mapa)
+function focusMonumentFromJourney(monumentId) {
+    const monument = state.monuments.find(m => m.id === monumentId);
+    if (!monument) return;
+
+    state.currentMonumentForMap = monument;
+    showMapView();
 }
 
 function stopScanner() {
@@ -1553,14 +1636,6 @@ function resetScanner() {
     scannerOverlay.classList.add('hidden');
     closeScannerBtn.classList.add('hidden');
     stopScanner();
-}
-
-function closeResult() {
-    scannerResult.classList.add('hidden');
-    XPUI.clearDiscovery();
-    LevelsUI.clearDiscoveryNote();
-    StreakUI.renderDiscoveryNote(scannerStreakNote, null);
-    resetScanner();
 }
 
 // Progress functions
@@ -1618,12 +1693,26 @@ const badgeQueue = [];
 let badgeQueueTimer = null;
 
 function enqueueBadge(badge) {
+    // Durante uma descoberta, a medalha e mostrada dentro da propria
+    // celebracao em vez de abrir um modal por cima dela (ponto 13).
+    if (discoveryCapture) {
+        discoveryCapture.badges.push(badge);
+        return;
+    }
+
     badgeQueue.push({ kind: 'badge', badge: badge });
     scheduleNextBadge(1000);
 }
 
-// O novo nivel entra na mesma fila, mas abre o seu proprio modal
+// O novo nivel entra na mesma fila, mas abre o seu proprio modal.
+// Numa descoberta, entra antes na celebracao: um unico ecra chega
+// para dizer tudo o que acabou de acontecer (pontos 14 e 29).
 function enqueueLevelUp(level) {
+    if (discoveryCapture) {
+        discoveryCapture.levelUp = level;
+        return;
+    }
+
     badgeQueue.push({ kind: 'level', level: level });
     scheduleNextBadge(1000);
 }
@@ -1632,8 +1721,14 @@ function scheduleNextBadge(delay) {
     if (badgeQueueTimer !== null) return;
     if (!badgeQueue.length) return;
 
+    // A celebracao da descoberta ja e uma celebracao: nada se abre
+    // por cima dela. Ao fechar, a fila e retomada (ponto 28).
+    if (DiscoveryUI.isOpen()) return;
+
     badgeQueueTimer = setTimeout(() => {
         badgeQueueTimer = null;
+        if (DiscoveryUI.isOpen()) return;
+
         const next = badgeQueue.shift();
         if (!next) return;
         if (next.kind === 'level') LevelsUI.showLevelUp(next.level);
@@ -2211,7 +2306,6 @@ logoutBtn.addEventListener('click', logout);
 startScannerBtn.addEventListener('click', startScanner);
 closeScannerBtn.addEventListener('click', closeScanner);
 if (torchBtn) torchBtn.addEventListener('click', toggleTorch);
-closeResultBtn.addEventListener('click', closeResult);
 navScanner.addEventListener('click', showScannerView);
 navProfile.addEventListener('click', showProfileView);
 navMap.addEventListener('click', showMapView);
@@ -2271,6 +2365,7 @@ function initApp() {
     initXPSystem();
     initExplorationStreak();
     initJourney();
+    initDiscoveryCelebration();
 
     const savedUser = localStorage.getItem('heritageUser');
     if (savedUser) {

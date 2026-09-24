@@ -339,36 +339,6 @@ const XPUI = (function () {
 
     // `batch` e o resultado de XP.awardMany com a descoberta e, se for
     // o caso, a zona concluida.
-    function renderDiscovery(batch) {
-        const zoneTarget = elements.scannerZoneNote;
-        if (!zoneTarget) return;
-
-        const zoneAward = (batch && batch.awarded || []).filter(function (result) {
-            return result.action === XP.ACTION.ZONE_COMPLETED;
-        })[0];
-
-        if (!zoneAward) {
-            zoneTarget.classList.add('hidden');
-            zoneTarget.innerHTML = '';
-            return;
-        }
-
-        const name = zoneName(zoneAward.transaction.zoneId || zoneAward.transaction.entityId);
-
-        zoneTarget.innerHTML = '' +
-            '<span class="hh-xp-zone-kicker"><i class="fas fa-map-marked-alt"></i> ' + escapeHtml(t('xpZoneTitle')) + '</span>' +
-            '<span class="hh-xp-zone-name">' + escapeHtml(name) + '</span>' +
-            '<span class="hh-xp-zone-amount">' + escapeHtml(t('xpAmount', { n: zoneAward.amount })) + '</span>' +
-            '<span class="hh-xp-zone-total">' + escapeHtml(t('xpDiscoveryTotal', { n: batch.totalAwarded })) + '</span>';
-        zoneTarget.classList.remove('hidden');
-    }
-
-    function clearDiscovery() {
-        if (!elements.scannerZoneNote) return;
-        elements.scannerZoneNote.classList.add('hidden');
-        elements.scannerZoneNote.innerHTML = '';
-    }
-
     // ==========================================================
     // Zonas (ponto 40)
     // ==========================================================
@@ -449,7 +419,6 @@ const XPUI = (function () {
             historyMore: document.getElementById('xpHistoryMore'),
             historyClose: document.getElementById('closeXpHistory'),
             toast: document.getElementById('xpToast'),
-            scannerZoneNote: document.getElementById('scannerZoneNote'),
             zonesList: document.getElementById('zonesList')
         };
 
@@ -473,8 +442,6 @@ const XPUI = (function () {
         toast: toast,
         describe: describe,
         summaryText: summaryText,
-        renderDiscovery: renderDiscovery,
-        clearDiscovery: clearDiscovery,
         renderZones: renderZones,
         openHistory: openHistory,
         closeHistory: closeHistory,
