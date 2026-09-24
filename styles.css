@@ -678,20 +678,15 @@ body.hh-dark-bg .container {
     max-height: min(450px, 56dvh);
     /* Faixa reservada ao rodape: dica (2 linhas) + margem + botao + folga. */
     --hh-cam-foot-h: 132px;
-    /* Sangra ate a borda do ecra: anula a goteira lateral da .hh-page.
-       Sem cantos nem contorno laterais, que so fariam sentido num cartao.
-       A largura e explicita de proposito: com `width: auto`, o max-height
+    /* A largura e explicita de proposito: com `width: auto`, o max-height
        acima faz o aspect-ratio derivar a largura a partir da altura ja
        limitada, e a camara encolhia nos ecras baixos. */
-    width: calc(100% + var(--hh-gutter) * 2);
-    margin-left: calc(var(--hh-gutter) * -1);
-    margin-right: calc(var(--hh-gutter) * -1);
-    border-radius: 0;
+    width: 100%;
+    border-radius: 14px;
     overflow: hidden;
     background: #071120;
-    border-top: 1px solid var(--hh-line);
-    border-bottom: 1px solid var(--hh-line);
-    box-shadow: 0 18px 38px rgba(4, 12, 24, 0.55);
+    border: 1px solid var(--hh-line);
+    box-shadow: 0 14px 30px rgba(4, 12, 24, 0.5);
 }
 .hh-cam-video {
     position: absolute;
@@ -2084,8 +2079,7 @@ html:not(.dark) .hh-badge.is-unlocked .hh-badge-ring {
     box-shadow: 0 4px 12px rgba(24, 40, 66, 0.18), 0 0 0 2px rgba(168, 129, 63, 0.45);
 }
 html:not(.dark) .hh-cam {
-    border-top-color: rgba(18, 41, 74, 0.18);
-    border-bottom-color: rgba(18, 41, 74, 0.18);
+    border-color: rgba(18, 41, 74, 0.18);
     box-shadow: 0 14px 30px rgba(24, 40, 66, 0.22);
 }
 
@@ -6911,4 +6905,55 @@ html:not(.dark) .hh-map-card.is-fullscreen .hh-map-head {
     .hh-map-fs-btn {
         transition: none;
     }
+}
+
+/* ============================================================
+   CARTAO DO SCANNER
+
+   A camara passa a viver dentro de um .hh-card, como os restantes
+   blocos da aplicacao: cabecalho com titulo sublinhado e brasao,
+   depois o conteudo.
+   ============================================================ */
+.hh-scan-card {
+    /* E o primeiro cartao da pagina: a goteira de .hh-page ja o
+       separa do cabecalho. */
+    margin-top: 0;
+    /* Um pouco mais estreito que o cartao normal, para a camara
+       ganhar area sem sair do estilo. */
+    padding: 16px 14px 14px;
+}
+.hh-scan-card .hh-discover-head {
+    align-items: center;
+    margin-bottom: 14px;
+}
+/* Mesma familia dos brasoes dos outros cartoes */
+.hh-scan-crest {
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    border-radius: 50%;
+    color: var(--hh-gold-soft);
+    background: rgba(214, 178, 116, 0.14);
+    border: 1px solid rgba(214, 178, 116, 0.42);
+}
+
+/* --- Ecras estreitos --- */
+@media (max-width: 360px) {
+    .hh-scan-card {
+        padding: 14px 12px 12px;
+    }
+    .hh-scan-card .hh-discover-head {
+        margin-bottom: 12px;
+    }
+}
+
+/* --- Tema claro --- */
+html:not(.dark) .hh-scan-crest {
+    color: #8A6A2F;
+    background: rgba(168, 129, 63, 0.12);
+    border-color: rgba(168, 129, 63, 0.35);
 }

@@ -230,38 +230,46 @@
                 <!-- Scanner View (default) -->
                 <div id="scannerView">
                   <div class="hh-page">
-                    <div class="hh-cam">
-                        <video id="scannerVideo" class="hh-cam-video" autoplay playsinline></video>
-                        <div id="scannerOverlay" class="scanner-overlay hidden">
-                            <div class="text-center">
-                                <div class="scanner-frame mb-6">
-                                    <div class="scanner-line"></div>
+                    <div class="hh-card hh-scan-card">
+                        <div class="hh-discover-head">
+                            <h3 class="hh-section-title hh-underlined" data-i18n="scannerCardTitle">Scanner de Monumentos</h3>
+                            <span class="hh-scan-crest" aria-hidden="true">
+                                <i class="fas fa-qrcode"></i>
+                            </span>
+                        </div>
+                        <div class="hh-cam">
+                            <video id="scannerVideo" class="hh-cam-video" autoplay playsinline></video>
+                            <div id="scannerOverlay" class="scanner-overlay hidden">
+                                <div class="text-center">
+                                    <div class="scanner-frame mb-6">
+                                        <div class="scanner-line"></div>
+                                    </div>
+                                    <p class="hh-scanning-label" data-i18n="searchingQr">Procurando por QR Code...</p>
                                 </div>
-                                <p class="hh-scanning-label" data-i18n="searchingQr">Procurando por QR Code...</p>
                             </div>
-                        </div>
-                        <!-- O resultado da descoberta e mostrado em #discoveryModal -->
-                        <img class="hh-cam-idle" src="imagens/igreja_nossa_senhora_luz.jpg" alt="" aria-hidden="true">
-                        <div class="hh-cam-shade"></div>
-                        <div class="hh-brackets" aria-hidden="true">
-                            <span class="hh-bracket hh-bracket-tl"></span>
-                            <span class="hh-bracket hh-bracket-tr"></span>
-                            <span class="hh-bracket hh-bracket-bl"></span>
-                            <span class="hh-bracket hh-bracket-br"></span>
-                            <i class="fas fa-qrcode hh-qr-glyph"></i>
-                        </div>
-                        <button id="closeScannerBtn" class="hh-cam-close hidden">
-                            <i class="fas fa-times"></i>
-                        </button>
-                        <button id="torchBtn" class="hh-torch hidden" data-i18n-title="torch" title="Luz">
-                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 2h8l-1 4H9L8 2zm1 5h6l-.6 3H9.6L9 7zm.7 4h4.6l-.5 3.2a1 1 0 0 1-1 .8h-1.6a1 1 0 0 1-1-.8L9.7 11zm1.3 5h2v6h-2v-6z" fill="currentColor"/></svg>
-                            <span data-i18n="torch">Luz</span>
-                        </button>
-                        <div class="hh-cam-foot">
-                            <p class="hh-cam-hint" data-i18n="scanHint">Aponte a câmera para um QR Code de monumento</p>
-                            <button id="startScannerBtn" class="hh-gold-btn">
-                                <i class="fas fa-qrcode mr-3 text-xl"></i> <span data-i18n="scanQr">Escanear QR Code</span>
+                            <!-- O resultado da descoberta e mostrado em #discoveryModal -->
+                            <img class="hh-cam-idle" src="imagens/igreja_nossa_senhora_luz.jpg" alt="" aria-hidden="true">
+                            <div class="hh-cam-shade"></div>
+                            <div class="hh-brackets" aria-hidden="true">
+                                <span class="hh-bracket hh-bracket-tl"></span>
+                                <span class="hh-bracket hh-bracket-tr"></span>
+                                <span class="hh-bracket hh-bracket-bl"></span>
+                                <span class="hh-bracket hh-bracket-br"></span>
+                                <i class="fas fa-qrcode hh-qr-glyph"></i>
+                            </div>
+                            <button id="closeScannerBtn" class="hh-cam-close hidden">
+                                <i class="fas fa-times"></i>
                             </button>
+                            <button id="torchBtn" class="hh-torch hidden" data-i18n-title="torch" title="Luz">
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 2h8l-1 4H9L8 2zm1 5h6l-.6 3H9.6L9 7zm.7 4h4.6l-.5 3.2a1 1 0 0 1-1 .8h-1.6a1 1 0 0 1-1-.8L9.7 11zm1.3 5h2v6h-2v-6z" fill="currentColor"/></svg>
+                                <span data-i18n="torch">Luz</span>
+                            </button>
+                            <div class="hh-cam-foot">
+                                <p class="hh-cam-hint" data-i18n="scanHint">Aponte a câmera para um QR Code de monumento</p>
+                                <button id="startScannerBtn" class="hh-gold-btn">
+                                    <i class="fas fa-qrcode mr-3 text-xl"></i> <span data-i18n="scanQr">Escanear QR Code</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
 
