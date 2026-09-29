@@ -728,50 +728,80 @@ function showLoginForm() {
     loginForm.classList.remove('hidden');
 }
 
-function login() {
-    const email = document.getElementById('loginEmail').value;
-    const password = document.getElementById('loginPassword').value;
-    
-    if (!email || !password) {
-        alert(t('fillAllFields'));
+// ============================================================
+// Autenticacao — Supabase Auth
+//
+// A sessao deixa de ser fingida: a senha e mesmo verificada, e o
+// progresso deixa de estar preso a este aparelho. O `localStorage`
+// continua a guardar tudo localmente, para que a app abra depressa
+// e funcione sem rede — a nuvem e um espelho (ver cloud.js).
+// ============================================================
+
+function setAuthBusy(button, labelKey, busy) {
+    if (!button) return;
+
+    // O rotulo vive num <span data-i18n> ao lado da seta: mexer no
+    // botao inteiro apagaria o icone e a marca de traducao, e o
+    // idioma deixava de poder ser mudado depois.
+    const label = button.querySelector('[data-i18n]') || button;
+
+    if (busy) {
+        label.dataset.idleLabel = label.textContent;
+        label.textContent = t(labelKey);
+        button.disabled = true;
         return;
     }
-    
-    // Simulate login (in real app, this would be an API call)
-    const savedUser = localStorage.getItem('heritageUser');
-    if (savedUser) {
-        const user = JSON.parse(savedUser);
-        if (user.email === email) {
-            state.user = user;
-            loadUserData();
-            showMainApp();
-            return;
-        }
+
+    if (label.dataset.idleLabel) {
+        label.textContent = label.dataset.idleLabel;
+        delete label.dataset.idleLabel;
     }
-    
-    alert(t('wrongCredentials'));
+    button.disabled = false;
 }
 
-function register() {
-    const name = document.getElementById('registerName').value;
-    const email = document.getElementById('registerEmail').value;
-    const password = document.getElementById('registerPassword').value;
-    
-    if (!name || !email || !password) {
-        alert(t('fillAllFields'));
-        return;
+function readLocalUser() {
+    try {
+        const saved = localStorage.getItem('heritageUser');
+        return saved ? JSON.parse(saved) : null;
+    } catch (e) {
+        return null;
     }
-    
-    if (password.length < 6) {
-        alert(t('passwordTooShort'));
-        return;
-    }
-    
-    // Create new user
-    const user = {
-        name,
-        email,
-        password,
+}
+
+// Chaves locais com dono. Antes havia um utilizador por aparelho;
+// agora que ha contas a serio, o album e as notas de uma pessoa
+// nao podem aparecer a quem entrar a seguir no mesmo telemovel.
+function monumentKey(kind, monumentId) {
+    const owner = state.user && state.user.cloudId ? state.user.cloudId : 'local';
+    return 'monument_' + kind + '_' + monumentId + '__' + owner;
+}
+
+// Conteudo gravado antes de existirem contas nao tem dono. Quando
+// uma conta adopta esse perfil, adopta tambem o que ele escreveu
+// e fotografou, em vez de o deixar orfao.
+function adoptLegacyMonumentKeys() {
+    const kinds = ['note', 'tags', 'photos'];
+
+    state.monuments.forEach(function (monument) {
+        kinds.forEach(function (kind) {
+            const legacyKey = 'monument_' + kind + '_' + monument.id;
+            const value = localStorage.getItem(legacyKey);
+            if (value === null) return;
+
+            const ownedKey = monumentKey(kind, monument.id);
+            if (localStorage.getItem(ownedKey) === null) {
+                localStorage.setItem(ownedKey, value);
+            }
+            localStorage.removeItem(legacyKey);
+        });
+    });
+}
+
+function createEmptyProfile(name, email, cloudId) {
+    return {
+        cloudId: cloudId,
+        name: name || '',
+        email: email || '',
         photo: null,
         points: 0,
         scannedMonuments: [],
@@ -780,32 +810,213 @@ function register() {
         // Toda a gente comeca Explorador, sem celebracao (ponto 3)
         levelSeen: Levels.getLevelFromXP(0).level
     };
-
-    // Save user data
-    localStorage.setItem('heritageUser', JSON.stringify(user));
-    state.user = user;
-    levelCelebrationsReady = true;
-
-    showMainApp();
 }
 
-function logout() {
-    if (confirm(t('confirmLogout'))) {
-        saveUserData();
-        state.user = null;
-        state.points = 0;
-        state.scannedMonuments = [];
-        levelCelebrationsReady = false;
-        closeMapFullscreen();
-        StreakUI.render();
-        XPUI.render();
-        LevelsUI.render();
-        JourneyUI.render();
-        document.body.classList.remove('hh-dark-bg');
-        authScreen.classList.remove('hidden');
-        mainApp.classList.add('hidden');
-        stopScanner();
+function remoteToProfile(remote, session) {
+    return {
+        cloudId: session.userId,
+        name: remote.name || '',
+        email: remote.email || session.email,
+        // A foto de perfil e deste browser: nunca vem da nuvem.
+        photo: null,
+        points: remote.points || 0,
+        scannedMonuments: remote.scannedMonuments || [],
+        xp: remote.xp || XP.createEmptyWallet(),
+        explorationStreak: remote.explorationStreak || ExplorationStreak.createEmptyStreak(),
+        levelSeen: remote.levelSeen || Levels.getLevelFromXP(0).level
+    };
+}
+
+function profileTotalXP(profile) {
+    if (!profile) return -1;
+    if (profile.xp && typeof profile.xp.total === 'number') return profile.xp.total;
+    return profile.points || 0;
+}
+
+// O perfil deste aparelho so conta se for mesmo desta conta.
+function localProfileFor(local, session) {
+    if (!local) return null;
+
+    if (local.cloudId === session.userId) return local;
+
+    // Perfil anterior a nuvem, criado aqui com este email: e
+    // adoptado pela conta em vez de se perder.
+    if (!local.cloudId && local.email && local.email === session.email) {
+        local.adoptedFromDevice = true;
+        return local;
     }
+
+    return null;
+}
+
+// Qual dos dois retratos vale: o deste aparelho ou o da nuvem?
+//
+// O progresso nesta app so cresce, por isso o criterio e simples e
+// previsivel: ganha quem tiver mais XP total. Jogar sem rede e
+// voltar a ligar nunca perde nada, e entrar num aparelho novo traz
+// o progresso todo.
+function pickProfile(localProfile, remoteProfile) {
+    if (!localProfile) return remoteProfile;
+    if (!remoteProfile) return localProfile;
+
+    return profileTotalXP(localProfile) >= profileTotalXP(remoteProfile)
+        ? localProfile
+        : remoteProfile;
+}
+
+// As notas e etiquetas da nuvem passam a viver tambem aqui, nas
+// chaves desta conta. As FOTOGRAFIAS nao vem de lado nenhum: essas
+// sao, e continuam a ser, deste browser.
+function applyRemoteEntries(entries) {
+    entries.forEach(function (entry) {
+        if (entry.note) {
+            localStorage.setItem(monumentKey('note', entry.monumentId), entry.note);
+        }
+        if (entry.tags && entry.tags.length) {
+            localStorage.setItem(
+                monumentKey('tags', entry.monumentId),
+                JSON.stringify(entry.tags)
+            );
+        }
+    });
+}
+
+// Entrada unica na app depois de a sessao existir — vinda do
+// login, do registo ou de uma sessao que o browser ainda guardava.
+async function enterWithSession(session, fallbackName) {
+    const remote = await HeritageCloud.pullProfile();
+    const localProfile = localProfileFor(readLocalUser(), session);
+    const remoteProfile = remote ? remoteToProfile(remote, session) : null;
+
+    const adopted = !!(localProfile && localProfile.adoptedFromDevice);
+    let profile = pickProfile(localProfile, remoteProfile);
+    if (!profile) profile = createEmptyProfile(fallbackName, session.email, session.userId);
+
+    profile.cloudId = session.userId;
+    profile.email = session.email;
+    if (!profile.name) profile.name = fallbackName || '';
+    delete profile.adoptedFromDevice;
+
+    // A senha nunca fica guardada no aparelho: quem a verifica e o
+    // Supabase, e ja nao ha aqui nada que precise dela.
+    delete profile.password;
+
+    // A foto de perfil e local: se este aparelho tinha uma, fica.
+    if (localProfile && localProfile.photo) profile.photo = localProfile.photo;
+
+    state.user = profile;
+
+    if (adopted) adoptLegacyMonumentKeys();
+
+    // A nuvem pode trazer definicoes de outro aparelho, mas so as
+    // aplicamos quando este ainda nao tem nenhumas — mudar o tema
+    // ou o idioma debaixo dos pes de quem ja escolheu seria pior.
+    if (remote && remote.settings && !localStorage.getItem(SETTINGS_KEY)) {
+        state.settings = Object.assign({}, defaultSettings, remote.settings);
+        saveSettings();
+        applyTheme();
+        applyLanguage();
+    }
+
+    applyRemoteEntries(await HeritageCloud.pullEntries());
+
+    // `loadUserData()` primeiro: e ele que enche o `state` a partir
+    // do perfil. So depois se grava, ou gravariamos o estado velho.
+    loadUserData();
+    saveUserData();
+    showMainApp();
+
+    // O que ficou por subir sobe em segundo plano: entrar na app
+    // nunca pode ficar a espera de fotografias.
+    flushPendingPhotos();
+    flushPendingAvatar();
+}
+
+async function login() {
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value;
+
+    if (!email || !password) {
+        alert(t('fillAllFields'));
+        return;
+    }
+
+    setAuthBusy(loginBtn, 'signingIn', true);
+
+    try {
+        const result = await HeritageCloud.signIn(email, password);
+
+        if (!result.ok) {
+            alert(t(result.code));
+            return;
+        }
+
+        await enterWithSession(result);
+    } finally {
+        setAuthBusy(loginBtn, 'signingIn', false);
+    }
+}
+
+async function register() {
+    const name = document.getElementById('registerName').value.trim();
+    const email = document.getElementById('registerEmail').value.trim();
+    const password = document.getElementById('registerPassword').value;
+
+    if (!name || !email || !password) {
+        alert(t('fillAllFields'));
+        return;
+    }
+
+    if (password.length < 6) {
+        alert(t('passwordTooShort'));
+        return;
+    }
+
+    setAuthBusy(registerBtn, 'signingUp', true);
+
+    try {
+        const result = await HeritageCloud.signUp(name, email, password);
+
+        if (!result.ok) {
+            // Conta criada mas a espera de confirmacao por email
+            // nao e um erro: e um passo que ainda falta.
+            alert(t(result.code));
+            if (result.pendingConfirmation) showLoginForm();
+            return;
+        }
+
+        await enterWithSession(result, name);
+    } finally {
+        setAuthBusy(registerBtn, 'signingUp', false);
+    }
+}
+
+async function logout() {
+    if (!confirm(t('confirmLogout'))) return;
+
+    // O que ainda nao subiu sobe antes de a sessao fechar: sair da
+    // conta nunca pode ser a maneira de perder progresso.
+    saveUserData();
+    await HeritageCloud.signOut();
+
+    // O perfil sai deste aparelho, para que quem entrar a seguir
+    // nao encontre o progresso de outra pessoa. O album fica, com
+    // o dono marcado na chave, e volta no proximo login.
+    localStorage.removeItem('heritageUser');
+
+    state.user = null;
+    state.points = 0;
+    state.scannedMonuments = [];
+    levelCelebrationsReady = false;
+    closeMapFullscreen();
+    StreakUI.render();
+    XPUI.render();
+    LevelsUI.render();
+    JourneyUI.render();
+    document.body.classList.remove('hh-dark-bg');
+    authScreen.classList.remove('hidden');
+    mainApp.classList.add('hidden');
+    stopScanner();
 }
 
 function showMainApp() {
@@ -859,6 +1070,10 @@ function saveUserData() {
         state.user.points = state.user.xp ? state.user.xp.total : state.points;
         state.user.scannedMonuments = state.scannedMonuments;
         localStorage.setItem('heritageUser', JSON.stringify(state.user));
+
+        // A nuvem recebe o mesmo retrato, sem imagens e sem pressa:
+        // a gravacao local ja aconteceu, e e ela que conta.
+        HeritageCloud.queueProfile(state.user, state.settings);
     }
 }
 
@@ -1247,12 +1462,25 @@ function updateUserInterface() {
         profileUserName.textContent = state.user.name;
         userEmail.textContent = state.user.email;
         
+        // A foto pode estar em casa (ainda por subir) ou no Storage,
+        // e nesse caso precisa de um link assinado.
         if (state.user.photo) {
-            profilePhoto.src = state.user.photo;
-            profilePhoto.classList.remove('hidden');
-            profileIcon.classList.add('hidden');
+            showProfilePhoto(state.user.photo);
+        } else if (state.user.avatarPath) {
+            showRemoteAvatar(state.user.avatarPath);
         }
     }
+}
+
+function showProfilePhoto(src) {
+    profilePhoto.src = src;
+    profilePhoto.classList.remove('hidden');
+    profileIcon.classList.add('hidden');
+}
+
+async function showRemoteAvatar(path) {
+    const urls = await HeritageCloud.signImageUrls([path]);
+    if (urls[path]) showProfilePhoto(urls[path]);
 }
 
 // Profile photo functions
@@ -1260,24 +1488,64 @@ function changePhoto() {
     photoInput.click();
 }
 
-function handlePhotoChange(event) {
+async function handlePhotoChange(event) {
     const file = event.target.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const photoData = e.target.result;
-            profilePhoto.src = photoData;
-            profilePhoto.classList.remove('hidden');
-            profileIcon.classList.add('hidden');
-            
-            // Save photo to user data
-            if (state.user) {
-                state.user.photo = photoData;
-                saveUserData();
-            }
-        };
-        reader.readAsDataURL(file);
+    event.target.value = '';
+    if (!file) return;
+
+    // Um avatar nunca e visto maior que um circulo: 512 px chegam,
+    // e tudo o que sobra e espaco poupado para sempre.
+    let compressed;
+    try {
+        compressed = await ImageCompressor.compress(file, 'AVATAR');
+    } catch (error) {
+        alert(t('photoUnreadable'));
+        return;
     }
+
+    const preview = await blobToDataUrl(compressed.blob);
+    showProfilePhoto(preview);
+
+    if (!state.user) return;
+
+    const path = HeritageCloud.avatarPath(compressed.extension);
+    const upload = await HeritageCloud.uploadImage(path, compressed.blob, compressed.format);
+
+    if (upload.ok) {
+        // O avatar anterior pode ter outra extensao: apaga-se, ou
+        // ficava para sempre a ocupar espaco sem ninguem o ver.
+        if (state.user.avatarPath && state.user.avatarPath !== path) {
+            await HeritageCloud.removeImages([state.user.avatarPath]);
+        }
+        state.user.avatarPath = path;
+        state.user.photo = null;
+    } else {
+        // Sem rede fica em casa, e sobe no proximo arranque.
+        state.user.photo = preview;
+    }
+
+    saveUserData();
+}
+
+// O avatar que ficou por subir sobe assim que houver ligacao.
+async function flushPendingAvatar() {
+    if (!state.user || !state.user.photo) return;
+    if (!HeritageCloud.isAvailable() || !HeritageCloud.getUserId()) return;
+
+    let compressed;
+    try {
+        compressed = await ImageCompressor.compress(state.user.photo, 'AVATAR');
+    } catch (error) {
+        return;
+    }
+
+    const path = HeritageCloud.avatarPath(compressed.extension);
+    const upload = await HeritageCloud.uploadImage(path, compressed.blob, compressed.format);
+    if (!upload.ok) return;
+
+    state.user.avatarPath = path;
+    state.user.photo = null;
+    saveUserData();
 }
 
 // Settings functions
@@ -1306,6 +1574,10 @@ function loadSettings() {
 
 function saveSettings() {
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(state.settings));
+
+    // Tema, idioma e alertas seguem a conta, para que um aparelho
+    // novo nao comece do zero nas preferencias.
+    if (state.user) HeritageCloud.queueProfile(state.user, state.settings);
 }
 
 function resolveTheme(theme) {
@@ -2071,7 +2343,7 @@ function openMonumentPhotos(monumentId) {
 
     state.currentMonumentForPhotos = monument;
     state.monumentTagsDraft = getMonumentTags(monumentId);
-    monumentNote.value = localStorage.getItem(`monument_note_${monumentId}`) || '';
+    monumentNote.value = localStorage.getItem(monumentKey('note', monumentId)) || '';
 
     renderMonumentPage();
     monumentPhotosModal.classList.remove('hidden');
@@ -2159,7 +2431,7 @@ function toggleNoteEditing() {
 // --- Memorias rapidas ---
 function getMonumentTags(monumentId) {
     try {
-        const saved = JSON.parse(localStorage.getItem(`monument_tags_${monumentId}`));
+        const saved = JSON.parse(localStorage.getItem(monumentKey('tags', monumentId)));
         return Array.isArray(saved) ? saved : [];
     } catch (e) {
         return [];
@@ -2193,30 +2465,80 @@ function toggleMemoryTag(tagId) {
 
 // --- Album de fotos ---
 //
-// Cada fotografia passa a ser { id, data, createdAt }. Os albuns
-// antigos eram arrays de data URLs; sao convertidos ao serem lidos,
-// sem perder nada.
+// A imagem vive no Supabase Storage. Aqui fica so o que a app
+// precisa para a mostrar: o caminho, as medidas e a data. Deixou de
+// haver Data URLs no localStorage — eram eles que esgotavam a quota
+// do browser quando um album crescia.
+//
+// Tres formas ja existiram, e todas continuam a ser lidas:
+//   "data:..."                    album muito antigo
+//   { id, data, createdAt }       album anterior a nuvem
+//   { id, path, width, ... }      album actual, no Storage
+//
+// As duas primeiras nascem PENDENTES: ficam em casa com a imagem, e
+// sobem — comprimidas — assim que houver ligacao.
 function createPhotoId() {
     return 'photo_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8);
 }
 
 function normalizeMonumentPhoto(entry) {
     if (typeof entry === 'string') {
-        return { id: createPhotoId(), data: entry, createdAt: null };
+        return { id: createPhotoId(), data: entry, createdAt: null, pending: true };
     }
-    if (entry && typeof entry === 'object' && typeof entry.data === 'string') {
+
+    if (!entry || typeof entry !== 'object') return null;
+
+    const createdAt = typeof entry.createdAt === 'string' ? entry.createdAt : null;
+    const id = typeof entry.id === 'string' ? entry.id : createPhotoId();
+
+    if (typeof entry.path === 'string' && entry.path) {
         return {
-            id: typeof entry.id === 'string' ? entry.id : createPhotoId(),
-            data: entry.data,
-            createdAt: typeof entry.createdAt === 'string' ? entry.createdAt : null
+            id: id,
+            path: entry.path,
+            width: entry.width || null,
+            height: entry.height || null,
+            bytes: entry.bytes || null,
+            originalBytes: entry.originalBytes || null,
+            format: entry.format || null,
+            createdAt: createdAt
         };
     }
+
+    if (typeof entry.data === 'string') {
+        return {
+            id: id,
+            data: entry.data,
+            format: entry.format || null,
+            createdAt: createdAt,
+            pending: true
+        };
+    }
+
     return null;
+}
+
+// Pixel transparente: o lugar da fotografia enquanto o link
+// assinado nao chega, em vez do icone de imagem partida.
+const PHOTO_PLACEHOLDER =
+    'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+
+function blobToDataUrl(blob) {
+    return new Promise(function (resolve, reject) {
+        const reader = new FileReader();
+        reader.onload = function () { resolve(reader.result); };
+        reader.onerror = function () { reject(new Error('nao foi possivel ler a imagem')); };
+        reader.readAsDataURL(blob);
+    });
+}
+
+async function dataUrlToBlob(dataUrl) {
+    const response = await fetch(dataUrl);
+    return await response.blob();
 }
 
 function getMonumentPhotos(monumentId) {
     try {
-        const saved = JSON.parse(localStorage.getItem(`monument_photos_${monumentId}`));
+        const saved = JSON.parse(localStorage.getItem(monumentKey('photos', monumentId)));
         if (!Array.isArray(saved)) return [];
         return saved.map(normalizeMonumentPhoto).filter(Boolean);
     } catch (e) {
@@ -2225,7 +2547,7 @@ function getMonumentPhotos(monumentId) {
 }
 
 function saveMonumentPhotos(monumentId, photos) {
-    localStorage.setItem(`monument_photos_${monumentId}`, JSON.stringify(photos));
+    localStorage.setItem(monumentKey('photos', monumentId), JSON.stringify(photos));
 }
 
 function updateUserPhotosGrid() {
@@ -2250,8 +2572,12 @@ function updateUserPhotosGrid() {
     savedPhotos.forEach((photo, index) => {
         const photoElement = document.createElement('div');
         photoElement.className = 'hh-mp-photo';
+        // A grelha aparece de imediato; as que vivem no Storage
+        // recebem o link assinado logo a seguir (hydratePhotoUrls).
         photoElement.innerHTML = `
-            <img src="${photo.data}" alt="${t('photoAlt')} ${index + 1}">
+            <img src="${photo.pending ? photo.data : PHOTO_PLACEHOLDER}"
+                 alt="${t('photoAlt')} ${index + 1}"
+                 data-path="${photo.path || ''}">
             <button type="button" class="hh-mp-photo-del" title="${t('close')}">
                 <i class="fas fa-times"></i>
             </button>
@@ -2273,6 +2599,29 @@ function updateUserPhotosGrid() {
         uploadPhoto();
     });
     userPhotosGrid.appendChild(addButton);
+
+    hydratePhotoUrls(monumentId);
+}
+
+// Pede os links assinados das fotografias visiveis e pinta-as.
+async function hydratePhotoUrls(monumentId) {
+    const paths = getMonumentPhotos(monumentId)
+        .filter(function (photo) { return !!photo.path; })
+        .map(function (photo) { return photo.path; });
+
+    if (!paths.length) return;
+
+    const urls = await HeritageCloud.signImageUrls(paths);
+
+    // A pagina pode ter mudado enquanto esperavamos: so pintamos se
+    // ainda for este o monumento aberto.
+    if (!state.currentMonumentForPhotos) return;
+    if (state.currentMonumentForPhotos.id !== monumentId) return;
+
+    userPhotosGrid.querySelectorAll('img[data-path]').forEach(function (img) {
+        const url = urls[img.dataset.path];
+        if (url) img.src = url;
+    });
 }
 
 // --- Guardar experiencia (nota + etiquetas) ---
@@ -2283,16 +2632,20 @@ function saveExperience() {
     const note = monumentNote.value.trim();
 
     if (note) {
-        localStorage.setItem(`monument_note_${monumentId}`, note);
+        localStorage.setItem(monumentKey('note', monumentId), note);
     } else {
-        localStorage.removeItem(`monument_note_${monumentId}`);
+        localStorage.removeItem(monumentKey('note', monumentId));
     }
 
     if (state.monumentTagsDraft.length) {
-        localStorage.setItem(`monument_tags_${monumentId}`, JSON.stringify(state.monumentTagsDraft));
+        localStorage.setItem(monumentKey('tags', monumentId), JSON.stringify(state.monumentTagsDraft));
     } else {
-        localStorage.removeItem(`monument_tags_${monumentId}`);
+        localStorage.removeItem(monumentKey('tags', monumentId));
     }
+
+    // A experiencia e as etiquetas seguem para a nuvem; as
+    // fotografias deste monumento ficam aqui, neste browser.
+    HeritageCloud.queueEntry(monumentId, note, state.monumentTagsDraft);
 
     setNoteEditing(false);
 
@@ -2348,18 +2701,22 @@ function closeCameraCapture() {
 
 function capturePhoto() {
     if (!state.cameraStream || !state.currentMonumentForPhotos) return;
-    
+
     const canvas = document.createElement('canvas');
     const context = canvas.getContext('2d');
-    
+
     canvas.width = cameraVideo.videoWidth;
     canvas.height = cameraVideo.videoHeight;
-    
+
     context.drawImage(cameraVideo, 0, 0);
-    
-    const photoData = canvas.toDataURL('image/jpeg', 0.8);
-    savePhoto(photoData);
-    
+
+    // Sai em qualidade alta e como Blob: quem comprime e o
+    // compressor, uma unica vez, e nao esta funcao. Comprimir aqui
+    // tambem so faria a imagem passar duas vezes pela perda.
+    canvas.toBlob(function (blob) {
+        if (blob) savePhoto(blob);
+    }, 'image/jpeg', 0.92);
+
     closeCameraCapture();
 }
 
@@ -2369,21 +2726,23 @@ function uploadPhoto() {
 
 function handlePhotoUpload(event) {
     const file = event.target.files[0];
-    if (!file || !state.currentMonumentForPhotos) return;
-    
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        savePhoto(e.target.result);
-    };
-    reader.readAsDataURL(file);
-    
-    // Reset input
     event.target.value = '';
+
+    if (!file || !state.currentMonumentForPhotos) return;
+
+    // O ficheiro segue inteiro para o compressor: ler para Data URL
+    // antes de comprimir so gastava memoria a mais.
+    savePhoto(file);
 }
 
-function savePhoto(photoData) {
+// Guardar uma fotografia: comprimir, subir, registar.
+//
+// A ordem importa. O XP so e atribuido depois de a fotografia estar
+// mesmo guardada — na nuvem, ou em casa a espera de subir. Nunca se
+// anuncia o que nao ficou gravado (ponto 4 da seccao 13).
+async function savePhoto(source) {
     if (!state.currentMonumentForPhotos) return;
-    
+
     const monumentId = state.currentMonumentForPhotos.id;
     const savedPhotos = getMonumentPhotos(monumentId);
 
@@ -2392,7 +2751,34 @@ function savePhoto(photoData) {
         return;
     }
 
-    const photo = { id: createPhotoId(), data: photoData, createdAt: new Date().toISOString() };
+    let compressed;
+    try {
+        compressed = await ImageCompressor.compress(source, 'ALBUM');
+    } catch (error) {
+        alert(t('photoUnreadable'));
+        return;
+    }
+
+    const photo = {
+        id: createPhotoId(),
+        createdAt: new Date().toISOString(),
+        width: compressed.width,
+        height: compressed.height,
+        bytes: compressed.bytes,
+        originalBytes: compressed.originalBytes,
+        format: compressed.format
+    };
+
+    const uploaded = await uploadPhotoToCloud(monumentId, photo, compressed.blob, compressed.extension);
+
+    if (!uploaded) {
+        // Sem rede, fica em casa com a imagem e marcada para subir.
+        // Conta na mesma, porque FOI gravada — e liberta a quota do
+        // browser assim que a ligacao voltar.
+        photo.pending = true;
+        photo.data = await blobToDataUrl(compressed.blob);
+    }
+
     savedPhotos.push(photo);
     saveMonumentPhotos(monumentId, savedPhotos);
 
@@ -2415,22 +2801,144 @@ function savePhoto(photoData) {
         monumentId
     );
 
-    announceReward(xpBatch, streakResult, t('photoSaved'));
+    announceReward(xpBatch, streakResult, photoSavedMessage(photo, compressed));
 }
 
-function deletePhoto(index) {
+// O aviso conta o que aconteceu: que ficou a espera de rede, ou
+// quanto espaco a compressao poupou.
+function photoSavedMessage(photo, compressed) {
+    if (photo.pending) return t('photoQueued');
+    if (compressed.savings > 0) return t('photoCompressed', { saved: compressed.savings });
+    return t('photoSaved');
+}
+
+// Sobe o ficheiro e regista-o. Devolve `true` so quando as duas
+// coisas correram bem — meia gravacao nao e uma gravacao.
+async function uploadPhotoToCloud(monumentId, photo, blob, extension) {
+    if (!HeritageCloud.isAvailable() || !HeritageCloud.getUserId()) return false;
+
+    const path = HeritageCloud.photoPath(monumentId, photo.id, extension);
+
+    const upload = await HeritageCloud.uploadImage(path, blob, photo.format);
+    if (!upload.ok) return false;
+
+    const registered = await HeritageCloud.savePhotoRow({
+        id: photo.id,
+        monumentId: monumentId,
+        path: path,
+        width: photo.width,
+        height: photo.height,
+        bytes: photo.bytes,
+        originalBytes: photo.originalBytes,
+        format: photo.format,
+        createdAt: photo.createdAt
+    });
+
+    if (!registered.ok) {
+        // O ficheiro subiu mas o registo nao: apaga-se o ficheiro,
+        // ou ficava a ocupar espaco sem nada que o soubesse mostrar.
+        await HeritageCloud.removeImages([path]);
+        return false;
+    }
+
+    photo.path = path;
+    delete photo.pending;
+    delete photo.data;
+    return true;
+}
+
+// As fotografias que ficaram em casa — por falta de rede, ou porque
+// foram tiradas antes de existir nuvem — sobem agora. Cada uma que
+// sobe liberta a quota do browser que estava a ocupar.
+async function flushPendingPhotos() {
+    if (!HeritageCloud.isAvailable() || !HeritageCloud.getUserId()) return;
+    if (!navigator.onLine) return;
+
+    for (let i = 0; i < state.monuments.length; i++) {
+        const monumentId = state.monuments[i].id;
+        const photos = getMonumentPhotos(monumentId);
+
+        const hasPending = photos.some(function (photo) { return photo.pending; });
+        if (!hasPending) continue;
+
+        let changed = false;
+
+        for (let j = 0; j < photos.length; j++) {
+            const photo = photos[j];
+            if (!photo.pending || !photo.data) continue;
+
+            const prepared = await preparePendingPhoto(photo);
+            if (!prepared) continue;
+
+            if (await uploadPhotoToCloud(monumentId, photo, prepared.blob, prepared.extension)) {
+                changed = true;
+            }
+        }
+
+        if (!changed) continue;
+
+        saveMonumentPhotos(monumentId, photos);
+
+        if (state.currentMonumentForPhotos && state.currentMonumentForPhotos.id === monumentId) {
+            updateUserPhotosGrid();
+        }
+    }
+}
+
+// Uma fotografia ja comprimida nao volta a passar pelo compressor:
+// perder qualidade uma segunda vez nao poupa nada que compense. Uma
+// antiga, guardada em bruto, e comprimida agora — e e ai que esta o
+// maior ganho de espaco de toda esta mudanca.
+async function preparePendingPhoto(photo) {
+    try {
+        if (photo.format) {
+            return {
+                blob: await dataUrlToBlob(photo.data),
+                extension: ImageCompressor.extensionFor(photo.format)
+            };
+        }
+
+        const compressed = await ImageCompressor.compress(photo.data, 'ALBUM');
+
+        photo.width = compressed.width;
+        photo.height = compressed.height;
+        photo.bytes = compressed.bytes;
+        photo.originalBytes = compressed.originalBytes;
+        photo.format = compressed.format;
+
+        return { blob: compressed.blob, extension: compressed.extension };
+    } catch (error) {
+        return null;
+    }
+}
+
+async function deletePhoto(index) {
     if (!state.currentMonumentForPhotos) return;
-    
+
     const monumentId = state.currentMonumentForPhotos.id;
     const savedPhotos = getMonumentPhotos(monumentId);
+    const photo = savedPhotos[index];
 
-    if (confirm(t('confirmDeletePhoto'))) {
-        // O XP ja atribuido nao e devolvido nem o lugar libertado:
-        // apagar e voltar a adicionar nao rende XP outra vez.
-        savedPhotos.splice(index, 1);
-        saveMonumentPhotos(monumentId, savedPhotos);
-        updateUserPhotosGrid();
+    if (!photo) return;
+    if (!confirm(t('confirmDeletePhoto'))) return;
+
+    // Uma fotografia que ja vive na nuvem so sai daqui depois de sair
+    // de la. Apagar so em casa deixaria um ficheiro orfao a ocupar
+    // espaco para sempre, sem nada que voltasse a mostra-lo.
+    if (photo.path) {
+        const removed = await HeritageCloud.removeImages([photo.path]);
+        if (!removed.ok) {
+            alert(t('photoDeleteFailed'));
+            return;
+        }
+        await HeritageCloud.deletePhotoRow(photo.id);
     }
+
+    // O XP ja atribuido nao e devolvido nem o lugar libertado:
+    // apagar e voltar a adicionar nao rende XP outra vez.
+    savedPhotos.splice(index, 1);
+    saveMonumentPhotos(monumentId, savedPhotos);
+    updateUserPhotosGrid();
 }
 
 // Mostra/oculta a senha nos campos do ecra de autenticacao
@@ -2444,6 +2952,12 @@ document.querySelectorAll('[data-toggle-password]').forEach(btn => {
         if (icon) icon.className = hidden ? 'far fa-eye-slash' : 'far fa-eye';
         input.focus();
     });
+});
+
+// Quando a rede volta, as imagens que estavam em casa sobem.
+window.addEventListener('online', function () {
+    flushPendingPhotos();
+    flushPendingAvatar();
 });
 
 // Event listeners
@@ -2511,16 +3025,29 @@ document.getElementById('registerPassword').addEventListener('keypress', functio
 });
 
 // Initialize app
-function initApp() {
+async function initApp() {
     initSettings();
     initXPSystem();
     initExplorationStreak();
     initJourney();
     initDiscoveryCelebration();
 
-    const savedUser = localStorage.getItem('heritageUser');
-    if (savedUser) {
-        state.user = JSON.parse(savedUser);
+    // A nuvem e opcional: se a biblioteca ou a configuracao
+    // faltarem, a app corre na mesma, so com este aparelho.
+    HeritageCloud.init();
+
+    const session = HeritageCloud.isAvailable()
+        ? await HeritageCloud.restoreSession()
+        : null;
+
+    if (session) {
+        await enterWithSession(session);
+    } else if (!navigator.onLine && readLocalUser()) {
+        // Sem rede no arranque, quem ja tinha entrado neste aparelho
+        // continua a explorar — e o que descobrir agora sobe assim
+        // que a ligacao voltar. O trabalho de campo nao pode parar
+        // por causa de uma barra de sinal.
+        state.user = readLocalUser();
         loadUserData();
         showMainApp();
     } else {

@@ -23,6 +23,9 @@ ficheiro de domínio toca no DOM nem no `localStorage` directamente.
 | `index.html` | Estrutura de todos os ecrãs e modais (tudo existe no HTML, só se alterna a classe `hidden`) |
 | `styles.css` | Todo o aspecto visual, temas claro/escuro, animações |
 | `i18n.js` | Traduções PT / EN / FR + função `t(chave, vars)` |
+| `supabase-config.js` | URL e chave pública do projecto Supabase |
+| `cloud.js` | Espelho na nuvem: sessão, perfil, experiências e ficheiros no Supabase |
+| `image-compressor.js` | **Domínio** da compressão: medidas, degraus de qualidade, formato |
 | `script.js` | Orquestrador: estado, autenticação, scanner, mapa, navegação, álbum, definições |
 | `xp.js` | **Domínio** do XP: quanto vale cada acção, idempotência, histórico |
 | `xp-ui.js` | Cartão de XP, histórico, toast, zonas, painel pós-descoberta |
@@ -622,19 +625,114 @@ Nunca há dois avisos sobrepostos pela mesma acção.
 
 ---
 
-## 11. Persistência (`localStorage`)
+## 11. Persistência (`localStorage` + Supabase)
+
+### A regra que governa as duas camadas
+
+O `localStorage` é a fonte **síncrona** da verdade. O domínio grava como sempre
+gravou e **nunca espera pela rede** — é isso que mantém intacta a regra de ouro:
+nada é anunciado antes de estar gravado, e uma descoberta desfaz-se se a escrita
+falhar. O Supabase é um **espelho** por cima disso: puxa quando a sessão abre,
+empurra depois de cada gravação local.
+
+Consequência desejada: sem rede a app funciona na mesma, e o que ficou por
+enviar sobe assim que a ligação voltar.
+
+### Chaves locais
 
 | Chave | Conteúdo |
 |---|---|
-| `heritageUser` | Perfil completo: dados, foto, `scannedMonuments`, `xp` (carteira), `explorationStreak`, `levelSeen` |
+| `heritageUser` | Perfil: dados, foto, `cloudId`, `scannedMonuments`, `xp` (carteira), `explorationStreak`, `levelSeen` |
 | `heritageSettings` | `{ theme, lang, achievementAlerts }` |
-| `monument_note_<id>` | Texto da experiência de um monumento |
-| `monument_tags_<id>` | Etiquetas de memória de um monumento |
-| `monument_photos_<id>` | Álbum de um monumento |
+| `monument_note_<id>__<dono>` | Texto da experiência de um monumento |
+| `monument_tags_<id>__<dono>` | Etiquetas de memória de um monumento |
+| `monument_photos_<id>__<dono>` | Álbum de um monumento: **metadados**, não imagens |
+
+As chaves de monumento têm **dono** (`monumentKey()`): desde que há contas a
+sério, duas pessoas podem usar o mesmo telemóvel, e o álbum de uma não pode
+aparecer à outra. Conteúdo gravado antes das contas é adoptado pela conta que
+entrar com o mesmo email (`adoptLegacyMonumentKeys()`).
+
+### Tabelas na nuvem
+
+| Tabela | Conteúdo |
+|---|---|
+| `profiles` | Uma linha por conta: `name`, `points`, `level_seen`, `xp`, `exploration_streak`, `scanned_monuments`, `settings` |
+| `monument_entries` | Uma linha por monumento visitado: `note`, `tags` |
+| `monument_photos` | Metadados do álbum: `path`, medidas, `bytes`, `original_bytes` |
+| `monument-photos` *(bucket)* | Os ficheiros das fotografias, privados |
+
+Ambas com **RLS**: cada explorador só lê e escreve o que é seu.
+
+Os agregados de domínio (carteira, sequência) sobem como `jsonb` **inteiros**,
+de propósito — assim uma gravação continua a ser **uma escrita atómica**, tal
+como o ponto 4 da secção 13 exige.
+
+### As fotografias vivem no Storage, comprimidas
+
+Um bucket **privado** (`monument-photos`), com o caminho sempre na forma
+`<id do dono>/<monumento>/<foto>.<ext>` — é a **primeira pasta** que a política
+do bucket compara com quem pede, por isso mudar essa forma é mudar a segurança.
+Quem vê uma fotografia recebe um **link assinado** que dura uma hora, nunca um
+endereço público.
+
+Nenhuma imagem entra numa linha da base de dados: `toRow()` monta o perfil campo
+a campo, e o que lá vai é o **caminho** do ficheiro. A tabela `monument_photos`
+guarda os metadados; o avatar é uma coluna `avatar_path`.
+
+**Nada sobe por comprimir** (ver secção 11.1). O limite de 1 MB por ficheiro no
+bucket é uma rede de segurança, não o caminho normal.
+
+### Fotografias pendentes
+
+Sem rede, a fotografia é guardada **em casa**, marcada `pending`, e conta na
+mesma — porque foi mesmo gravada, que é o que o ponto 4 da secção 13 exige.
+Sobe sozinha ao entrar na app, quando a ligação volta, e liberta nesse momento a
+quota do browser que estava a ocupar.
+
+É o mesmo mecanismo que migra os álbuns antigos: uma fotografia guardada antes
+desta mudança nasce pendente e, ao subir, passa pelo compressor — e é aí que
+está o maior ganho de espaço de toda esta alteração.
+
+### Apagar não deixa órfãos
+
+Uma fotografia que já vive na nuvem só sai do aparelho **depois** de sair de lá.
+Se o ficheiro subiu mas o registo falhou, o ficheiro é apagado. Um ficheiro que
+ninguém sabe mostrar seria espaço ocupado para sempre.
+
+---
+
+## 11.1. Compressão (`image-compressor.js`)
+
+Porque existe: o armazenamento é finito e partilhado por todos os exploradores.
+Uma fotografia de telemóvel pesa vários MB; a mesma fotografia, no tamanho em
+que é realmente vista, pesa uma fracção disso.
+
+| Perfil | Maior aresta | Alvo | Tecto |
+|---|---|---|---|
+| `ALBUM` | 1600 px | 180 KB | 900 KB |
+| `AVATAR` | 512 px | 60 KB | 300 KB |
+
+Regras que o compressor respeita:
+
+1. **Nunca aumenta uma imagem.** Esticar uma foto pequena só gastaria espaço a
+   inventar pixéis que não existem.
+2. **A qualidade desce por degraus** (0.82 → 0.45), e pára no primeiro que
+   couber — quem já cabia à primeira não é degradado.
+3. **WebP quando o browser o suporta**, JPEG quando não; tipicamente 25 a 35 %
+   abaixo do JPEG com a mesma qualidade aparente.
+4. **A orientação EXIF é respeitada** (`createImageBitmap`), ou fotos tiradas de
+   lado subiam deitadas.
+5. **Comprime-se uma só vez.** Uma fotografia já comprimida que esteja pendente
+   sobe tal como está; perder qualidade duas vezes não poupa nada que compense.
+6. **A aritmética não toca no DOM**, e é por isso que tem testes
+   (`image-compressor.test.js`, 26 testes).
+
+### Adaptadores
 
 Tanto `xp.js` como `streak.js` recebem o armazenamento por **adaptador
-injectado** (`configureStorage({ load, save })`) — trocar `localStorage` por uma
-base de dados não obriga a reescrever nenhuma regra de domínio.
+injectado** (`configureStorage({ load, save })`) — foi essa injecção que
+permitiu acrescentar a nuvem sem tocar numa única regra de domínio.
 
 `saveUserData()` mantém `user.points` como espelho do XP total, para que
 qualquer código antigo continue a ler um valor correcto.
@@ -646,11 +744,11 @@ qualquer código antigo continue a ler um valor correcto.
 ```
 ABRIR A APP
   │
-  ├─ sem sessão ──► ECRÃ DE AUTENTICAÇÃO
+  ├─ sem sessão ──► ECRÃ DE AUTENTICAÇÃO (Supabase Auth)
   │                   ├─ Criar conta ──► perfil novo (0 XP, nível 1 Explorador)
-  │                   └─ Entrar ───────► perfil recuperado + migrações
+  │                   └─ Entrar ───────► perfil puxado da nuvem + migrações
   │
-  └─ com sessão ──► entra directamente
+  └─ com sessão ──► entra directamente (sem rede, entra com o que é local)
                       │
                       ▼
               SCANNER (vista por omissão)
@@ -741,7 +839,11 @@ Regras que o código respeita de forma consistente e que devem manter-se:
 
 ### Implementado
 
-- Autenticação local (registo, login, sessão persistente, logout)
+- Autenticação real com Supabase Auth (registo, login, sessão persistente,
+  logout), com a senha verificada no servidor
+- Progresso sincronizado na nuvem: entrar noutro aparelho encontra tudo lá
+- Fotografias no Supabase Storage, comprimidas antes de subir, com fila
+  para o que foi tirado sem rede
 - Scanner de QR com lanterna e tratamento de erros
 - 12 monumentos, 4 zonas, 1 jornada cultural
 - Sistema de XP completo, com histórico e idempotência
@@ -753,7 +855,7 @@ Regras que o código respeita de forma consistente e que devem manter-se:
 - Celebração de descoberta com três variantes, hierarquia de recompensas e
   ligação directa ao álbum
 - Testes de domínio: `xp.test.js`, `levels.test.js`, `streak.test.js`,
-  `journey.test.js`, `discovery.test.js` (156 testes)
+  `journey.test.js`, `discovery.test.js`, `image-compressor.test.js` (182 testes)
 
 ### Já previsto no código, por implementar
 
@@ -767,9 +869,12 @@ Regras que o código respeita de forma consistente e que devem manter-se:
 
 - **Nível 4 inalcançável hoje**: o máximo de XP obtenível (1 165) fica abaixo do
   limiar de 1 200 (ver 7.4)
-- Autenticação é simulada: um só utilizador por dispositivo, a senha não é
-  verificada no login, e nada é encriptado
-- Tudo vive no `localStorage` — as fotografias em Data URL podem esgotar a quota
-  do browser
-- Sem backend: não há sincronização entre dispositivos nem tabela de
-  classificação entre exploradores
+- **Um álbum só se vê com ligação.** As imagens deixaram de estar no aparelho,
+  por isso offline mostram-se vazias — excepto as que ainda estão pendentes.
+  Guardar miniaturas locais resolveria, ao custo de voltar a gastar quota
+- **Conflito entre aparelhos resolve-se pelo XP mais alto** (`pickProfile()`).
+  O progresso desta app só cresce, por isso o critério é seguro e previsível —
+  mas dois aparelhos a explorar em paralelo sem rede não fundem as descobertas:
+  ganha o retrato com mais XP
+- Ainda não há tabela de classificação entre exploradores, embora o RLS e a
+  coluna `points` já estejam prontos para uma
