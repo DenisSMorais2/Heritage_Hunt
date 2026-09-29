@@ -8176,3 +8176,258 @@ html:not(.dark) .hh-rk-confirm-title {
 html:not(.dark) .hh-rk-confirm {
     background: linear-gradient(180deg, #FFFFFF 0%, #F4F1E9 100%);
 }
+
+/* ============================================================
+   PROPORÇÕES DE ECRÃ
+
+   O desenho é o mesmo em toda a parte; o que muda é a FOLGA.
+   Nada aqui redesenha o ranking — só o deixa respirar quando há
+   espaço e encolher quando não há.
+
+   Três regras mandam nesta secção:
+
+   1. `dvh` em vez de `vh`. Em telemóvel a barra do browser
+      aparece e desaparece, e `vh` não conta com isso: um ecrã
+      medido em `vh` fica sempre um pouco maior do que é.
+   2. Nada com altura fixa que não caiba num ecrã deitado. Um
+      telemóvel ao alto tem 850px de altura; deitado tem 390.
+   3. Qualquer folha tem de poder deslizar. Um botão fora do
+      ecrã é um botão que não existe.
+   ============================================================ */
+
+.hh-rk-page {
+    /* `vh` primeiro como recurso para quem não conhece `dvh`. */
+    min-height: 100vh;
+    min-height: 100dvh;
+}
+
+/* --- Herói: alto quando há altura, discreto quando não há --- */
+.hh-rk-hero {
+    /* Nunca mais de um terço do ecrã. Num ecrã deitado, 240px
+       fixos deixavam o conteúdo todo abaixo da dobra. */
+    min-height: min(240px, 32dvh);
+    padding:
+        calc(clamp(14px, 3vh, 26px) + var(--hh-safe-top))
+        clamp(14px, 4.5vw, 20px)
+        clamp(14px, 2.6vh, 24px);
+}
+
+.hh-rk-hero-title {
+    font-size: clamp(1.6rem, min(8.5vw, 6.4dvh), 2.5rem);
+}
+
+.hh-rk-hero-lead {
+    font-size: clamp(0.78rem, 2.4dvh, 0.86rem);
+}
+
+/* --- Emblema do estado desativado --- */
+.hh-rk-off {
+    padding-top: clamp(14px, 3.4dvh, 26px);
+}
+
+.hh-rk-off-emblem {
+    height: clamp(104px, 19dvh, 150px);
+}
+
+.hh-rk-off-badge {
+    width: clamp(66px, 12.5dvh, 92px);
+    height: clamp(66px, 12.5dvh, 92px);
+    font-size: clamp(1.5rem, 4.6dvh, 2.1rem);
+}
+
+.hh-rk-off-slash {
+    width: clamp(44px, 8.4dvh, 62px);
+}
+
+.hh-rk-off-lead {
+    margin-bottom: clamp(16px, 3.4dvh, 24px);
+}
+
+.hh-rk-assure {
+    margin-top: clamp(16px, 3.4dvh, 26px);
+}
+
+/* --- Folhas: deslizam sempre --- */
+.hh-rk-confirm {
+    /* Sem isto, num ecrã deitado o botão "Participar" caía fora
+       do ecrã e a folha ficava sem saída. */
+    max-height: 92dvh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+.hh-rk-info-sheet {
+    max-height: 100dvh;
+}
+
+.hh-rk-info-body {
+    overscroll-behavior: contain;
+}
+
+/* ============================================================
+   Ecrãs baixos — telemóvel deitado, janelas curtas
+   ============================================================ */
+
+@media (max-height: 620px) {
+    /* A navegação também encolhe: 96px num ecrã de 390 é um quarto
+       da altura só para quatro ícones.
+
+       A variável e a barra TÊM de encolher juntas. A variável só
+       reserva o espaço; se ela diminuísse sozinha, o conteúdo
+       passaria a esconder-se por trás de uma barra que continuava
+       do mesmo tamanho. */
+    :root {
+        --hh-nav-h: 72px;
+    }
+
+    /* O que manda na altura da barra e a margem do grupo mais o
+       min-height dos botoes, e nao o padding. 44px continua a
+       cumprir o alvo tactil minimo. */
+    nav.hh-nav > .hh-nav-group {
+        margin: 6px clamp(10px, 3.5vw, 14px);
+        padding: 0;
+    }
+
+    nav.hh-nav button {
+        min-height: 44px;
+        padding: 6px 4px;
+    }
+
+    nav.hh-nav .hh-nav-group > button i {
+        font-size: 1.05rem;
+    }
+
+    nav.hh-nav .hh-nav-group > button span {
+        font-size: 0.62rem;
+        margin-top: 1px;
+    }
+
+    .hh-rk-hero-sub {
+        font-size: 0.9rem;
+    }
+
+    .hh-rk-hero-lead {
+        /* A frase de apoio é a primeira coisa dispensável: o
+           título e o subtítulo já dizem onde estamos. */
+        display: none;
+    }
+
+    .hh-rk-period {
+        margin-top: 10px;
+        padding: 7px 14px;
+    }
+
+    .hh-rk-off-title {
+        font-size: 1.15rem;
+        margin-bottom: 6px;
+    }
+
+    .hh-rk-off-lead {
+        font-size: 0.82rem;
+        line-height: 1.5;
+    }
+
+    .hh-rk-state {
+        padding-top: 20px;
+    }
+
+    .hh-rk-state-icon {
+        width: 58px;
+        height: 58px;
+        margin-bottom: 12px;
+        font-size: 1.45rem;
+    }
+
+    .hh-rk-confirm-icon {
+        width: 44px;
+        height: 44px;
+        margin-bottom: 10px;
+        font-size: 1.1rem;
+    }
+
+    .hh-rk-confirm-text {
+        margin-bottom: 16px;
+    }
+
+    .hh-rk-info-card {
+        padding-top: 70px;
+    }
+
+    .hh-rk-info-points {
+        gap: 14px;
+    }
+}
+
+/* Muito baixo (telemóvel deitado a sério): o cartão de
+   tranquilização sai de cena. É secundário por desenho, e num
+   ecrã destes competiria com o convite em vez de o apoiar. */
+@media (max-height: 460px) {
+    .hh-rk-hero {
+        min-height: 0;
+    }
+
+    .hh-rk-off-emblem {
+        height: 88px;
+    }
+
+    .hh-rk-assure {
+        display: none;
+    }
+
+    .hh-rk-info-card {
+        padding-top: 54px;
+    }
+
+    .hh-rk-info-compass {
+        display: none;
+    }
+}
+
+/* ============================================================
+   Ecrãs largos — tablet, computador
+
+   A app é uma coluna de telemóvel centrada, e continua a sê-lo.
+   O que muda é só a moldura à volta, para a coluna não parecer
+   abandonada no meio de um ecrã grande.
+   ============================================================ */
+
+@media (min-width: 900px) and (min-height: 700px) {
+    .hh-rk-hero {
+        min-height: 260px;
+    }
+
+    .hh-rk-off-emblem {
+        height: 160px;
+    }
+}
+
+/* ============================================================
+   Ecrãs muito estreitos — dobráveis fechados
+   ============================================================ */
+
+@media (max-width: 330px) {
+    .hh-rk-podium {
+        gap: 3px;
+    }
+
+    .hh-rk-pod-finds,
+    .hh-rk-finds {
+        font-size: 0.6rem;
+    }
+
+    .hh-rk-row {
+        gap: 8px;
+        padding-left: 8px;
+        padding-right: 10px;
+    }
+
+    .hh-rk-avatar {
+        width: 34px;
+        height: 34px;
+    }
+
+    .hh-rk-pos {
+        min-width: 20px;
+        font-size: 0.82rem;
+    }
+}
