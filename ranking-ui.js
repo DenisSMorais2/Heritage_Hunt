@@ -409,6 +409,12 @@ const RankingUI = (function () {
             const img = document.createElement('img');
             img.alt = '';
             img.dataset.avatar = entry.avatarPath;
+            // A inicial viaja com a imagem: se o link falhar, o
+            // lugar da fotografia fica com o nome de quem la devia
+            // estar, e nao com um ponto de interrogacao.
+            img.dataset.initial = Ranking.initialFor(entry.displayName);
+            // Uma fotografia que nao carrega tambem cai na inicial.
+            img.addEventListener('error', function () { toInitial(img); });
             wrap.appendChild(img);
         } else {
             const initial = document.createElement('span');
@@ -438,16 +444,25 @@ const RankingUI = (function () {
             const url = urls[img.dataset.avatar];
             // Sem link assinado, a inicial e melhor que um quadrado partido.
             if (!url) {
-                const wrap = img.parentNode;
-                const initial = document.createElement('span');
-                initial.className = 'hh-rk-ava-initial';
-                initial.textContent = '?';
-                img.remove();
-                wrap.insertBefore(initial, wrap.firstChild);
+                toInitial(img);
                 return;
             }
             img.src = url;
         });
+    }
+
+    // Substitui uma fotografia que nao chegou pela inicial de quem
+    // ela representa.
+    function toInitial(img) {
+        const wrap = img.parentNode;
+        if (!wrap) return;
+
+        const initial = document.createElement('span');
+        initial.className = 'hh-rk-ava-initial';
+        initial.textContent = img.dataset.initial || '?';
+
+        img.remove();
+        wrap.insertBefore(initial, wrap.firstChild);
     }
 
     return {
