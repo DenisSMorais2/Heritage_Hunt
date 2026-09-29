@@ -822,8 +822,10 @@ function remoteToProfile(remote, session) {
         cloudId: session.userId,
         name: remote.name || '',
         email: remote.email || session.email,
-        // A foto de perfil e deste browser: nunca vem da nuvem.
+        // `photo` e o Data URL de uma fotografia que ainda NAO subiu.
+        // Nao vem da nuvem: o que vem de la e o caminho do ficheiro.
         photo: null,
+        avatarPath: remote.avatarPath || null,
         points: remote.points || 0,
         scannedMonuments: remote.scannedMonuments || [],
         xp: remote.xp || XP.createEmptyWallet(),
@@ -906,7 +908,20 @@ async function enterWithSession(session, fallbackName) {
     // Supabase, e ja nao ha aqui nada que precise dela.
     delete profile.password;
 
-    // A foto de perfil e local: se este aparelho tinha uma, fica.
+    // O avatar NAO pertence ao retrato de progresso, e por isso nao
+    // pode ser decidido pelo XP como o resto: e um ficheiro proprio,
+    // partilhado por todos os aparelhos.
+    //
+    // A nuvem manda, porque e la que o ficheiro vive; o aparelho
+    // serve de recurso quando ela nada sabe. Sem isto, entrar num
+    // telemovel novo trazia um perfil sem caminho de avatar — e a
+    // gravacao seguinte apagava-o para todos os aparelhos.
+    profile.avatarPath = (remoteProfile && remoteProfile.avatarPath)
+        || (localProfile && localProfile.avatarPath)
+        || null;
+
+    // Uma fotografia ainda por subir e deste aparelho, e fica: e
+    // mais recente que qualquer caminho ja guardado.
     if (localProfile && localProfile.photo) profile.photo = localProfile.photo;
 
     state.user = profile;
