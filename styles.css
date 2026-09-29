@@ -7545,6 +7545,13 @@ html:not(.dark) .hh-scan-crest {
     gap: 14px;
 }
 
+/* Numa coluna flex os filhos encolhem por omissão — e era isso que
+   cortava o título do cartão. Nada aqui pode ficar mais baixo que o
+   seu próprio conteúdo: quem tem de ceder é o scroll, não o texto. */
+.hh-rk-info-body > * {
+    flex: 0 0 auto;
+}
+
 .hh-rk-info-card {
     position: relative;
     overflow: hidden;
@@ -7842,4 +7849,330 @@ html:not(.dark) .hh-rk-sk-row {
    azul genérico dos restantes — é o único comando desta folha. */
 .hh-rk-info-switch .switch input:checked + .switch-slider {
     background: linear-gradient(135deg, var(--hh-gold-soft), var(--hh-gold));
+}
+
+/* ============================================================
+   RANKING DESATIVADO
+
+   Não é um erro nem uma lista vazia: é uma escolha respeitada.
+   Por isso nada aqui usa a linguagem visual de aviso — nem
+   vermelho, nem triângulo, nem cinzento de coisa partida. O
+   emblema é dourado, o tom é de convite, e a página continua a
+   ser a aba Ranking, e não um ecrã de definições.
+   ============================================================ */
+
+.hh-rk-off {
+    text-align: center;
+    padding: 26px 4px 16px;
+}
+
+.hh-rk-off.hidden {
+    display: none;
+}
+
+/* --- Emblema: troféu ao centro, percurso à volta --- */
+.hh-rk-off-emblem {
+    position: relative;
+    display: grid;
+    place-items: center;
+    height: 150px;
+    margin-bottom: 4px;
+    color: var(--hh-gold);
+}
+
+.hh-rk-off-route {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    /* O percurso tracejado e as estrelas de bússola ficam atrás do
+       emblema: dizem "exploração" sem pedir atenção. */
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.hh-rk-off-badge {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 92px;
+    height: 92px;
+    border-radius: 50%;
+    border: 1px solid rgba(214, 178, 116, 0.42);
+    background:
+        radial-gradient(70% 70% at 50% 30%, rgba(214, 178, 116, 0.22), transparent 70%),
+        rgba(214, 178, 116, 0.10);
+    color: var(--hh-gold);
+    font-size: 2.1rem;
+    box-shadow: 0 0 34px rgba(214, 178, 116, 0.16);
+}
+
+/* A barra diagonal diz "desligado" sem transformar o troféu numa
+   proibição: é fina, dourada, e do mesmo material do resto. */
+.hh-rk-off-slash {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 62px;
+    height: 2px;
+    background: var(--hh-gold);
+    border-radius: 2px;
+    transform: translate(-50%, -50%) rotate(-45deg);
+    box-shadow: 0 0 0 2px rgba(14, 32, 57, 0.85);
+    opacity: 0.9;
+}
+
+.hh-rk-off-title {
+    margin: 0 0 10px;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: clamp(1.25rem, 5.4vw, 1.5rem);
+    font-weight: 700;
+    color: var(--hh-gold-soft);
+}
+
+.hh-rk-off-lead {
+    margin: 0 auto 24px;
+    max-width: 32ch;
+    font-size: 0.88rem;
+    line-height: 1.6;
+    color: var(--hh-muted);
+}
+
+/* --- Convite --- */
+.hh-rk-cta-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+}
+
+.hh-rk-ghost {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    min-height: 48px;
+    margin-top: 12px;
+    padding: 0 20px;
+    border-radius: 999px;
+    border: 1px solid var(--hh-line);
+    background: transparent;
+    color: var(--hh-cream);
+    font-size: 0.92rem;
+    font-weight: 600;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.hh-rk-ghost i {
+    font-size: 0.78rem;
+    color: var(--hh-muted);
+}
+
+/* --- Card de tranquilização (secundário de propósito) --- */
+.hh-rk-assure {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-top: 26px;
+    padding: 14px;
+    text-align: left;
+    border-radius: 14px;
+    border: 1px solid var(--hh-line);
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.hh-rk-assure-icon {
+    flex: 0 0 auto;
+    width: 26px;
+    text-align: center;
+    color: var(--hh-gold);
+    font-size: 1rem;
+    margin-top: 1px;
+}
+
+.hh-rk-assure-title {
+    margin: 0 0 3px;
+    font-size: 0.86rem;
+    font-weight: 600;
+    color: var(--hh-cream);
+}
+
+.hh-rk-assure-sub {
+    margin: 0;
+    font-size: 0.78rem;
+    line-height: 1.55;
+    color: var(--hh-muted);
+}
+
+/* ============================================================
+   Folha de confirmação
+   ============================================================ */
+
+.hh-rk-confirm-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    background: rgba(4, 10, 20, 0.66);
+}
+
+.hh-rk-confirm-overlay.hidden {
+    display: none;
+}
+
+.hh-rk-confirm {
+    width: 100%;
+    max-width: 28rem;
+    padding: 26px clamp(18px, 5vw, 26px) calc(22px + var(--hh-safe-bottom));
+    border-radius: 22px 22px 0 0;
+    border-top: 1px solid rgba(214, 178, 116, 0.28);
+    background: linear-gradient(180deg, var(--hh-navy-700) 0%, var(--hh-navy-900) 100%);
+    text-align: center;
+}
+
+.hh-rk-confirm-icon {
+    display: inline-grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    margin-bottom: 14px;
+    border-radius: 50%;
+    background: rgba(214, 178, 116, 0.14);
+    color: var(--hh-gold);
+    font-size: 1.25rem;
+}
+
+.hh-rk-confirm-title {
+    margin: 0 0 10px;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: clamp(1.15rem, 5vw, 1.35rem);
+    font-weight: 700;
+    color: var(--hh-cream);
+}
+
+.hh-rk-confirm-text {
+    margin: 0 auto 22px;
+    max-width: 34ch;
+    font-size: 0.85rem;
+    line-height: 1.6;
+    color: var(--hh-muted);
+}
+
+/* Numa folha de decisão a acção principal ocupa a largura toda:
+   é a resposta esperada, não uma hipótese entre outras. */
+.hh-rk-confirm .hh-rk-cta,
+.hh-rk-info-actions .hh-rk-cta {
+    width: 100%;
+}
+
+.hh-rk-text-btn {
+    width: 100%;
+    min-height: 44px;
+    margin-top: 6px;
+    border: none;
+    background: none;
+    color: var(--hh-gold-soft);
+    font-size: 0.92rem;
+    font-weight: 600;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* ============================================================
+   Painel "Sobre o ranking"
+   ============================================================ */
+
+.hh-rk-info-photo {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.55;
+}
+
+.hh-rk-info-photo-shade {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        180deg,
+        rgba(10, 23, 41, 0.30) 0%,
+        rgba(10, 23, 41, 0.78) 55%,
+        rgba(10, 23, 41, 0.94) 100%
+    );
+}
+
+.hh-rk-info-card {
+    padding-top: 92px;
+}
+
+.hh-rk-info-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+    margin: 0;
+    padding: 14px;
+    border-radius: 14px;
+    border: 1px solid rgba(214, 178, 116, 0.22);
+    background: rgba(214, 178, 116, 0.07);
+    font-size: 0.8rem;
+    line-height: 1.55;
+    color: var(--hh-muted);
+}
+
+.hh-rk-info-note.hidden {
+    display: none;
+}
+
+.hh-rk-info-note i {
+    flex: 0 0 auto;
+    margin-top: 2px;
+    color: var(--hh-gold);
+    font-size: 0.95rem;
+}
+
+.hh-rk-info-actions {
+    margin-top: 4px;
+}
+
+.hh-rk-info-actions.hidden {
+    display: none;
+}
+
+/* ============================================================
+   Tema claro
+   ============================================================ */
+
+html:not(.dark) .hh-rk-off-title {
+    color: #8A6A2F;
+}
+
+html:not(.dark) .hh-rk-off-badge {
+    background:
+        radial-gradient(70% 70% at 50% 30%, rgba(168, 129, 63, 0.18), transparent 70%),
+        rgba(168, 129, 63, 0.10);
+    border-color: rgba(168, 129, 63, 0.38);
+    box-shadow: 0 0 34px rgba(168, 129, 63, 0.12);
+}
+
+html:not(.dark) .hh-rk-off-slash {
+    box-shadow: 0 0 0 2px #F7F3EA;
+}
+
+html:not(.dark) .hh-rk-assure,
+html:not(.dark) .hh-rk-ghost {
+    background: rgba(255, 255, 255, 0.72);
+}
+
+html:not(.dark) .hh-rk-assure-title,
+html:not(.dark) .hh-rk-ghost,
+html:not(.dark) .hh-rk-confirm-title {
+    color: #12294A;
+}
+
+html:not(.dark) .hh-rk-confirm {
+    background: linear-gradient(180deg, #FFFFFF 0%, #F4F1E9 100%);
 }

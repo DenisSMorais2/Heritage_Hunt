@@ -42,10 +42,22 @@ const RankingUI = (function () {
             retry:      document.getElementById('rankingRetry'),
             explore:    document.getElementById('rankingExploreBtn'),
 
+            disabled:   document.getElementById('rankingDisabled'),
+            join:       document.getElementById('rankingJoinBtn'),
+            learn:      document.getElementById('rankingLearnBtn'),
+
             infoBtn:    document.getElementById('rankingInfoBtn'),
             infoModal:  document.getElementById('rankingInfoModal'),
             infoClose:  document.getElementById('closeRankingInfo'),
-            infoToggle: document.getElementById('rankingOptInSheetToggle')
+            infoToggle: document.getElementById('rankingOptInSheetToggle'),
+            infoNote:   document.getElementById('rankingOffNote'),
+            infoActions: document.getElementById('rankingInfoActions'),
+            infoJoin:   document.getElementById('rankingInfoJoin'),
+            infoLater:  document.getElementById('rankingInfoLater'),
+
+            confirm:    document.getElementById('rankingConfirmModal'),
+            confirmYes: document.getElementById('rankingConfirmYes'),
+            confirmNo:  document.getElementById('rankingConfirmNo')
         };
 
         if (!dom.view) return;
@@ -65,8 +77,29 @@ const RankingUI = (function () {
             if (deps.onOptInChange) deps.onOptInChange(event.target.checked);
         });
 
+        // O convite principal nunca liga nada de imediato: pergunta.
+        dom.join.addEventListener('click', openConfirm);
+        dom.learn.addEventListener('click', openInfo);
+
+        // Dentro do painel o contexto ja foi dado por inteiro, por
+        // isso aqui o passo seguinte e directo.
+        dom.infoJoin.addEventListener('click', function () { join(); });
+        dom.infoLater.addEventListener('click', closeInfo);
+
+        dom.confirmYes.addEventListener('click', function () {
+            closeConfirm();
+            join();
+        });
+        dom.confirmNo.addEventListener('click', closeConfirm);
+        dom.confirm.addEventListener('click', function (event) {
+            if (event.target === dom.confirm) closeConfirm();
+        });
+
         document.addEventListener('keydown', function (event) {
-            if (event.key === 'Escape' && isInfoOpen()) closeInfo();
+            if (event.key !== 'Escape') return;
+            // A folha de confirmacao esta por cima do painel: sai primeiro.
+            if (isConfirmOpen()) closeConfirm();
+            else if (isInfoOpen()) closeInfo();
         });
     }
 
@@ -92,7 +125,49 @@ const RankingUI = (function () {
     // O interruptor existe em dois sitios — aqui e nas definicoes —
     // e os dois tem de contar sempre a mesma verdade.
     function syncOptIn(value) {
-        if (dom && dom.infoToggle) dom.infoToggle.checked = value !== false;
+        const participating = value !== false;
+
+        if (!dom) return;
+        if (dom.infoToggle) dom.infoToggle.checked = participating;
+
+        // A nota e o convite so fazem sentido a quem esta de fora.
+        if (dom.infoNote) dom.infoNote.classList.toggle('hidden', participating);
+        if (dom.infoActions) dom.infoActions.classList.toggle('hidden', participating);
+    }
+
+    // --- Confirmar a participacao --------------------------------
+
+    function isConfirmOpen() {
+        return !!dom && !!dom.confirm && !dom.confirm.classList.contains('hidden');
+    }
+
+    function openConfirm() {
+        if (!dom || !dom.confirm) return;
+        dom.confirm.classList.remove('hidden');
+        document.body.classList.add('hh-modal-open');
+    }
+
+    function closeConfirm() {
+        if (!dom || !dom.confirm) return;
+        dom.confirm.classList.add('hidden');
+        // O painel pode estar aberto por baixo: so se solta o corpo
+        // quando nao houver mais nada por cima.
+        if (!isInfoOpen()) document.body.classList.remove('hh-modal-open');
+    }
+
+    /**
+     * Passar a participar.
+     *
+     * A escrita acontece primeiro e a vista so muda depois: se a
+     * gravacao falhar, nada aqui finge que correu bem.
+     */
+    async function join() {
+        if (!deps.onOptInChange) return;
+
+        closeInfo();
+        await deps.onOptInChange(true);
+
+        if (deps.onJoined) deps.onJoined();
     }
 
     // --- Carregamento --------------------------------------------
@@ -102,7 +177,7 @@ const RankingUI = (function () {
     }
 
     function showOnly(section) {
-        ['skeleton', 'error', 'empty', 'content'].forEach(function (name) {
+        ['skeleton', 'error', 'empty', 'content', 'disabled'].forEach(function (name) {
             if (dom[name]) dom[name].classList.toggle('hidden', name !== section);
         });
     }
@@ -134,11 +209,22 @@ const RankingUI = (function () {
     // --- Desenho -------------------------------------------------
 
     function render(payload) {
-        renderNotice(payload);
-        renderOptOutNote(payload);
         syncOptIn(payload.optedIn);
 
-        const kind = Ranking.emptyState(payload.participants, payload.me);
+        const kind = Ranking.viewState(payload);
+
+        // Nao participar nao e um erro nem uma lista vazia: e uma
+        // escolha. Nao leva aviso de semana nova nem nota de rodape,
+        // porque a propria pagina ja explica onde estamos.
+        if (kind === 'disabled') {
+            hideNotices();
+            showOnly('disabled');
+            dom.standings.classList.add('hidden');
+            return;
+        }
+
+        renderNotice(payload);
+        renderOptOutNote(payload);
 
         if (kind === 'waiting') {
             dom.emptyText.textContent = deps.t('rankingEmptyWaiting');
@@ -178,6 +264,11 @@ const RankingUI = (function () {
         } catch (e) {
             // Sem espaco para a preferencia, o aviso repete-se. Nao e grave.
         }
+    }
+
+    function hideNotices() {
+        dom.notice.classList.add('hidden');
+        dom.optOut.classList.add('hidden');
     }
 
     function renderOptOutNote(payload) {
@@ -360,6 +451,8 @@ const RankingUI = (function () {
         reload: load,
         syncOptIn: syncOptIn,
         closeInfo: closeInfo,
+        closeConfirm: closeConfirm,
+        isConfirmOpen: isConfirmOpen,
         isInfoOpen: isInfoOpen,
         isVisible: isVisible,
 

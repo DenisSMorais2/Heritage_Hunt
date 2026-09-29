@@ -121,6 +121,24 @@
         return String(weekStart) !== String(lastSeenWeekStart);
     }
 
+    /**
+     * Que estado a vista deve mostrar.
+     *
+     *   'disabled'  a pessoa escolheu nao participar
+     *   'waiting'   ninguem ganhou XP esta semana ainda
+     *   'alone'     so eu — a pagina fala do meu proprio percurso
+     *   'ranked'    ha comunidade que mostrar
+     *
+     * A decisao de nao participar VENCE tudo o resto, e nao e um
+     * erro nem uma lista vazia: e uma escolha que a app respeita.
+     * Por isso e decidida aqui, antes de se olhar para quem ha.
+     */
+    function viewState(payload) {
+        if (!payload) return 'waiting';
+        if (payload.optedIn === false) return 'disabled';
+        return emptyState(payload.participants, payload.me);
+    }
+
     function medalFor(position) {
         return MEDAL[position] || null;
     }
@@ -147,6 +165,7 @@
         podiumLayout: podiumLayout,
         needsStandingsBar: needsStandingsBar,
         emptyState: emptyState,
+        viewState: viewState,
         isNewWeek: isNewWeek,
         medalFor: medalFor,
         initialFor: initialFor,

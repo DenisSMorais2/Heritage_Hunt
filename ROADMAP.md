@@ -822,15 +822,46 @@ Duas coisas do desenho ficaram deliberadamente de fora, ambas pela mesma razão
 
 Ambas voltam no dia em que houver para onde ir.
 
+### Ranking desativado
+
+Quem escolhe não participar **continua a ter a aba Ranking** e continua a poder
+abri-la. O que muda é o conteúdo: em vez do pódio e da lista, a página mostra um
+estado próprio.
+
+Isto **não é um erro nem uma lista vazia** — é uma escolha respeitada, e a
+interface tem de o dizer com clareza. Daí as regras que este estado segue:
+
+1. **Nenhuma linguagem de aviso.** Nada de vermelho, triângulo ou cinzento de
+   coisa partida. O emblema é o troféu da app, dourado, com uma barra fina;
+   à volta, o percurso tracejado e as estrelas de bússola da identidade.
+2. **Nenhuma pressão.** Nunca «estás a perder posições», «outros estão à tua
+   frente» ou «volta já». O texto convida e explica, e mais nada.
+3. **A saída está sempre à vista**, e a tranquilização também: um cartão
+   secundário lembra que o XP, as descobertas e as memórias continuam iguais.
+4. **O convite nunca liga nada sozinho.** Tocar em *Participar no ranking* abre
+   uma folha que diz primeiro o que passa a ser visível, e só depois pergunta.
+   Uma mudança que torna o nome e a fotografia públicos não acontece com um
+   toque distraído.
+
+`Ranking.viewState()` decide qual dos quatro estados mostrar, e a decisão de não
+participar **vence tudo o resto** — é avaliada antes de se olhar para quem há.
+Uma resposta em falta nunca conta como desativado: desativado é uma escolha
+deliberada, não uma falha de rede.
+
+Ao aceitar, a escrita acontece primeiro e a vista só transita depois. Não há
+recarregamento da página, e o aviso é um *toast* do mesmo feitio dos outros da
+app — entrar no ranking merece uma frase, não confetti.
+
 ### Privacidade
 
 Participar é uma escolha (`profiles.ranking_opt_in`), e **acompanha a conta**,
 não o aparelho. Quem sai continua a ganhar XP, a subir de nível, a manter a
 sequência e a descobrir — apenas não aparece na lista.
 
-O interruptor existe em **dois sítios** — nas definições e no painel *(i)* do
-próprio ranking — e os dois mostram sempre o mesmo estado: `toggleRankingOptIn()`
-sincroniza ambos e só depois envia. Quem quer perceber o que isto é, ou sair,
+O interruptor existe em **dois sítios** — nas definições e no painel *Sobre o
+ranking* — e há ainda dois caminhos que levam ao mesmo sítio: o convite do estado
+desativado e o *Participar agora* no fim do painel. Todos passam por
+`toggleRankingOptIn()`, que sincroniza as superfícies e só depois envia. Quem quer perceber o que isto é, ou sair,
 encontra tudo no sítio onde a dúvida nasce.
 
 O que o ranking expõe: **nome, avatar, XP semanal e descobertas**. Nunca email,
@@ -961,6 +992,8 @@ Regras que o código respeita de forma consistente e que devem manter-se:
   para o que foi tirado sem rede
 - Ranking semanal de exploradores, com XP validado no servidor, opt-out,
   pódio, barra de posição própria e estados de carregamento, vazio e erro
+- Estado desativado com identidade própria, convite confirmado antes de
+  activar, painel *Sobre o ranking* e transição imediata ao aderir
 - Scanner de QR com lanterna e tratamento de erros
 - 12 monumentos, 4 zonas, 1 jornada cultural
 - Sistema de XP completo, com histórico e idempotência
@@ -973,7 +1006,7 @@ Regras que o código respeita de forma consistente e que devem manter-se:
   ligação directa ao álbum
 - Testes de domínio: `xp.test.js`, `levels.test.js`, `streak.test.js`,
   `journey.test.js`, `discovery.test.js`, `image-compressor.test.js`,
-  `ranking.test.js` (204 testes)
+  `ranking.test.js` (211 testes)
 
 ### Já previsto no código, por implementar
 
@@ -994,6 +1027,10 @@ Regras que o código respeita de forma consistente e que devem manter-se:
   O progresso desta app só cresce, por isso o critério é seguro e previsível —
   mas dois aparelhos a explorar em paralelo sem rede não fundem as descobertas:
   ganha o retrato com mais XP
+- **Não há interruptor global do ranking.** O estado desativado responde a
+  `profiles.ranking_opt_in`, que é por pessoa. Um `ranking_enabled` para toda a
+  app — para desligar a funcionalidade de uma vez — não existe, e exigiria uma
+  tabela de configuração que ainda não se justifica
 - **O ranking filtra por ilha mas só existe São Vicente.** `profiles.island_id`
   e o parâmetro da consulta já estão lá; faltam as outras ilhas no conteúdo.
   Não há filtros de Amigos nem de Cabo Verde — e não se mostram botões que

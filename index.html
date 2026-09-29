@@ -522,6 +522,57 @@
                             <button id="rankingExploreBtn" type="button" class="hh-rk-cta" data-i18n="rankingExplore">Explorar monumentos</button>
                         </div>
 
+                        <!-- ============================================================
+                             Ranking desativado
+
+                             Não é um erro, nem uma lista vazia: é uma escolha
+                             que a app respeita. Por isso não há aqui nenhum
+                             ícone de aviso, nenhuma pressão e nenhuma perda —
+                             só o que isto significa e como voltar atrás.
+                             ============================================================ -->
+                        <div id="rankingDisabled" class="hh-rk-off hidden">
+
+                            <div class="hh-rk-off-emblem" aria-hidden="true">
+                                <svg class="hh-rk-off-route" viewBox="0 0 260 150" role="presentation">
+                                    <path d="M8 96c26-30 52 18 80-6s40-52 74-44 44 38 90 26"
+                                          fill="none" stroke="currentColor" stroke-width="1.6"
+                                          stroke-linecap="round" stroke-dasharray="5 9" opacity=".55"/>
+                                    <circle cx="8" cy="96" r="4.5" fill="none" stroke="currentColor" stroke-width="1.6" opacity=".6"/>
+                                    <path d="M232 36l3.4 9.6 9.6 3.4-9.6 3.4L232 62l-3.4-9.6-9.6-3.4 9.6-3.4z"
+                                          fill="currentColor" opacity=".55"/>
+                                    <path d="M40 40l2.6 7.4 7.4 2.6-7.4 2.6L40 60l-2.6-7.4-7.4-2.6 7.4-2.6z"
+                                          fill="currentColor" opacity=".35"/>
+                                </svg>
+                                <span class="hh-rk-off-badge">
+                                    <i class="fas fa-trophy"></i>
+                                    <span class="hh-rk-off-slash"></span>
+                                </span>
+                            </div>
+
+                            <p class="hh-rk-off-title" data-i18n="rankingOffTitle">Ranking desativado</p>
+                            <p class="hh-rk-off-lead" data-i18n="rankingOffLead">Participa no ranking para ver os exploradores mais activos da semana e partilhar a tua jornada de descoberta em São Vicente.</p>
+
+                            <button id="rankingJoinBtn" type="button" class="hh-rk-cta hh-rk-cta-icon">
+                                <i class="fas fa-user-group" aria-hidden="true"></i>
+                                <span data-i18n="rankingJoin">Participar no ranking</span>
+                            </button>
+
+                            <button id="rankingLearnBtn" type="button" class="hh-rk-ghost">
+                                <span data-i18n="rankingLearnMore">Saber mais</span>
+                                <i class="fas fa-chevron-right" aria-hidden="true"></i>
+                            </button>
+
+                            <!-- Secundário de propósito: tranquiliza sem competir
+                                 com o convite acima. -->
+                            <div class="hh-rk-assure">
+                                <span class="hh-rk-assure-icon" aria-hidden="true"><i class="fas fa-shield-halved"></i></span>
+                                <div>
+                                    <p class="hh-rk-assure-title" data-i18n="rankingProgressTitle">A tua exploração continua</p>
+                                    <p class="hh-rk-assure-sub" data-i18n="rankingAssureSub">Mesmo que não participes, continuas a ganhar XP, descobrir monumentos e guardar as tuas memórias normalmente.</p>
+                                </div>
+                            </div>
+                        </div>
+
                         <div id="rankingContent" class="hidden">
                             <div id="rankingPodium" class="hh-rk-podium"></div>
                             <div id="rankingList" class="hh-rk-list"></div>
@@ -844,6 +895,23 @@
 
         <!-- Monument Page (pagina do monumento descoberto) -->
         <!-- ============================================================
+             Confirmar a participação
+
+             Participar torna o nome e a fotografia visíveis a outras
+             pessoas. Uma mudança dessas nunca acontece com um toque
+             distraído: diz-se primeiro o que muda, pergunta-se depois.
+             ============================================================ -->
+        <div id="rankingConfirmModal" class="hh-rk-confirm-overlay hidden">
+            <div class="hh-rk-confirm" role="dialog" aria-modal="true" aria-labelledby="rankingConfirmTitle">
+                <span class="hh-rk-confirm-icon" aria-hidden="true"><i class="fas fa-user-group"></i></span>
+                <h2 id="rankingConfirmTitle" class="hh-rk-confirm-title" data-i18n="rankingConfirmTitle">Participar no ranking?</h2>
+                <p class="hh-rk-confirm-text" data-i18n="rankingConfirmText">O teu nome, fotografia e progresso semanal poderão aparecer para outros exploradores. Dados privados, como o email e a localização exacta, não são partilhados.</p>
+                <button id="rankingConfirmYes" type="button" class="hh-rk-cta" data-i18n="rankingConfirmYes">Participar</button>
+                <button id="rankingConfirmNo" type="button" class="hh-rk-text-btn" data-i18n="rankingConfirmNo">Agora não</button>
+            </div>
+        </div>
+
+        <!-- ============================================================
              Painel: o que e o ranking, e a escolha de participar
 
              Vive a parte da lista de proposito. Quem quer perceber o
@@ -857,13 +925,15 @@
                     <button id="closeRankingInfo" type="button" class="hh-rk-icon-btn" data-i18n-title="rankingBack" title="Voltar">
                         <i class="fas fa-chevron-left" aria-hidden="true"></i>
                     </button>
-                    <span class="hh-rk-head-label" data-i18n="rankingHeader">Ranking</span>
+                    <span class="hh-rk-head-label" data-i18n="rankingAbout">Sobre o ranking</span>
                     <span class="hh-rk-head-spacer" aria-hidden="true"></span>
                 </header>
 
                 <div class="hh-rk-info-body">
 
                     <section class="hh-rk-info-card">
+                        <img class="hh-rk-info-photo" src="imagens/porto_mindelo.jpg" alt="" aria-hidden="true">
+                        <span class="hh-rk-info-photo-shade" aria-hidden="true"></span>
                         <svg class="hh-rk-info-compass" viewBox="0 0 120 120" aria-hidden="true">
                             <circle cx="60" cy="60" r="52" fill="none" stroke="currentColor" stroke-width="2" opacity=".5"/>
                             <circle cx="60" cy="60" r="40" fill="none" stroke="currentColor" stroke-width="1.5" opacity=".35"/>
@@ -889,7 +959,21 @@
                         <p class="hh-rk-info-switch-sub" data-i18n="rankingOptInSub">Permite que outros exploradores vejam o teu nome, fotografia e progresso semanal.</p>
                     </section>
 
+                    <!-- Só quando está desligado: diz o que isso significa,
+                         sem o transformar numa perda. -->
+                    <p id="rankingOffNote" class="hh-rk-info-note hidden">
+                        <i class="fas fa-circle-info" aria-hidden="true"></i>
+                        <span data-i18n="rankingOffNote">Quando desactivado, o teu perfil não aparece no ranking, mas continuas a ganhar XP, a descobrir monumentos e a guardar as tuas memórias normalmente.</span>
+                    </p>
+
                     <section class="hh-rk-info-points">
+                        <div class="hh-rk-info-point">
+                            <span class="hh-rk-info-point-icon" aria-hidden="true"><i class="fas fa-user-group"></i></span>
+                            <div>
+                                <p class="hh-rk-info-point-title" data-i18n="rankingOptInTitle">Participar no ranking</p>
+                                <p class="hh-rk-info-point-sub" data-i18n="rankingOptInSub">Permite que outros exploradores vejam o teu nome, fotografia e progresso semanal.</p>
+                            </div>
+                        </div>
                         <div class="hh-rk-info-point">
                             <span class="hh-rk-info-point-icon" aria-hidden="true"><i class="fas fa-shield-halved"></i></span>
                             <div>
@@ -912,6 +996,16 @@
                             </div>
                         </div>
                     </section>
+
+                    <!-- O convite fecha o painel: quem leu tudo tem aqui o
+                         passo seguinte, sem ter de voltar atrás à procura. -->
+                    <div id="rankingInfoActions" class="hh-rk-info-actions hidden">
+                        <button id="rankingInfoJoin" type="button" class="hh-rk-cta hh-rk-cta-icon">
+                            <i class="fas fa-user-group" aria-hidden="true"></i>
+                            <span data-i18n="rankingJoinNow">Participar agora</span>
+                        </button>
+                        <button id="rankingInfoLater" type="button" class="hh-rk-text-btn" data-i18n="rankingConfirmNo">Agora não</button>
+                    </div>
                 </div>
             </div>
         </div>

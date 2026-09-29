@@ -150,6 +150,47 @@ test('um total inválido conta como vazio', () => {
     assertEqual(Ranking.emptyState(-3, null), 'waiting');
 });
 
+console.log('\n--- Estado da vista ---');
+
+test('quem optou por não participar vê o estado desativado', () => {
+    assertEqual(Ranking.viewState({ optedIn: false, participants: 42, me: null }), 'disabled',
+        'a escolha de não participar vence tudo o resto');
+});
+
+test('o desativado vence mesmo com comunidade cheia', () => {
+    assertEqual(Ranking.viewState({
+        optedIn: false,
+        participants: 120,
+        me: entry(3, 'Dénis', 300, 3, true)
+    }), 'disabled');
+});
+
+test('a participar, mostra-se a classificação', () => {
+    assertEqual(Ranking.viewState({
+        optedIn: true, participants: 5, me: entry(4, 'Dénis', 315, 4, true)
+    }), 'ranked');
+});
+
+test('a participar mas sem ninguém, espera-se pela comunidade', () => {
+    assertEqual(Ranking.viewState({ optedIn: true, participants: 0, me: null }), 'waiting');
+});
+
+test('a participar e sozinho, a página fala do meu percurso', () => {
+    assertEqual(Ranking.viewState({
+        optedIn: true, participants: 1, me: entry(1, 'Dénis', 50, 1, true)
+    }), 'alone');
+});
+
+test('sem resposta nenhuma não se assume desativado', () => {
+    assertEqual(Ranking.viewState(null), 'waiting',
+        'desativado é uma escolha deliberada, não uma falha de rede');
+});
+
+test('optedIn em falta conta como a participar', () => {
+    assertEqual(Ranking.viewState({ participants: 3, me: null }), 'ranked',
+        'só um false explícito desativa');
+});
+
 console.log('\n--- Semana nova ---');
 
 test('semana diferente da última vista é semana nova', () => {

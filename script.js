@@ -1794,6 +1794,11 @@ function initRanking() {
         onExplore: function () {
             RankingUI.closeInfo();
             showScannerView();
+        },
+        // Aviso discreto, do mesmo feitio dos outros da app. Entrar
+        // no ranking nao merece confetti: merece uma frase.
+        onJoined: function () {
+            XPUI.toast(null, t('rankingJoinedToast'));
         }
     });
 }
