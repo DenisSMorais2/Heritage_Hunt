@@ -172,7 +172,7 @@
         <!-- Main App -->
         <div id="mainApp" class="hidden min-h-screen pb-20">
             <!-- Header -->
-            <header class="hh-header">
+            <header class="hh-header" id="appHeader">
                 <div class="hh-header-top">
                     <div class="hh-brand">
                         <svg class="hh-logo" viewBox="0 0 120 92" aria-hidden="true">
@@ -439,6 +439,97 @@
                             <p class="hh-empty" data-i18n="noMonumentsYet">Ainda não descobriu nenhum monumento</p>
                         </div>
                     </div>
+
+                    <!-- Comunidade: o ranking vive aqui, atrás do perfil,
+                         e não na barra de navegação. O centro da app
+                         continua a ser o scanner, o mapa e o perfil. -->
+                    <div class="hh-card hh-rk-teaser">
+                        <div class="hh-rk-teaser-head">
+                            <span class="hh-rk-teaser-icon" aria-hidden="true"><i class="fas fa-compass"></i></span>
+                            <div class="hh-rk-teaser-text">
+                                <p class="hh-rk-teaser-title" data-i18n="rankingTeaserTitle">Comunidade</p>
+                                <p class="hh-rk-teaser-sub" data-i18n="rankingTeaserSub">Outras pessoas também estão a descobrir São Vicente.</p>
+                            </div>
+                        </div>
+                        <button id="openRankingBtn" type="button" class="hh-rk-teaser-btn">
+                            <span data-i18n="rankingOpen">Ver exploradores</span>
+                            <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- ============================================================
+                     Ranking de exploradores
+
+                     Camada social: mostra que mais alguém está lá fora a
+                     descobrir os mesmos lugares. As descobertas aparecem
+                     ao lado do XP porque são elas que explicam o que
+                     aqueles pontos representam.
+                     ============================================================ -->
+                <div id="rankingView" class="hidden">
+                  <div class="hh-rk-page">
+
+                    <header class="hh-rk-hero">
+                        <img class="hh-rk-hero-img" src="imagens/porto_mindelo.jpg" alt="" aria-hidden="true">
+                        <div class="hh-rk-hero-shade" aria-hidden="true"></div>
+                        <div class="hh-rk-hero-text">
+                            <div class="hh-rk-hero-top">
+                                <h1 class="hh-rk-hero-title" data-i18n="rankingHeader">Ranking</h1>
+                                <button id="rankingInfoBtn" type="button" class="hh-rk-icon-btn" data-i18n-title="rankingAbout" title="Sobre o ranking">
+                                    <i class="fas fa-info" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                            <p class="hh-rk-hero-sub" data-i18n="rankingTitle">Exploradores de São Vicente</p>
+                            <p id="rankingSubtitle" class="hh-rk-hero-lead" data-i18n="rankingSubtitle">Descobre quem está a explorar o património esta semana.</p>
+                            <span class="hh-rk-period">
+                                <i class="far fa-calendar" aria-hidden="true"></i>
+                                <span data-i18n="rankingThisWeek">Esta semana</span>
+                            </span>
+                        </div>
+                    </header>
+
+                    <div class="hh-rk-body" id="rankingBody">
+
+                        <p id="rankingNotice" class="hh-rk-notice hidden"></p>
+                        <p id="rankingOptOutNote" class="hh-rk-optout hidden"></p>
+
+                        <!-- Enquanto não se sabe, mostra-se a forma e não
+                             um número errado: nunca "0 XP" nem "#0". -->
+                        <div id="rankingSkeleton" class="hh-rk-skeleton" aria-hidden="true">
+                            <div class="hh-rk-sk-podium">
+                                <div class="hh-rk-sk-pod"></div>
+                                <div class="hh-rk-sk-pod is-tall"></div>
+                                <div class="hh-rk-sk-pod"></div>
+                            </div>
+                            <div class="hh-rk-sk-row"></div>
+                            <div class="hh-rk-sk-row"></div>
+                            <div class="hh-rk-sk-row"></div>
+                            <div class="hh-rk-sk-row"></div>
+                            <div class="hh-rk-sk-row"></div>
+                        </div>
+
+                        <div id="rankingError" class="hh-rk-state hidden">
+                            <span class="hh-rk-state-icon"><i class="fas fa-triangle-exclamation" aria-hidden="true"></i></span>
+                            <p class="hh-rk-state-title" data-i18n="rankingError">Não foi possível carregar os exploradores neste momento.</p>
+                            <button id="rankingRetry" type="button" class="hh-rk-cta" data-i18n="rankingRetry">Tentar novamente</button>
+                        </div>
+
+                        <div id="rankingEmpty" class="hh-rk-state hidden">
+                            <span class="hh-rk-state-icon"><i class="fas fa-users" aria-hidden="true"></i></span>
+                            <p id="rankingEmptyText" class="hh-rk-state-title"></p>
+                            <p class="hh-rk-state-sub" data-i18n="rankingEmptySub">Continua a tua jornada e acompanha aqui a comunidade que está a descobrir São Vicente.</p>
+                            <button id="rankingExploreBtn" type="button" class="hh-rk-cta" data-i18n="rankingExplore">Explorar monumentos</button>
+                        </div>
+
+                        <div id="rankingContent" class="hidden">
+                            <div id="rankingPodium" class="hh-rk-podium"></div>
+                            <div id="rankingList" class="hh-rk-list"></div>
+                        </div>
+                    </div>
+
+                    <!-- Só aparece a quem não se vê na lista acima. -->
+                    <div id="rankingStandings" class="hh-rk-standings hidden"></div>
                   </div>
                 </div>
 
@@ -573,6 +664,23 @@
 
                             <div class="hh-set-divider"></div>
 
+                            <!-- Participação no ranking -->
+                            <div class="hh-set-section hh-set-row">
+                                <div class="hh-set-head">
+                                    <span class="hh-set-icon hh-set-icon-gold"><i class="fas fa-compass"></i></span>
+                                    <div class="hh-set-head-text">
+                                        <p class="hh-set-title" data-i18n="rankingOptInTitle">Participar no ranking</p>
+                                        <p class="hh-set-sub" data-i18n="rankingOptInSub">Permite que outros exploradores vejam o teu nome, fotografia e progresso semanal.</p>
+                                    </div>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="rankingOptInToggle">
+                                    <span class="switch-slider"></span>
+                                </label>
+                            </div>
+
+                            <div class="hh-set-divider"></div>
+
                             <!-- Conta -->
                             <div class="hh-set-foot">
                                 <button id="settingsLogoutBtn" class="hh-logout-btn">
@@ -679,12 +787,16 @@
                         <span class="text-xs mt-1 font-medium" data-i18n="navScanner">Scanner</span>
                     </button>
                     <button id="navProfile" class="p-4 text-gray-400 flex flex-col items-center transition-all">
-                        <i class="fas fa-trophy text-xl"></i>
+                        <i class="fas fa-user text-xl"></i>
                         <span class="text-xs mt-1 font-medium" data-i18n="navProfile">Perfil</span>
                     </button>
                     <button id="navMap" class="p-4 text-gray-400 flex flex-col items-center transition-all">
                         <i class="fas fa-map-marked-alt text-xl"></i>
                         <span class="text-xs mt-1 font-medium" data-i18n="navMap">Mapa</span>
+                    </button>
+                    <button id="navRanking" class="p-4 text-gray-400 flex flex-col items-center transition-all">
+                        <i class="fas fa-trophy text-xl"></i>
+                        <span class="text-xs mt-1 font-medium" data-i18n="navRanking">Ranking</span>
                     </button>
                 </div>
             </nav>
@@ -731,6 +843,79 @@
         </div>
 
         <!-- Monument Page (pagina do monumento descoberto) -->
+        <!-- ============================================================
+             Painel: o que e o ranking, e a escolha de participar
+
+             Vive a parte da lista de proposito. Quem quer perceber o
+             que isto e, ou sair, encontra tudo num sitio so — sem ter
+             de ir as definicoes procurar.
+             ============================================================ -->
+        <div id="rankingInfoModal" class="hh-rk-info-overlay hidden">
+            <div class="hh-rk-info-sheet" role="dialog" aria-modal="true" aria-labelledby="rankingInfoHeading">
+
+                <header class="hh-rk-info-head">
+                    <button id="closeRankingInfo" type="button" class="hh-rk-icon-btn" data-i18n-title="rankingBack" title="Voltar">
+                        <i class="fas fa-chevron-left" aria-hidden="true"></i>
+                    </button>
+                    <span class="hh-rk-head-label" data-i18n="rankingHeader">Ranking</span>
+                    <span class="hh-rk-head-spacer" aria-hidden="true"></span>
+                </header>
+
+                <div class="hh-rk-info-body">
+
+                    <section class="hh-rk-info-card">
+                        <svg class="hh-rk-info-compass" viewBox="0 0 120 120" aria-hidden="true">
+                            <circle cx="60" cy="60" r="52" fill="none" stroke="currentColor" stroke-width="2" opacity=".5"/>
+                            <circle cx="60" cy="60" r="40" fill="none" stroke="currentColor" stroke-width="1.5" opacity=".35"/>
+                            <circle cx="60" cy="60" r="5" fill="currentColor" opacity=".8"/>
+                            <path d="M60 14l7 39-7 7-7-7z" fill="currentColor" opacity=".9"/>
+                            <path d="M60 106l-7-39 7-7 7 7z" fill="currentColor" opacity=".45"/>
+                            <path d="M106 60l-39 7-7-7 7-7z" fill="currentColor" opacity=".6"/>
+                            <path d="M14 60l39-7 7 7-7 7z" fill="currentColor" opacity=".6"/>
+                        </svg>
+                        <h2 id="rankingInfoHeading" class="hh-rk-info-title" data-i18n="rankingInfoTitle">Faz parte da comunidade</h2>
+                        <p class="hh-rk-info-lead" data-i18n="rankingInfoLead">O ranking mostra os exploradores mais activos da semana. Participa para partilhar a tua jornada e ver como outros também estão a descobrir São Vicente.</p>
+                    </section>
+
+                    <section class="hh-rk-info-switch">
+                        <div class="hh-rk-info-switch-row">
+                            <span class="hh-rk-info-switch-icon" aria-hidden="true"><i class="fas fa-user-group"></i></span>
+                            <p class="hh-rk-info-switch-label" data-i18n="rankingOptInTitle">Participar no ranking</p>
+                            <label class="switch">
+                                <input type="checkbox" id="rankingOptInSheetToggle">
+                                <span class="switch-slider"></span>
+                            </label>
+                        </div>
+                        <p class="hh-rk-info-switch-sub" data-i18n="rankingOptInSub">Permite que outros exploradores vejam o teu nome, fotografia e progresso semanal.</p>
+                    </section>
+
+                    <section class="hh-rk-info-points">
+                        <div class="hh-rk-info-point">
+                            <span class="hh-rk-info-point-icon" aria-hidden="true"><i class="fas fa-shield-halved"></i></span>
+                            <div>
+                                <p class="hh-rk-info-point-title" data-i18n="rankingPrivacyTitle">A tua privacidade é respeitada</p>
+                                <p class="hh-rk-info-point-sub" data-i18n="rankingPrivacySub">Apenas o teu nome, fotografia e progresso são mostrados.</p>
+                            </div>
+                        </div>
+                        <div class="hh-rk-info-point">
+                            <span class="hh-rk-info-point-icon" aria-hidden="true"><i class="fas fa-eye-slash"></i></span>
+                            <div>
+                                <p class="hh-rk-info-point-title" data-i18n="rankingLeaveTitle">Podes sair quando quiseres</p>
+                                <p class="hh-rk-info-point-sub" data-i18n="rankingLeaveSub">Desliga esta opção a qualquer momento.</p>
+                            </div>
+                        </div>
+                        <div class="hh-rk-info-point">
+                            <span class="hh-rk-info-point-icon" aria-hidden="true"><i class="fas fa-chart-simple"></i></span>
+                            <div>
+                                <p class="hh-rk-info-point-title" data-i18n="rankingProgressTitle">A tua progressão continua</p>
+                                <p class="hh-rk-info-point-sub" data-i18n="rankingProgressSub">Mesmo que não participes, continuas a ganhar XP, a subir de nível e a explorar normalmente.</p>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
+
         <div id="monumentPhotosModal" class="hh-mp-overlay hidden">
             <div class="hh-mp-sheet" role="dialog" aria-modal="true" aria-labelledby="monumentPhotosName">
                 <!-- Hero -->
@@ -1020,6 +1205,8 @@
 <script src="journey-ui.js"></script>
 <script src="discovery.js"></script>
 <script src="discovery-ui.js"></script>
+<script src="ranking.js"></script>
+<script src="ranking-ui.js"></script>
 <script src="script.js"></script>
 </body>
 </html>

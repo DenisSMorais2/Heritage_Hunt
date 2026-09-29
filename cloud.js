@@ -252,7 +252,7 @@ const HeritageCloud = (function () {
         try {
             result = await client
                 .from('profiles')
-                .select('name, email, points, level_seen, xp, exploration_streak, scanned_monuments, settings, avatar_path')
+                .select('name, email, points, level_seen, xp, exploration_streak, scanned_monuments, settings, avatar_path, ranking_opt_in')
                 .eq('id', sessionUserId)
                 .maybeSingle();
         } catch (error) {
@@ -284,7 +284,8 @@ const HeritageCloud = (function () {
             explorationStreak: isFilledObject(row.exploration_streak) ? row.exploration_streak : null,
             scannedMonuments: Array.isArray(row.scanned_monuments) ? row.scanned_monuments : [],
             settings: isFilledObject(row.settings) ? row.settings : null,
-            avatarPath: row.avatar_path || null
+            avatarPath: row.avatar_path || null,
+            rankingOptIn: row.ranking_opt_in !== false
         };
     }
 
@@ -309,7 +310,11 @@ const HeritageCloud = (function () {
             scanned_monuments: stripImages(user.scannedMonuments || []),
             settings: settings || {},
             // O avatar e um caminho no Storage, nunca a imagem.
-            avatar_path: user.avatarPath || null
+            avatar_path: user.avatarPath || null,
+            // Participar no ranking e uma escolha de quem usa a app,
+            // por isso e o cliente que a declara. O que o cliente NAO
+            // pode declarar e quanto XP tem — isso vive no ledger.
+            ranking_opt_in: settings && settings.rankingOptIn === false ? false : true
         };
     }
 
@@ -629,6 +634,126 @@ const HeritageCloud = (function () {
         });
     }
 
+    // --- Ledger de XP (a base do ranking) ------------------------
+    //
+    // A carteira local continua a mandar no JOGO. Este ledger e a
+    // sombra dela do lado do servidor, e e a UNICA coisa que o
+    // ranking le.
+    //
+    // Repare-se no que NAO vai nesta chamada: o montante. O servidor
+    // e que sabe quanto vale cada accao. Daqui so segue o que
+    // aconteceu — e a chave que impede que conte duas vezes.
+
+    async function recordXpEvent(transaction) {
+        if (!available || !sessionUserId || !transaction) {
+            return { ok: false, code: 'cloudUnavailable' };
+        }
+        if (!transaction.action || !transaction.rewardKey) {
+            return { ok: false, code: 'cloudUnknownError' };
+        }
+
+        let result;
+        try {
+            result = await client.rpc('award_xp', {
+                p_action:      transaction.action,
+                p_reward_key:  transaction.rewardKey,
+                p_monument_id: asText(transaction.monumentId),
+                p_zone_id:     asText(transaction.zoneId),
+                p_created_at:  transaction.createdAt || null
+            });
+        } catch (error) {
+            result = { error: error };
+        }
+
+        if (result.error) {
+            setStatus(navigator.onLine ? 'error' : 'offline');
+            return { ok: false, code: errorCode(result.error) };
+        }
+
+        return { ok: true, result: result.data };
+    }
+
+    function asText(value) {
+        if (value === null || value === undefined || value === '') return null;
+        return String(value);
+    }
+
+    /**
+     * Repoe no ledger tudo o que a carteira local conhece.
+     *
+     * E esta a rede de seguranca de todo o sistema: uma descoberta
+     * feita sem rede, ou um envio que falhou, entra aqui no arranque
+     * seguinte. O servidor ignora o que ja tem — a chave de
+     * recompensa garante-o — por isso repetir nao custa nada.
+     *
+     * A ordem e do MAIS ANTIGO para o mais novo, porque o servidor
+     * exige que o monumento ja esteja descoberto antes de aceitar
+     * uma fotografia ou uma experiencia sobre ele.
+     */
+    async function syncXpLedger(history) {
+        if (!available || !sessionUserId) return { ok: false, sent: 0 };
+        if (!Array.isArray(history) || !history.length) return { ok: true, sent: 0 };
+
+        const oldestFirst = history.slice().sort(function (a, b) {
+            const left = a && a.createdAt ? a.createdAt : '';
+            const right = b && b.createdAt ? b.createdAt : '';
+            return left < right ? -1 : (left > right ? 1 : 0);
+        });
+
+        let sent = 0;
+
+        for (let i = 0; i < oldestFirst.length; i++) {
+            const outcome = await recordXpEvent(oldestFirst[i]);
+            if (!outcome.ok) return { ok: false, sent: sent };
+            sent++;
+        }
+
+        return { ok: true, sent: sent };
+    }
+
+    // --- Ranking -------------------------------------------------
+    //
+    // Uma so chamada, ja agregada. Nunca se trazem eventos de XP
+    // para o browser: alem de nao escalar, seria o historico de
+    // outras pessoas a passar por aqui sem razao nenhuma.
+
+    async function getWeeklyRanking(limit, islandId) {
+        if (!available || !sessionUserId) return { ok: false, code: 'cloudUnavailable' };
+
+        let result;
+        try {
+            result = await client.rpc('get_weekly_ranking', {
+                p_limit: limit || 20,
+                p_island_id: islandId || null
+            });
+        } catch (error) {
+            result = { error: error };
+        }
+
+        if (result.error) {
+            setStatus(navigator.onLine ? 'error' : 'offline');
+            return { ok: false, code: errorCode(result.error) };
+        }
+
+        const data = result.data;
+        if (!data || data.ok !== true) {
+            return { ok: false, code: 'cloudUnknownError' };
+        }
+
+        setStatus('synced');
+
+        return {
+            ok: true,
+            weekStart: data.weekStart,
+            weekEnd: data.weekEnd,
+            participants: data.participants || 0,
+            optedIn: data.optedIn !== false,
+            limit: data.limit || 20,
+            top: Array.isArray(data.top) ? data.top : [],
+            me: data.me || null
+        };
+    }
+
     // --- Fila e reenvio ------------------------------------------
 
     function scheduleRetry() {
@@ -690,6 +815,10 @@ const HeritageCloud = (function () {
         savePhotoRow: savePhotoRow,
         deletePhotoRow: deletePhotoRow,
         pullPhotos: pullPhotos,
+
+        recordXpEvent: recordXpEvent,
+        syncXpLedger: syncXpLedger,
+        getWeeklyRanking: getWeeklyRanking,
 
         flush: flush,
         flushNow: flushNow,

@@ -6957,3 +6957,889 @@ html:not(.dark) .hh-scan-crest {
     background: rgba(168, 129, 63, 0.12);
     border-color: rgba(168, 129, 63, 0.35);
 }
+
+/* ============================================================
+   RANKING DE EXPLORADORES
+
+   Vista com aba propria: a barra de navegacao continua visivel
+   por cima dela. A identidade e a da app — navy, dourado, bussola,
+   fotografia do porto — e nao a de um jogo de arcada: sem neon,
+   sem fogo, sem coroas gigantes.
+
+   Desenhado a pensar nos 320px primeiro; tudo o resto e folga.
+   ============================================================ */
+
+.hh-rk-page {
+    min-height: 100vh;
+    background:
+        radial-gradient(120% 40% at 50% 0%, rgba(214, 178, 116, 0.08), transparent 60%),
+        linear-gradient(180deg, var(--hh-navy-800) 0%, var(--hh-navy-900) 100%);
+    padding-bottom: calc(var(--hh-nav-h) + var(--hh-safe-bottom) + 76px);
+}
+
+/* --- Herói --- */
+.hh-rk-hero {
+    position: relative;
+    overflow: hidden;
+    /* Sem cabecalho por cima, a fotografia comeca na barra de estado. */
+    padding: calc(26px + var(--hh-safe-top)) clamp(14px, 4.5vw, 20px) 24px;
+    min-height: 240px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+}
+
+.hh-rk-hero-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    /* A fotografia é fundo, não assunto — mas tem de se ver: é ela
+       que diz de que ilha falamos antes de qualquer palavra. */
+    opacity: 0.8;
+}
+
+.hh-rk-hero-shade {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        180deg,
+        rgba(10, 23, 41, 0.35) 0%,
+        rgba(10, 23, 41, 0.62) 45%,
+        rgba(10, 23, 41, 0.88) 78%,
+        var(--hh-navy-900) 100%
+    );
+}
+
+.hh-rk-hero-text {
+    position: relative;
+}
+
+.hh-rk-hero-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.hh-rk-hero-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: clamp(1.9rem, 8.5vw, 2.5rem);
+    line-height: 1.05;
+    font-weight: 700;
+    color: #F3F7FC;
+    margin: 0;
+}
+
+.hh-rk-hero-sub {
+    margin: 4px 0 0;
+    font-size: clamp(0.95rem, 4.2vw, 1.1rem);
+    font-weight: 600;
+    color: #DCE6F3;
+}
+
+.hh-rk-hero-lead {
+    margin: 8px 0 0;
+    max-width: 26ch;
+    font-size: 0.86rem;
+    line-height: 1.5;
+    color: rgba(220, 230, 243, 0.72);
+}
+
+.hh-rk-icon-btn {
+    flex: 0 0 auto;
+    /* 44px: o alvo tactil minimo. Tentei um circulo de 38px com a
+       area estendida por ::after, mas o pseudo-elemento sangrava e
+       punha os pais a transbordar. Um botao honesto de 44 e melhor
+       que um truque que se paga em layout. */
+    width: 44px;
+    height: 44px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    border: 1px solid rgba(233, 240, 249, 0.28);
+    background: rgba(10, 23, 41, 0.45);
+    color: #E9F0F9;
+    font-size: 0.85rem;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* --- Selector de período ---
+   Estático de propósito: no MVP só existe a semana actual, e um
+   menu com uma só opção seria um botão que não faz nada. */
+.hh-rk-period {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 16px;
+    padding: 9px 16px;
+    border-radius: 999px;
+    border: 1px solid rgba(214, 178, 116, 0.35);
+    background: rgba(10, 23, 41, 0.6);
+    color: var(--hh-gold-soft);
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+/* --- Corpo --- */
+.hh-rk-body {
+    padding: 18px clamp(12px, 4vw, 18px) 8px;
+}
+
+.hh-rk-notice,
+.hh-rk-optout {
+    margin: 0 0 14px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    line-height: 1.45;
+    text-align: center;
+}
+
+.hh-rk-notice {
+    border: 1px solid rgba(214, 178, 116, 0.28);
+    background: rgba(214, 178, 116, 0.08);
+    color: var(--hh-gold-soft);
+}
+
+.hh-rk-optout {
+    border: 1px solid var(--hh-line);
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--hh-muted);
+}
+
+.hh-rk-notice.hidden,
+.hh-rk-optout.hidden,
+.hh-rk-skeleton.hidden,
+.hh-rk-state.hidden,
+.hh-rk-standings.hidden,
+#rankingContent.hidden {
+    display: none;
+}
+
+/* --- Avatares --- */
+.hh-rk-ava {
+    position: relative;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: linear-gradient(140deg, var(--hh-navy-600), var(--hh-navy-700));
+    border: 1px solid var(--hh-line);
+    flex: 0 0 auto;
+}
+
+.hh-rk-ava img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    /* `cover` num circulo: um retrato nunca sai deformado. */
+    object-fit: cover;
+    display: block;
+}
+
+.hh-rk-ava-initial {
+    font-weight: 700;
+    color: var(--hh-gold-soft);
+    line-height: 1;
+}
+
+/* --- Pódio --- */
+.hh-rk-podium {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    align-items: end;
+    gap: clamp(4px, 1.8vw, 10px);
+    margin-bottom: 22px;
+}
+
+.hh-rk-pod {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    min-width: 0;
+    padding-top: 14px;
+}
+
+/* O primeiro sobe um degrau — o suficiente para se ler a
+   hierarquia, sem virar um palco. */
+.hh-rk-pod.is-first {
+    padding-bottom: 14px;
+}
+
+.hh-rk-crown {
+    font-size: clamp(0.85rem, 3.6vw, 1.05rem);
+    line-height: 1;
+    margin-bottom: 5px;
+    color: #9FB0C6;
+}
+
+.hh-rk-pod.is-gold .hh-rk-crown { color: var(--hh-gold); }
+.hh-rk-pod.is-silver .hh-rk-crown { color: #C6D2E1; }
+.hh-rk-pod.is-bronze .hh-rk-crown { color: #C08A63; }
+
+.hh-rk-pod-avatar {
+    width: clamp(58px, 19vw, 78px);
+    height: clamp(58px, 19vw, 78px);
+    margin-bottom: 16px;
+    border-width: 3px;
+    border-color: #8FA1B8;
+}
+
+.hh-rk-pod.is-first .hh-rk-pod-avatar {
+    width: clamp(64px, 21vw, 100px);
+    height: clamp(64px, 21vw, 100px);
+    border-color: var(--hh-gold);
+    box-shadow: 0 0 22px rgba(214, 178, 116, 0.28);
+}
+
+.hh-rk-pod.is-bronze .hh-rk-pod-avatar {
+    border-color: #C08A63;
+}
+
+.hh-rk-pod-avatar .hh-rk-ava-initial {
+    font-size: clamp(1.2rem, 5.5vw, 1.7rem);
+}
+
+/* O número encavalita na base do avatar, como no desenho. */
+.hh-rk-pod-pos {
+    position: absolute;
+    bottom: -13px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 27px;
+    height: 27px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--hh-navy-900);
+    background: #B9C6D6;
+    border: 3px solid var(--hh-navy-900);
+}
+
+.hh-rk-pod.is-gold .hh-rk-pod-pos {
+    background: linear-gradient(140deg, var(--hh-gold-soft), var(--hh-gold));
+    width: 30px;
+    height: 30px;
+    bottom: -15px;
+}
+
+.hh-rk-pod.is-bronze .hh-rk-pod-pos {
+    background: linear-gradient(140deg, #D2A282, #B0764F);
+}
+
+.hh-rk-pod-name {
+    font-weight: 600;
+    font-size: clamp(0.82rem, 3.6vw, 0.95rem);
+    color: var(--hh-cream);
+    margin: 0 0 2px;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.hh-rk-pod.is-first .hh-rk-pod-name {
+    font-size: clamp(0.95rem, 4.2vw, 1.1rem);
+}
+
+.hh-rk-pod > * {
+    max-width: 100%;
+}
+
+.hh-rk-pod-xp {
+    font-size: clamp(0.8rem, 3.4vw, 0.92rem);
+    font-weight: 700;
+    color: var(--hh-gold-soft);
+    margin: 0;
+}
+
+.hh-rk-pod.is-first .hh-rk-pod-xp {
+    font-size: clamp(0.95rem, 4.2vw, 1.12rem);
+    color: var(--hh-gold);
+}
+
+.hh-rk-pod-finds {
+    font-size: clamp(0.62rem, 2.7vw, 0.72rem);
+    color: var(--hh-muted);
+    margin: 3px 0 0;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* --- Lista --- */
+.hh-rk-list {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.hh-rk-row {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    /* 60px de altura: acima do alvo táctil mínimo de 44px. */
+    min-height: 60px;
+    padding: 9px 14px 9px 10px;
+    border-radius: 14px;
+    border: 1px solid var(--hh-line);
+    background: rgba(255, 255, 255, 0.035);
+}
+
+/* O utilizador actual distingue-se por uma linha dourada discreta,
+   nunca por uma cor agressiva. */
+.hh-rk-row.is-me {
+    border-color: rgba(214, 178, 116, 0.55);
+    background: linear-gradient(90deg, rgba(214, 178, 116, 0.13), rgba(214, 178, 116, 0.03));
+}
+
+.hh-rk-pos {
+    flex: 0 0 auto;
+    min-width: 24px;
+    text-align: center;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--hh-muted);
+    font-variant-numeric: tabular-nums;
+}
+
+.hh-rk-row.is-me .hh-rk-pos {
+    color: var(--hh-gold-soft);
+}
+
+.hh-rk-avatar {
+    width: 40px;
+    height: 40px;
+}
+
+.hh-rk-avatar .hh-rk-ava-initial {
+    font-size: 0.95rem;
+}
+
+.hh-rk-text {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.hh-rk-name {
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
+    margin: 0;
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--hh-cream);
+    /* Um nome comprido corta-se; nunca empurra o XP para fora. */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.hh-rk-you {
+    flex: 0 0 auto;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--hh-muted);
+}
+
+.hh-rk-numbers {
+    flex: 0 0 auto;
+    text-align: right;
+}
+
+.hh-rk-xp {
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--hh-gold-soft);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.hh-rk-finds {
+    margin: 1px 0 0;
+    font-size: 0.72rem;
+    color: var(--hh-muted);
+    white-space: nowrap;
+}
+
+/* --- Barra fixa com a minha posição ---
+   Assente mesmo por cima da navegação, para que a posição esteja
+   sempre à vista mesmo em #37. */
+.hh-rk-standings {
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: calc(var(--hh-nav-h) + var(--hh-safe-bottom) - 8px);
+    z-index: 40;
+    width: 100%;
+    max-width: 28rem;
+    padding: 0 clamp(12px, 4vw, 18px);
+}
+
+.hh-rk-standings .hh-rk-row {
+    background: var(--hh-navy-800);
+    border-color: rgba(214, 178, 116, 0.6);
+    box-shadow: 0 10px 26px rgba(4, 10, 20, 0.55);
+}
+
+/* --- Estados --- */
+.hh-rk-state {
+    text-align: center;
+    padding: 34px 16px 20px;
+}
+
+.hh-rk-state-icon {
+    display: inline-grid;
+    place-items: center;
+    width: 76px;
+    height: 76px;
+    margin-bottom: 18px;
+    border-radius: 50%;
+    background: rgba(233, 240, 249, 0.07);
+    color: #DCE6F3;
+    font-size: 1.9rem;
+}
+
+.hh-rk-state-title {
+    margin: 0 auto 10px;
+    max-width: 20ch;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: clamp(1.15rem, 5vw, 1.4rem);
+    font-weight: 700;
+    color: var(--hh-cream);
+    line-height: 1.3;
+}
+
+.hh-rk-state-sub {
+    margin: 0 auto;
+    max-width: 30ch;
+    font-size: 0.86rem;
+    line-height: 1.55;
+    color: var(--hh-muted);
+}
+
+.hh-rk-cta {
+    margin-top: 22px;
+    min-height: 50px;
+    padding: 0 30px;
+    border-radius: 999px;
+    border: none;
+    background: linear-gradient(135deg, var(--hh-gold-soft), var(--hh-gold));
+    color: var(--hh-navy-900);
+    font-size: 0.95rem;
+    font-weight: 700;
+    box-shadow: 0 8px 20px rgba(214, 178, 116, 0.24);
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* --- Esqueleto de carregamento --- */
+.hh-rk-skeleton {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.hh-rk-sk-podium {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    align-items: end;
+    gap: clamp(4px, 1.8vw, 10px);
+    margin-bottom: 18px;
+}
+
+.hh-rk-sk-pod {
+    height: 132px;
+    border-radius: 14px;
+}
+
+.hh-rk-sk-pod.is-tall {
+    height: 164px;
+}
+
+.hh-rk-sk-row {
+    height: 60px;
+    border-radius: 14px;
+}
+
+.hh-rk-sk-pod,
+.hh-rk-sk-row {
+    background: linear-gradient(
+        100deg,
+        rgba(255, 255, 255, 0.04) 30%,
+        rgba(255, 255, 255, 0.09) 50%,
+        rgba(255, 255, 255, 0.04) 70%
+    );
+    background-size: 220% 100%;
+    animation: hh-rk-shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes hh-rk-shimmer {
+    from { background-position: 180% 0; }
+    to   { background-position: -40% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .hh-rk-sk-pod,
+    .hh-rk-sk-row {
+        animation: none;
+    }
+}
+
+/* ============================================================
+   Painel: o que é o ranking, e a escolha de participar
+   ============================================================ */
+
+.hh-rk-info-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 80;
+    display: flex;
+    justify-content: center;
+    background: rgba(4, 10, 20, 0.72);
+}
+
+.hh-rk-info-overlay.hidden {
+    display: none;
+}
+
+.hh-rk-info-sheet {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 28rem;
+    background: linear-gradient(180deg, var(--hh-navy-800) 0%, var(--hh-navy-900) 100%);
+    color: var(--hh-cream);
+    overflow: hidden;
+}
+
+.hh-rk-info-head {
+    flex: 0 0 auto;
+    display: grid;
+    grid-template-columns: 38px 1fr 38px;
+    align-items: center;
+    gap: 8px;
+    padding: calc(12px + var(--hh-safe-top)) clamp(12px, 4vw, 18px) 12px;
+}
+
+.hh-rk-head-label {
+    text-align: center;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--hh-cream);
+}
+
+.hh-rk-info-body {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 6px clamp(12px, 4vw, 18px) calc(24px + var(--hh-safe-bottom));
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.hh-rk-info-card {
+    position: relative;
+    overflow: hidden;
+    padding: 22px;
+    border-radius: 18px;
+    border: 1px solid rgba(214, 178, 116, 0.22);
+    background: linear-gradient(140deg, rgba(23, 50, 90, 0.85), rgba(14, 32, 57, 0.95));
+}
+
+.hh-rk-info-compass {
+    position: absolute;
+    top: -18px;
+    right: -22px;
+    width: 130px;
+    height: 130px;
+    color: var(--hh-gold);
+    opacity: 0.22;
+}
+
+.hh-rk-info-title {
+    position: relative;
+    margin: 0 0 10px;
+    max-width: 12ch;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: clamp(1.35rem, 6vw, 1.6rem);
+    line-height: 1.2;
+    font-weight: 700;
+    color: var(--hh-gold-soft);
+}
+
+.hh-rk-info-lead {
+    position: relative;
+    margin: 0;
+    max-width: 34ch;
+    font-size: 0.86rem;
+    line-height: 1.6;
+    color: rgba(233, 240, 249, 0.82);
+}
+
+.hh-rk-info-switch {
+    padding: 16px;
+    border-radius: 16px;
+    border: 1px solid var(--hh-line);
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.hh-rk-info-switch-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 44px;
+}
+
+.hh-rk-info-switch-icon {
+    flex: 0 0 auto;
+    color: var(--hh-gold);
+    font-size: 1.15rem;
+}
+
+.hh-rk-info-switch-label {
+    flex: 1 1 auto;
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--hh-cream);
+}
+
+.hh-rk-info-switch-sub {
+    margin: 10px 0 0;
+    font-size: 0.8rem;
+    line-height: 1.5;
+    color: var(--hh-muted);
+}
+
+.hh-rk-info-points {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    padding: 18px 16px;
+    border-radius: 16px;
+    border: 1px solid var(--hh-line);
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.hh-rk-info-point {
+    display: flex;
+    align-items: flex-start;
+    gap: 13px;
+}
+
+.hh-rk-info-point-icon {
+    flex: 0 0 auto;
+    width: 26px;
+    text-align: center;
+    color: var(--hh-gold);
+    font-size: 1.05rem;
+    margin-top: 2px;
+}
+
+.hh-rk-info-point-title {
+    margin: 0 0 3px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--hh-cream);
+}
+
+.hh-rk-info-point-sub {
+    margin: 0;
+    font-size: 0.78rem;
+    line-height: 1.5;
+    color: var(--hh-muted);
+}
+
+/* --- Entrada pelo perfil --- */
+.hh-rk-teaser {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.hh-rk-teaser-head {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.hh-rk-teaser-icon {
+    flex: 0 0 auto;
+    width: 38px;
+    height: 38px;
+    display: grid;
+    place-items: center;
+    border-radius: 11px;
+    background: rgba(214, 178, 116, 0.14);
+    color: var(--hh-gold);
+}
+
+.hh-rk-teaser-text {
+    min-width: 0;
+}
+
+.hh-rk-teaser-title {
+    margin: 0 0 2px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--hh-cream);
+}
+
+.hh-rk-teaser-sub {
+    margin: 0;
+    font-size: 0.8rem;
+    line-height: 1.45;
+    color: var(--hh-muted);
+}
+
+.hh-rk-teaser-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    min-height: 44px;
+    border-radius: 12px;
+    border: 1px solid rgba(214, 178, 116, 0.42);
+    background: rgba(214, 178, 116, 0.10);
+    color: var(--hh-gold-soft);
+    font-size: 0.88rem;
+    font-weight: 600;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.hh-set-icon-gold {
+    background: rgba(214, 178, 116, 0.16);
+    color: var(--hh-gold);
+}
+
+body.hh-modal-open {
+    overflow: hidden;
+}
+
+/* ============================================================
+   Navegação a quatro abas
+   ============================================================ */
+
+nav.hh-nav .glass-glider {
+    width: calc(100% / 4);
+}
+
+nav.hh-nav[data-active="ranking"] .glass-glider {
+    transform: translateX(300%);
+}
+
+/* ============================================================
+   Tema claro
+   ============================================================ */
+
+html:not(.dark) .hh-rk-page {
+    background: linear-gradient(180deg, #FBF8F2 0%, #F4F1E9 55%, #EFEBE1 100%);
+}
+
+/* No tema claro o véu NAO pode clarear até ao fundo: o texto do
+   herói é claro, e sobre creme deixava de se ler. Fica um banner
+   escuro assumido, com o canto arredondado a dizer que é de
+   propósito — e não uma falha de transição. */
+html:not(.dark) .hh-rk-hero {
+    border-radius: 0 0 24px 24px;
+}
+
+html:not(.dark) .hh-rk-hero-shade {
+    background: linear-gradient(
+        180deg,
+        rgba(10, 23, 41, 0.32) 0%,
+        rgba(10, 23, 41, 0.58) 45%,
+        rgba(10, 23, 41, 0.86) 100%
+    );
+}
+
+html:not(.dark) .hh-rk-pod-name,
+html:not(.dark) .hh-rk-name,
+html:not(.dark) .hh-rk-state-title,
+html:not(.dark) .hh-rk-teaser-title,
+html:not(.dark) .hh-rk-head-label,
+html:not(.dark) .hh-rk-info-switch-label,
+html:not(.dark) .hh-rk-info-point-title {
+    color: #12294A;
+}
+
+html:not(.dark) .hh-rk-row,
+html:not(.dark) .hh-rk-optout,
+html:not(.dark) .hh-rk-info-switch,
+html:not(.dark) .hh-rk-info-points {
+    background: rgba(255, 255, 255, 0.78);
+}
+
+html:not(.dark) .hh-rk-row.is-me {
+    background: linear-gradient(90deg, rgba(168, 129, 63, 0.14), rgba(168, 129, 63, 0.03));
+}
+
+html:not(.dark) .hh-rk-ava {
+    background: linear-gradient(140deg, #E8E1D3, #D8CFBC);
+}
+
+html:not(.dark) .hh-rk-pod-pos {
+    color: #FBF8F2;
+    border-color: #FBF8F2;
+}
+
+html:not(.dark) .hh-rk-standings .hh-rk-row {
+    background: #FFFFFF;
+    box-shadow: 0 10px 26px rgba(24, 40, 66, 0.18);
+}
+
+html:not(.dark) .hh-rk-state-icon {
+    background: rgba(18, 41, 74, 0.07);
+    color: #12294A;
+}
+
+html:not(.dark) .hh-rk-info-sheet {
+    background: linear-gradient(180deg, #FBF8F2 0%, #F1ECE1 100%);
+    color: #12294A;
+}
+
+html:not(.dark) .hh-rk-icon-btn {
+    border-color: rgba(18, 41, 74, 0.2);
+    background: rgba(255, 255, 255, 0.7);
+    color: #12294A;
+}
+
+html:not(.dark) .hh-rk-hero .hh-rk-icon-btn {
+    border-color: rgba(233, 240, 249, 0.35);
+    background: rgba(10, 23, 41, 0.35);
+    color: #F3F7FC;
+}
+
+html:not(.dark) .hh-rk-info-card {
+    background: linear-gradient(140deg, #17325A, #0E2039);
+}
+
+html:not(.dark) .hh-rk-info-lead {
+    color: rgba(233, 240, 249, 0.82);
+}
+
+html:not(.dark) .hh-rk-sk-pod,
+html:not(.dark) .hh-rk-sk-row {
+    background: linear-gradient(
+        100deg,
+        rgba(18, 41, 74, 0.05) 30%,
+        rgba(18, 41, 74, 0.10) 50%,
+        rgba(18, 41, 74, 0.05) 70%
+    );
+    background-size: 220% 100%;
+}
+
+/* O interruptor do ranking segue o dourado da identidade, e não o
+   azul genérico dos restantes — é o único comando desta folha. */
+.hh-rk-info-switch .switch input:checked + .switch-slider {
+    background: linear-gradient(135deg, var(--hh-gold-soft), var(--hh-gold));
+}

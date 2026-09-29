@@ -201,6 +201,11 @@ const showLoginBtn = document.getElementById('showLoginBtn');
 const loginBtn = document.getElementById('loginBtn');
 const registerBtn = document.getElementById('registerBtn');
 const logoutBtn = document.getElementById('logoutBtn');
+const openRankingBtn = document.getElementById('openRankingBtn');
+const rankingOptInToggle = document.getElementById('rankingOptInToggle');
+const rankingView = document.getElementById('rankingView');
+const appHeader = document.getElementById('appHeader');
+const navRanking = document.getElementById('navRanking');
 
 // Main app elements
 const scannerView = document.getElementById('scannerView');
@@ -918,6 +923,14 @@ async function enterWithSession(session, fallbackName) {
         applyLanguage();
     }
 
+    // Participar ou nao no ranking e uma escolha da PESSOA, nao
+    // deste telemovel: acompanha a conta para outro aparelho.
+    if (remote && typeof remote.rankingOptIn === 'boolean') {
+        state.settings.rankingOptIn = remote.rankingOptIn;
+        saveSettings();
+        if (rankingOptInToggle) rankingOptInToggle.checked = remote.rankingOptIn;
+    }
+
     applyRemoteEntries(await HeritageCloud.pullEntries());
 
     // `loadUserData()` primeiro: e ele que enche o `state` a partir
@@ -930,6 +943,11 @@ async function enterWithSession(session, fallbackName) {
     // nunca pode ficar a espera de fotografias.
     flushPendingPhotos();
     flushPendingAvatar();
+
+    // O ledger do ranking recupera aqui tudo o que nao chegou a
+    // subir — uma descoberta feita sem rede, por exemplo. Repetir
+    // nao custa: a chave de recompensa impede contar duas vezes.
+    if (state.user.xp) HeritageCloud.syncXpLedger(state.user.xp.history);
 }
 
 async function login() {
@@ -1013,6 +1031,7 @@ async function logout() {
     XPUI.render();
     LevelsUI.render();
     JourneyUI.render();
+    RankingUI.closeInfo();
     document.body.classList.remove('hh-dark-bg');
     authScreen.classList.remove('hidden');
     mainApp.classList.add('hidden');
@@ -1150,7 +1169,34 @@ function awardXP(events) {
         });
     }
 
+    // O ledger do servidor e a base do ranking — e so isso. O jogo
+    // nunca espera por ele: vai em segundo plano, e o que falhar
+    // e recuperado no arranque seguinte por `syncXpLedger`.
+    if (batch.persisted && batch.totalAwarded > 0) {
+        recordAwardedXP(batch.awarded);
+    }
+
     return batch;
+}
+
+/**
+ * Espelha no servidor as recompensas que a carteira local atribuiu.
+ *
+ * Repare-se no que NAO vai daqui: o montante. O servidor tem as
+ * suas proprias tabelas e decide quanto vale cada accao — e por
+ * isso que nenhuma consola consegue escrever 999999 no ranking.
+ *
+ * A ordem e a de atribuicao, porque o servidor exige que um
+ * monumento ja esteja descoberto antes de aceitar uma fotografia
+ * ou uma experiencia sobre ele.
+ */
+async function recordAwardedXP(awarded) {
+    if (!HeritageCloud.isAvailable() || !HeritageCloud.getUserId()) return;
+
+    for (let i = 0; i < awarded.length; i++) {
+        const transaction = awarded[i] && awarded[i].transaction;
+        if (transaction) await HeritageCloud.recordXpEvent(transaction);
+    }
 }
 
 // Uma accao nunca produz dois avisos sobrepostos: quando a sequencia
@@ -1553,7 +1599,10 @@ const SETTINGS_KEY = 'heritageSettings';
 const defaultSettings = {
     theme: 'system',          // 'light' | 'dark' | 'system'
     lang: detectBrowserLanguage(),
-    achievementAlerts: true
+    achievementAlerts: true,
+    // Participar no ranking nao muda nada no que se ganha: muda
+    // apenas se o nome e a fotografia aparecem aos outros.
+    rankingOptIn: true
 };
 const darkModeQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
@@ -1705,11 +1754,80 @@ function initSettings() {
     applyTheme();
     applyLanguage();
     achievementAlertsToggle.checked = state.settings.achievementAlerts;
+    if (rankingOptInToggle) rankingOptInToggle.checked = state.settings.rankingOptIn !== false;
 
     // Segue o tema do sistema apenas quando a opção 'Sistema' está activa
     darkModeQuery.addEventListener('change', () => {
         if (state.settings.theme === 'system') applyTheme();
     });
+}
+
+// ============================================================
+// Ranking de exploradores
+//
+// Vive atras do perfil, e nao na barra de navegacao: o centro da
+// app continua a ser explorar, descobrir e guardar memorias.
+// ============================================================
+
+// A ilha ja esta prevista na jornada (`islandId`), por isso o
+// ranking nasce preparado para outras ilhas sem mudar de forma.
+const RANKING_ISLAND = 'sao_vicente';
+
+function initRanking() {
+    RankingUI.init({
+        t: t,
+        islandId: RANKING_ISLAND,
+        fetchRanking: function (limit, islandId) {
+            return HeritageCloud.getWeeklyRanking(limit, islandId);
+        },
+        signAvatars: function (paths) {
+            return HeritageCloud.signImageUrls(paths);
+        },
+        isOptedIn: function () {
+            return state.settings.rankingOptIn !== false;
+        },
+        onOptInChange: function (enabled) {
+            return toggleRankingOptIn(enabled);
+        },
+        // Uma lista vazia nao pode ser um beco: leva de volta ao que
+        // a app e mesmo — sair e descobrir.
+        onExplore: function () {
+            RankingUI.closeInfo();
+            showScannerView();
+        }
+    });
+}
+
+function showRankingView() {
+    document.body.classList.add('hh-dark-bg');
+    scannerView.classList.add('hidden');
+    profileView.classList.add('hidden');
+    mapView.classList.add('hidden');
+    settingsView.classList.add('hidden');
+    rankingView.classList.remove('hidden');
+    updateNavButtons('ranking');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // Carrega ao entrar. Sem tempo real nem sondagem: o ranking nao
+    // precisa de mudar a cada segundo (ponto 40).
+    RankingUI.load();
+}
+
+async function toggleRankingOptIn(enabled) {
+    state.settings.rankingOptIn = !!enabled;
+    saveSettings();
+
+    // O interruptor vive em dois sitios — nas definicoes e no painel
+    // do ranking — e os dois tem de mostrar sempre o mesmo.
+    if (rankingOptInToggle) rankingOptInToggle.checked = !!enabled;
+    RankingUI.syncOptIn(!!enabled);
+
+    // A escolha tem de valer ja. Sem esta subida imediata, sair do
+    // ranking so teria efeito no arranque seguinte — e ninguem
+    // espera isso de um interruptor de privacidade.
+    await HeritageCloud.flushNow();
+
+    if (RankingUI.isVisible()) RankingUI.reload();
 }
 
 // Navigation functions
@@ -1719,6 +1837,7 @@ function showScannerView() {
     profileView.classList.add('hidden');
     mapView.classList.add('hidden');
     settingsView.classList.add('hidden');
+    rankingView.classList.add('hidden');
     updateNavButtons('scanner');
 }
 
@@ -1728,6 +1847,7 @@ function showProfileView() {
     profileView.classList.remove('hidden');
     mapView.classList.add('hidden');
     settingsView.classList.add('hidden');
+    rankingView.classList.add('hidden');
     updateProfileView();
     updateNavButtons('profile');
 }
@@ -1737,10 +1857,12 @@ function showSettingsView() {
     scannerView.classList.add('hidden');
     profileView.classList.add('hidden');
     mapView.classList.add('hidden');
+    rankingView.classList.add('hidden');
     settingsView.classList.remove('hidden');
     updateThemeSelector();
     updateLanguageSelector();
     achievementAlertsToggle.checked = state.settings.achievementAlerts;
+    if (rankingOptInToggle) rankingOptInToggle.checked = state.settings.rankingOptIn !== false;
     updateNavButtons('settings');
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -1750,6 +1872,7 @@ function showMapView() {
     scannerView.classList.add('hidden');
     profileView.classList.add('hidden');
     settingsView.classList.add('hidden');
+    rankingView.classList.add('hidden');
     mapView.classList.remove('hidden');
     renderZonesView();
     initMap();
@@ -1766,18 +1889,23 @@ function updateNavButtons(activeView) {
     // ficar por cima de outra vista.
     if (activeView !== 'map') closeMapFullscreen();
 
+    // O ranking traz cabecalho proprio — a fotografia do porto vai ate
+    // ao topo. Dois cabecalhos empilhados seriam dois titulos a discutir.
+    if (appHeader) appHeader.classList.toggle('hidden', activeView === 'ranking');
+
     if (settingsBtn) settingsBtn.classList.toggle('is-active', activeView === 'settings');
 
     // Desliza o indicador do glass radio group para a aba activa
     const navBar = document.querySelector('nav.hh-nav');
     if (navBar) {
-        navBar.dataset.active = ['scanner', 'profile', 'map'].includes(activeView) ? activeView : 'none';
+        navBar.dataset.active = ['scanner', 'profile', 'map', 'ranking'].includes(activeView) ? activeView : 'none';
     }
 
     const buttons = [
         { element: navScanner, view: 'scanner' },
         { element: navProfile, view: 'profile' },
-        { element: navMap, view: 'map' }
+        { element: navMap, view: 'map' },
+        { element: navRanking, view: 'ranking' }
     ];
     
     buttons.forEach(button => {
@@ -2973,6 +3101,7 @@ if (torchBtn) torchBtn.addEventListener('click', toggleTorch);
 navScanner.addEventListener('click', showScannerView);
 navProfile.addEventListener('click', showProfileView);
 navMap.addEventListener('click', showMapView);
+if (navRanking) navRanking.addEventListener('click', showRankingView);
 settingsBtn.addEventListener('click', showSettingsView);
 closeBadgeModal.addEventListener('click', closeBadge);
 closeAchievementModal.addEventListener('click', closeAchievementDetails);
@@ -3011,6 +3140,10 @@ languageOptions.forEach(option => {
     option.addEventListener('click', () => setLanguage(option.dataset.lang));
 });
 achievementAlertsToggle.addEventListener('change', (e) => toggleAchievementAlerts(e.target.checked));
+if (rankingOptInToggle) {
+    rankingOptInToggle.addEventListener('change', (e) => toggleRankingOptIn(e.target.checked));
+}
+if (openRankingBtn) openRankingBtn.addEventListener('click', showRankingView);
 settingsLogoutBtn.addEventListener('click', logout);
 
 // Handle form submissions
@@ -3031,6 +3164,7 @@ async function initApp() {
     initExplorationStreak();
     initJourney();
     initDiscoveryCelebration();
+    initRanking();
 
     // A nuvem e opcional: se a biblioteca ou a configuracao
     // faltarem, a app corre na mesma, so com este aparelho.

@@ -26,6 +26,8 @@ ficheiro de domínio toca no DOM nem no `localStorage` directamente.
 | `supabase-config.js` | URL e chave pública do projecto Supabase |
 | `cloud.js` | Espelho na nuvem: sessão, perfil, experiências e ficheiros no Supabase |
 | `image-compressor.js` | **Domínio** da compressão: medidas, degraus de qualidade, formato |
+| `ranking.js` | **Domínio** do ranking: pódio, barra de posição, estados vazios |
+| `ranking-ui.js` | O ecrã dos exploradores: pódio, lista, carregamento, erros |
 | `script.js` | Orquestrador: estado, autenticação, scanner, mapa, navegação, álbum, definições |
 | `xp.js` | **Domínio** do XP: quanto vale cada acção, idempotência, histórico |
 | `xp-ui.js` | Cartão de XP, histórico, toast, zonas, painel pós-descoberta |
@@ -661,6 +663,8 @@ entrar com o mesmo email (`adoptLegacyMonumentKeys()`).
 | `monument_entries` | Uma linha por monumento visitado: `note`, `tags` |
 | `monument_photos` | Metadados do álbum: `path`, medidas, `bytes`, `original_bytes` |
 | `monument-photos` *(bucket)* | Os ficheiros das fotografias, privados |
+| `xp_events` | **Ledger de XP validado no servidor** — a base do ranking |
+| `monuments`, `xp_rules` | Catálogo de referência: quanto vale cada coisa |
 
 Ambas com **RLS**: cada explorador só lê e escreve o que é seu.
 
@@ -728,6 +732,117 @@ Regras que o compressor respeita:
 6. **A aritmética não toca no DOM**, e é por isso que tem testes
    (`image-compressor.test.js`, 26 testes).
 
+---
+
+## 11.2. Ranking de exploradores
+
+O ranking é uma **camada social**: mostra que mais alguém anda lá fora a
+descobrir os mesmos lugares. Nunca interrompe uma descoberta — o centro do
+produto continua a ser explorar, descobrir, aprender e guardar memórias.
+
+Tem **aba própria** na barra de navegação, ao lado de Scanner, Perfil e Mapa,
+e é também alcançável pelo cartão *Comunidade* no perfil. Por isso é uma
+**vista**, e não um modal: a barra de baixo tem de continuar visível por cima
+dela. O troféu passou para o Ranking e o Perfil ficou com a pessoa — dois
+troféus lado a lado não se distinguem.
+
+O ranking é a única vista que **esconde o cabeçalho global**: tem herói próprio,
+com a fotografia do porto a chegar ao topo do ecrã. Dois cabeçalhos empilhados
+seriam dois títulos a discutir.
+
+### O problema que obrigou a um ledger
+
+`profiles.xp` é um JSONB que o **próprio cliente escreve por inteiro**. Serve
+bem para o jogo — a carteira local é a fonte da verdade da experiência — mas não
+serve para um ranking: bastava a consola do browser para ficar em primeiro.
+
+Por isso o ranking **não lê `profiles.xp`**. Lê `xp_events`, um ledger onde:
+
+1. **o montante vem sempre do servidor**, de `xp_rules` e `monuments`, nunca de
+   quem chama — o cliente envia a *acção*, nunca o valor;
+2. **a idempotência é uma restrição `UNIQUE (user_id, reward_key)`**, e não uma
+   convenção. É a mesma `rewardKey` que o `xp.js` já usava;
+3. **os pré-requisitos são verificados**: só se fotografa ou se escreve sobre um
+   monumento já descoberto, e uma zona só conta quando todos os seus monumentos
+   estão descobertos;
+4. **não existe política de `INSERT`** na tabela. A única porta é a função
+   `award_xp`, e essa ausência é a fechadura.
+
+Resultado: o XP máximo possível é o que o conteúdo permite — 12 monumentos e
+4 zonas dão **1165** — e não um número à escolha.
+
+> ⚠️ **`xp_rules` é o espelho de `XP_CONFIG` em `xp.js`.** Quem acrescentar uma
+> acção de XP tem de a acrescentar nos **dois** sítios. O cliente decide *se*
+> recompensa; o servidor decide *quanto vale*. Se divergirem, o ranking mente.
+
+### Isto não é um segundo sistema de XP
+
+As regras do jogo continuam todas em `xp.js`. O ledger não decide nada sobre a
+experiência: é uma sombra verificável, escrita a partir de `awardXP()`, o único
+sítio por onde o XP passa. Se a subida falhar, o jogo não dá por isso — e
+`syncXpLedger()` repõe tudo no arranque seguinte, sem risco de duplicar.
+
+### A semana
+
+De **segunda-feira 00:00 a domingo 23:59, hora de Cabo Verde** — o fuso do país,
+não o do aparelho, para que dois exploradores lado a lado vejam a mesma semana.
+Calculado em Postgres por `week_start()`; o relógio do browser nunca decide nada.
+
+**O XP total nunca é reposto a zero.** À segunda-feira não se apaga nada: a
+consulta passa simplesmente a somar os eventos da semana nova. Quem tinha 3250 XP
+continua com 3250 XP e aparece com 0 XP semanais.
+
+### Posições e empates
+
+A ordem é sempre determinista: **XP da semana → descobertas → quem lá chegou
+primeiro**. Duas pessoas só partilham posição quando estão empatadas nos três
+critérios — aí mostram-se mesmo como `#6` e `#6`, sem desempate artificial.
+
+### As descobertas ao lado do XP
+
+Decisão de produto, não enfeite. Sem elas, o ranking seria «quem juntou mais
+pontos»; com elas percebe-se que aqueles pontos são **lugares onde a pessoa
+esteve**. O XP determina a posição; as descobertas explicam o que representa.
+
+### O ecrã
+
+Herói com a fotografia do porto, pódio de três com coroas discretas e o primeiro
+lugar um degrau acima, lista a partir do quarto, e uma barra fixa por cima da
+navegação para quem está fora do top visível. Estados próprios para carregar
+(esqueleto, nunca «0 XP» nem «#0»), erro com *Tentar novamente*, e vazio com
+um caminho de volta ao que a app é: **Explorar monumentos**.
+
+Duas coisas do desenho ficaram deliberadamente de fora, ambas pela mesma razão
+— não mostrar comandos que não fazem nada (a regra que o próprio briefing fixa):
+
+- **A seta `>` em cada linha.** Tocar levaria a um perfil público de outro
+  explorador, que não existe e que o MVP diz para não construir.
+- **O menu do selector de período.** Só existe a semana actual; um menu com uma
+  só opção é um botão morto. O *Esta semana* ficou como etiqueta.
+
+Ambas voltam no dia em que houver para onde ir.
+
+### Privacidade
+
+Participar é uma escolha (`profiles.ranking_opt_in`), e **acompanha a conta**,
+não o aparelho. Quem sai continua a ganhar XP, a subir de nível, a manter a
+sequência e a descobrir — apenas não aparece na lista.
+
+O interruptor existe em **dois sítios** — nas definições e no painel *(i)* do
+próprio ranking — e os dois mostram sempre o mesmo estado: `toggleRankingOptIn()`
+sincroniza ambos e só depois envia. Quem quer perceber o que isto é, ou sair,
+encontra tudo no sítio onde a dúvida nasce.
+
+O que o ranking expõe: **nome, avatar, XP semanal e descobertas**. Nunca email,
+nunca localização, nunca álbuns ou experiências, e nunca o id de outra pessoa —
+«quem sou eu» diz-se com um booleano. A agregação acontece toda em Postgres: o
+browser recebe no máximo 20 linhas já somadas, e nunca um evento alheio.
+
+Os avatares dos outros exigiram uma política de Storage própria: só ficheiros com
+**uma** pasta no caminho (`<id>/avatar.ext`, ao contrário de
+`<id>/<monumento>/<foto>.ext`) e só de quem optou por participar. O álbum
+mantém-se privado.
+
 ### Adaptadores
 
 Tanto `xp.js` como `streak.js` recebem o armazenamento por **adaptador
@@ -755,7 +870,7 @@ ABRIR A APP
                       │
         ┌─────────────┼──────────────┐
         ▼             ▼              ▼
-     SCANNER        PERFIL          MAPA        [⚙ DEFINIÇÕES]
+     SCANNER        PERFIL          MAPA       RANKING   [⚙ DEFINIÇÕES]
         │             │              │
         │             │              ├─ marcador azul  → popup informativo
         │             │              ├─ marcador verde → PÁGINA DO MONUMENTO
@@ -844,6 +959,8 @@ Regras que o código respeita de forma consistente e que devem manter-se:
 - Progresso sincronizado na nuvem: entrar noutro aparelho encontra tudo lá
 - Fotografias no Supabase Storage, comprimidas antes de subir, com fila
   para o que foi tirado sem rede
+- Ranking semanal de exploradores, com XP validado no servidor, opt-out,
+  pódio, barra de posição própria e estados de carregamento, vazio e erro
 - Scanner de QR com lanterna e tratamento de erros
 - 12 monumentos, 4 zonas, 1 jornada cultural
 - Sistema de XP completo, com histórico e idempotência
@@ -855,7 +972,8 @@ Regras que o código respeita de forma consistente e que devem manter-se:
 - Celebração de descoberta com três variantes, hierarquia de recompensas e
   ligação directa ao álbum
 - Testes de domínio: `xp.test.js`, `levels.test.js`, `streak.test.js`,
-  `journey.test.js`, `discovery.test.js`, `image-compressor.test.js` (182 testes)
+  `journey.test.js`, `discovery.test.js`, `image-compressor.test.js`,
+  `ranking.test.js` (204 testes)
 
 ### Já previsto no código, por implementar
 
@@ -876,5 +994,13 @@ Regras que o código respeita de forma consistente e que devem manter-se:
   O progresso desta app só cresce, por isso o critério é seguro e previsível —
   mas dois aparelhos a explorar em paralelo sem rede não fundem as descobertas:
   ganha o retrato com mais XP
-- Ainda não há tabela de classificação entre exploradores, embora o RLS e a
-  coluna `points` já estejam prontos para uma
+- **O ranking filtra por ilha mas só existe São Vicente.** `profiles.island_id`
+  e o parâmetro da consulta já estão lá; faltam as outras ilhas no conteúdo.
+  Não há filtros de Amigos nem de Cabo Verde — e não se mostram botões que
+  ainda não funcionam
+- **`get_weekly_ranking` chama `weekly_standings` três vezes** (top, total e a
+  minha posição) dentro de um CTE `materialized`. Chega bem para esta escala;
+  com milhares de exploradores por semana, passa a valer a pena materializar
+- **Overlays com `backdrop-filter` bloqueiam o compositor ao redimensionar a
+  janela** neste browser. É anterior a este trabalho — reproduz-se na página do
+  monumento, que não foi tocada — e não afecta o uso normal num telemóvel
