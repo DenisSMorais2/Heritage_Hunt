@@ -297,14 +297,19 @@ const RankingUI = (function () {
             crown.innerHTML = '<i class="fas fa-crown"></i>';
             card.appendChild(crown);
 
-            const avatar = avatarNode(entry, 'hh-rk-pod-avatar');
+            // O numero encavalita na base do avatar, e por isso nao
+            // pode viver dentro dele: o circulo corta o que la esta
+            // para que nenhuma fotografia lhe escape.
+            const wrap = document.createElement('div');
+            wrap.className = 'hh-rk-pod-avatar-wrap';
+            wrap.appendChild(avatarNode(entry, 'hh-rk-pod-avatar'));
 
             const pos = document.createElement('span');
             pos.className = 'hh-rk-pod-pos';
             pos.textContent = entry.position;
-            avatar.appendChild(pos);
+            wrap.appendChild(pos);
 
-            card.appendChild(avatar);
+            card.appendChild(wrap);
 
             const name = document.createElement('p');
             name.className = 'hh-rk-pod-name';

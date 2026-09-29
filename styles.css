@@ -1207,8 +1207,11 @@ nav.hh-nav[data-active="none"] .glass-glider {
     flex-shrink: 0;
 }
 .hh-avatar {
+    position: relative;
     width: 84px;
     height: 84px;
+    /* Circulo por construcao, nao por coincidencia entre medidas. */
+    aspect-ratio: 1 / 1;
     border-radius: 50%;
     overflow: hidden;
     display: flex;
@@ -1222,11 +1225,19 @@ nav.hh-nav[data-active="none"] .glass-glider {
     font-size: 30px;
     color: var(--hh-gold-soft);
 }
+/* Mesma razao do avatar do ranking: a fotografia e POSICIONADA e
+   nao dimensionada em percentagem. `height: 100%` depende de o pai
+   ter altura resolvida, e quando isso falha o browser cai na
+   altura intrinseca — um retrato deformava-se dentro do circulo. */
 .hh-avatar-img {
+    position: absolute;
+    inset: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
+    object-position: center;
     border-radius: 50%;
+    display: block;
 }
 .hh-avatar-btn {
     position: absolute;
@@ -7123,18 +7134,32 @@ html:not(.dark) .hh-scan-crest {
     position: relative;
     display: grid;
     place-items: center;
+    /* O circulo e circulo por construcao, e nao por coincidencia
+       entre a largura e a altura declaradas. */
+    aspect-ratio: 1 / 1;
     border-radius: 50%;
     background: linear-gradient(140deg, var(--hh-navy-600), var(--hh-navy-700));
     border: 1px solid var(--hh-line);
     flex: 0 0 auto;
+    /* Rede de seguranca: nada pintado la dentro escapa ao circulo. */
+    overflow: hidden;
 }
 
+/* A fotografia e POSICIONADA, nao dimensionada em percentagem.
+   `height: 100%` depende de o pai ter altura definida — e quando
+   essa resolucao falha, o browser usa a altura intrinseca da
+   imagem: um retrato passava a elipse e tapava o nome e o XP.
+   Com `inset: 0` a caixa e sempre exactamente a do circulo, seja
+   qual for a proporcao da fotografia. */
 .hh-rk-ava img {
+    position: absolute;
+    inset: 0;
     width: 100%;
     height: 100%;
     border-radius: 50%;
-    /* `cover` num circulo: um retrato nunca sai deformado. */
+    /* `cover` mais `center`: corta o que sobra, nunca deforma. */
     object-fit: cover;
+    object-position: center;
     display: block;
 }
 
@@ -7180,10 +7205,17 @@ html:not(.dark) .hh-scan-crest {
 .hh-rk-pod.is-silver .hh-rk-crown { color: #C6D2E1; }
 .hh-rk-pod.is-bronze .hh-rk-crown { color: #C08A63; }
 
+/* O numero encavalita na base do avatar, por isso vive FORA do
+   circulo — que agora corta tudo o que la esta dentro. */
+.hh-rk-pod-avatar-wrap {
+    position: relative;
+    display: block;
+    margin-bottom: 16px;
+}
+
 .hh-rk-pod-avatar {
     width: clamp(58px, 19vw, 78px);
     height: clamp(58px, 19vw, 78px);
-    margin-bottom: 16px;
     border-width: 3px;
     border-color: #8FA1B8;
 }
