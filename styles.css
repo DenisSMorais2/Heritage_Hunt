@@ -58,13 +58,15 @@ body > .container {
 }
 
 #map {
-    /* Altura conduzida pelo ecra, com limites, em vez de um valor fixo. */
+    /* Fora do cartao (nenhum caso hoje) uma altura util por omissao */
     height: clamp(240px, 40dvh, 350px);
     z-index: 1;
     position: relative;
 }
+/* Dentro do cartao quem manda e a caixa: o mapa preenche-a por inteiro */
 .hh-map-wrap #map {
-    height: clamp(230px, 38dvh, 330px);
+    height: 100%;
+    min-height: 100%;
 }
 #locateUserBtn {
     z-index: 1000;
@@ -1580,6 +1582,11 @@ nav.hh-nav[data-active="none"] .glass-glider {
     min-width: 0;
     flex: 1 1 190px;
 }
+/* O texto e o unico que pode encolher: o pino e o contador tem
+   medida propria e encolhe-los so os tornava ilegiveis. */
+.hh-map-title-text {
+    flex: 1 1 auto;
+}
 .hh-map-pin {
     font-size: 22px;
     line-height: 1.2;
@@ -1603,7 +1610,11 @@ nav.hh-nav[data-active="none"] .glass-glider {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
-    flex-shrink: 0;
+    /* Com tres estados a legenda deixou de caber ao lado do titulo em
+       ecras estreitos. Encolher e mais honesto do que empurrar: quando
+       nao cabe, toma a linha inteira em vez de espremer o titulo. */
+    flex: 0 1 auto;
+    min-width: 0;
 }
 .hh-legend-pill {
     display: inline-flex;
@@ -1630,6 +1641,21 @@ nav.hh-nav[data-active="none"] .glass-glider {
 .hh-map-wrap {
     position: relative;
     z-index: 1;
+    /* PROPORCAO, nao altura.
+
+       Amarrar a altura a `dvh` tinha duas consequencias mas:
+
+         - a caixa mudava de FORMA entre ecras — quase quadrada num
+           telemovel alto, uma faixa larga num ecra baixo — porque a
+           largura vem do cartao (fixa) e a altura vinha do ecra;
+         - em movel, a barra do browser a recolher no scroll muda o
+           `dvh` a meio da leitura, e a caixa mexia-se sozinha.
+
+       A forma passa a vir da largura, que e a mesma em todos os
+       ecras. O `dvh` fica so como TECTO, para o mapa nunca comer a
+       pagina num ecra baixo ou em paisagem. */
+    aspect-ratio: 4 / 3;
+    max-height: 46dvh;
     border-radius: 14px;
     overflow: hidden;
     border: 1px solid rgba(233, 240, 249, 0.14);
@@ -1756,6 +1782,29 @@ nav.hh-nav[data-active="none"] .glass-glider {
 }
 .hh-map-mon.is-locked .hh-mon-name {
     color: #DCE6F2;
+}
+
+/* A legenda de tres estados em ecras estreitos: o mesmo conteudo,
+   com menos folga, para caber em duas linhas em vez de tres. */
+@media (max-width: 400px) {
+    .hh-legend-pill {
+        padding: 6px 10px;
+        font-size: 11.5px;
+        gap: 5px;
+    }
+    .hh-map-card .hh-section-title {
+        font-size: 19px;
+    }
+}
+
+/* Em paisagem a altura e o recurso escasso: a proporcao 4/3 daria
+   uma caixa mais alta do que o ecra, e o tecto em `dvh` sozinho
+   deixava o mapa demasiado baixo para se perceber a cidade. */
+@media (orientation: landscape) and (max-height: 560px) {
+    .hh-map-wrap {
+        aspect-ratio: 16 / 9;
+        max-height: 62dvh;
+    }
 }
 
 @media (max-width: 400px) {
@@ -6785,6 +6834,9 @@ body.map-fullscreen-open {
 .hh-map-card.is-fullscreen .hh-map-wrap {
     flex: 1 1 auto;
     min-height: 0;
+    /* O ecra inteiro e o unico sitio onde a altura manda na forma */
+    aspect-ratio: auto;
+    max-height: none;
     border: 0;
     border-radius: 0;
     box-shadow: none;
@@ -6803,6 +6855,7 @@ body.map-fullscreen-open {
     z-index: 1200;
     flex-direction: column;
     align-items: flex-start;
+    justify-content: flex-start;
     flex-wrap: nowrap;
     gap: 6px;
     margin: 0;
@@ -6821,9 +6874,6 @@ body.map-fullscreen-open {
 .hh-map-card.is-fullscreen .hh-map-sub {
     display: none;
 }
-.hh-map-card.is-fullscreen .hh-map-head {
-    justify-content: flex-start;
-}
 /* Em linha, o flex-basis de 190px e largura; em coluna passava a ser
    ALTURA e abria um vazio entre o titulo e a legenda. */
 .hh-map-card.is-fullscreen .hh-map-title {
@@ -6832,12 +6882,10 @@ body.map-fullscreen-open {
 }
 .hh-map-card.is-fullscreen .hh-legend {
     flex: 0 0 auto;
+    gap: 8px;
 }
 .hh-map-card.is-fullscreen .hh-section-title {
     font-size: 16px;
-}
-.hh-map-card.is-fullscreen .hh-legend {
-    gap: 8px;
 }
 
 /* --- Controlos, ja a contar com a faixa e a area segura --- */

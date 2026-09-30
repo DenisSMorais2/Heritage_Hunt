@@ -450,6 +450,23 @@ Trocar de ecrã, entrar em ecrã inteiro ou mudar de idioma nunca recria o mapa:
 só se redesenham as camadas (`MapUI.render()`) ou se corrige o tamanho
 (`MapUI.invalidate()`).
 
+**A caixa tem proporção, não altura.** `.hh-map-wrap` é `aspect-ratio: 4 / 3`,
+com `46dvh` apenas como tecto. Amarrar a altura a `dvh` — como estava — tinha
+duas consequências: a caixa mudava de **forma** entre ecrãs (quase quadrada num
+telemóvel alto, uma faixa larga num ecrã baixo), e em telemóvel a barra do
+browser a recolher no scroll mudava o `dvh` a meio da leitura. Agora a forma vem
+da largura, que é a mesma em todos os ecrãs; em paisagem passa a `16 / 9`, onde
+a altura é o recurso escasso. Em ecrã inteiro a proporção desliga-se: aí manda o
+ecrã.
+
+**E o Leaflet é avisado sempre que essa caixa muda.** Ele decide quantas
+*tiles* desenhar uma única vez, com a medida que a caixa tinha no arranque —
+rodar o telemóvel, a barra do browser a recolher, entrar ou sair do ecrã
+inteiro deixavam-no com as *tiles* do tamanho antigo: faixas cinzentas de um
+lado, imagem cortada do outro. Um `ResizeObserver` sobre a própria caixa apanha
+as quatro causas de uma vez, reage só quando a medida mudou mesmo, e agrupa por
+*frame* — durante uma rotação chega a última medida, não as sete intermédias.
+
 | Elemento | Para que serve |
 |---|---|
 | `.hh-map-title` | "Mapa de Mindelo" + subtítulo |

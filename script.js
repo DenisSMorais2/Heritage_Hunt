@@ -527,6 +527,12 @@ function isMapFullscreen() {
 // disser, fica com as tiles do tamanho antigo. Corremos depois de o
 // CSS ser aplicado (dois frames) e outra vez mais tarde, porque em
 // mobile a barra do browser ainda pode mexer na altura.
+//
+// Rodar o ecra, o scroll a recolher a barra do browser e qualquer
+// outra mudanca de medida ja NAO passam por aqui: o map-ui.js
+// observa a propria caixa e trata disso sozinho. Esta funcao existe
+// so para a transicao de entrar e sair do ecra inteiro, que precisa
+// de acertar o centro e o zoom ao mesmo tempo.
 function refreshMapSize() {
     if (!map) return;
 
@@ -605,8 +611,6 @@ function openMapFullscreen() {
     refreshMapSize();
 
     document.addEventListener('keydown', handleMapFullscreenKey, true);
-    window.addEventListener('resize', refreshMapSize);
-    window.addEventListener('orientationchange', refreshMapSize);
 
     // Uma entrada de historico so para o Voltar fechar o ecra inteiro
     try {
@@ -630,8 +634,6 @@ function closeMapFullscreen(options) {
     refreshMapSize();
 
     document.removeEventListener('keydown', handleMapFullscreenKey, true);
-    window.removeEventListener('resize', refreshMapSize);
-    window.removeEventListener('orientationchange', refreshMapSize);
 
     const fromHistory = !!(options && options.fromHistory);
     const pushed = mapFullscreenPushed;

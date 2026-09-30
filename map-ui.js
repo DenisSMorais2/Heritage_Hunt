@@ -793,6 +793,11 @@ const MapUI = (function () {
         // enquadramento (ponto 56)
         map.on('click', function () { closeSheet(); });
 
+        // A caixa que interessa e a que o CSS dimensiona, nao o
+        // elemento do Leaflet: e ela que muda com o ecra.
+        const container = map.getContainer();
+        watchSize((container && container.parentElement) || container);
+
         return map;
     }
 
@@ -830,7 +835,60 @@ const MapUI = (function () {
     }
 
     function invalidate() {
-        if (map) map.invalidateSize({ animate: false, pan: false });
+        if (!map) return;
+
+        // Sem centro guardado, `invalidateSize` reenquadra a partir do
+        // canto: em ecras estreitos isso via-se como um salto.
+        const center = map.getCenter();
+        const zoom = map.getZoom();
+
+        map.invalidateSize({ animate: false, pan: false });
+        map.setView(center, zoom, { animate: false });
+    }
+
+    // ==========================================================
+    // O Leaflet nao percebe que a caixa mudou de tamanho
+    //
+    // E ele que decide quantas tiles desenhar, e essa conta e feita
+    // UMA vez, com a medida que a caixa tinha no arranque. Tudo o
+    // que mude essa medida depois — rodar o telemovel, a barra do
+    // browser a recolher no scroll (que mexe em `dvh`), entrar e
+    // sair do ecra inteiro, um teclado a abrir — deixava o mapa com
+    // as tiles do tamanho antigo: faixas cinzentas de um lado e
+    // imagem cortada do outro.
+    //
+    // Um observador da PROPRIA caixa apanha as quatro causas de uma
+    // vez, e so reage quando a medida mudou mesmo.
+    // ==========================================================
+    let sizeObserver = null;
+    let lastBox = { width: 0, height: 0 };
+    let resizeFrame = null;
+
+    function watchSize(container) {
+        if (!container || typeof ResizeObserver !== 'function') return;
+        if (sizeObserver) sizeObserver.disconnect();
+
+        sizeObserver = new ResizeObserver(function (entries) {
+            const rect = entries[0] && entries[0].contentRect;
+            if (!rect) return;
+
+            // Meio pixel de arredondamento nao e uma mudanca de caixa
+            const changed = Math.abs(rect.width - lastBox.width) > 1 ||
+                Math.abs(rect.height - lastBox.height) > 1;
+            if (!changed) return;
+
+            lastBox = { width: rect.width, height: rect.height };
+
+            // Uma medida por frame: durante uma rotacao o observador
+            // dispara varias vezes, e o Leaflet so precisa da ultima.
+            if (resizeFrame) cancelAnimationFrame(resizeFrame);
+            resizeFrame = requestAnimationFrame(function () {
+                resizeFrame = null;
+                invalidate();
+            });
+        });
+
+        sizeObserver.observe(container);
     }
 
     // ==========================================================
