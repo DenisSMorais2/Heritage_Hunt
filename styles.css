@@ -1073,6 +1073,25 @@ body.hh-dark-bg .container {
 /* --- Navegacao inferior (glass radio group) --- */
 nav.hh-nav {
     z-index: 40;
+    /* POR QUE E QUE ISTO E PRECISO
+
+       O elemento e `fixed bottom-0 w-full max-w-md` — mas sem `left`
+       nem `right`. Um elemento fixo sem nenhum dos dois nao fica
+       ancorado ao ecra: fica na sua POSICAO ESTATICA, ou seja, onde
+       teria calhado no fluxo normal dentro do `#mainApp`.
+
+       Enquanto nada empurra o fluxo, isso da no mesmo. Mas basta um
+       elemento mais largo do que o ecra dentro de uma vista — era o
+       caso da legenda de tres estados no mapa — para o documento
+       passar a ser mais largo do que a janela. A partir dai a
+       posicao estatica desloca-se, e a barra ia atras dela: para a
+       direita, e para fora da janela visivel.
+
+       Ancorada aos dois lados e centrada, a barra passa a depender
+       so da janela. Nenhum conteudo a pode voltar a arrastar. */
+    left: 0;
+    right: 0;
+    margin-inline: auto;
     padding-bottom: var(--hh-safe-bottom);
     background: linear-gradient(180deg, #0E2039, #0A1729);
     border-top: 1px solid var(--hh-line);
@@ -1620,6 +1639,10 @@ nav.hh-nav[data-active="none"] .glass-glider {
     display: inline-flex;
     align-items: center;
     gap: 6px;
+    /* Cada pilula fica numa linha; quem quebra e a LEGENDA, entre
+       pilulas. Sem isto, "Próxima descoberta" partia-se ao meio e a
+       pilula ficava com o dobro da altura das vizinhas. */
+    white-space: nowrap;
     padding: 7px 12px;
     border-radius: 999px;
     font-size: 12px;
