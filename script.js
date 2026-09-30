@@ -7,8 +7,7 @@ const state = {
     currentMonumentForMap: null,
     userLocation: null,
     userLocationIsPrecise: false,
-    userLocationMarker: null,
-    userLocationCircle: null,
+    // O ponto e o halo do utilizador pertencem agora ao MapUI
     currentMonumentForPhotos: null,
     monumentTagsDraft: [],
     cameraStream: null,
@@ -215,6 +214,10 @@ const settingsView = document.getElementById('settingsView');
 const startScannerBtn = document.getElementById('startScannerBtn');
 const closeScannerBtn = document.getElementById('closeScannerBtn');
 const torchBtn = document.getElementById('torchBtn');
+const camFullscreenBtn = document.getElementById('camFullscreenBtn');
+const camZoomBar = document.getElementById('camZoom');
+const camTipCard = document.getElementById('camTipCard');
+const camTipToggle = document.getElementById('camTipToggle');
 const scannerVideo = document.getElementById('scannerVideo');
 const scannerOverlay = document.getElementById('scannerOverlay');
 const progressBar = document.getElementById('progressBar');
@@ -321,39 +324,71 @@ const cameraVideo = document.getElementById('cameraVideo');
 const closeCameraModal = document.getElementById('closeCameraModal');
 const capturePhotoBtn = document.getElementById('capturePhotoBtn');
 
-// Initialize map
+// A instancia do Leaflet. As camadas e os marcadores vivem no
+// MapUI: aqui guarda-se so a referencia, para o resto da app poder
+// perguntar se o mapa ja existe.
 let map;
-let markers = [];
 
+// ============================================================
+// Mapa — ligacao entre o dominio (map.js), os dados reais e a
+// interface (map-ui.js)
+//
+// O mapa passou a contar a jornada: quem sou, onde estou, o que ja
+// descobri, o que falta e para onde vou a seguir. As camadas vivem
+// todas no MapUI; aqui so se diz de onde vem cada dado.
+//
+// A instancia do Leaflet continua a ser UMA (ponto 33): `initMap`
+// corre uma vez, e o ecra inteiro so muda a caixa a volta dela.
+// ============================================================
 function initMap() {
     if (map) return;
-    
-    map = L.map('map', {
-        zoomControl: true,
-        attributionControl: true
-    }).setView([16.8907, -24.9874], 15);
-    
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-    }).addTo(map);
-    
-    // Force map container to have proper z-index
+
+    MapUI.init({
+        getMonuments: () => state.monuments,
+        getZones: () => state.zones,
+        getDiscoveredIds: () => discoveredMonumentIds(),
+
+        // A ordem do percurso vem da Jornada que ja existe: a linha
+        // do mapa e a MESMA sequencia que a folha da jornada mostra.
+        getJourneyOrder: () => Journey.getSteps().map(step => step.monument),
+
+        // A proxima descoberta NAO se decide aqui (ponto 8): ha um
+        // unico sitio onde essa regra vive.
+        getNextDiscovery: () => Engagement.getNextDiscovery(),
+
+        getUserLocation: () => (state.userLocation
+            ? {
+                lat: state.userLocation.lat,
+                lng: state.userLocation.lng,
+                precise: !!state.userLocationIsPrecise
+            }
+            : null),
+
+        getDiscoveredAt: (monumentId) => {
+            const found = state.scannedMonuments.find(m => m.id === monumentId);
+            return found ? (found.discoveredAt || null) : null;
+        },
+
+        // Os CTA levam aos fluxos que ja existem: nenhum ecra novo
+        onOpenAlbum: (monumentId) => openMonumentPhotos(monumentId),
+        onOpenMemories: () => showProfileView(),
+        onExploreClick: () => Analytics.count(Analytics.EVENT.NEXT_DISCOVERY_CLICKED)
+    });
+
+    map = MapUI.create('map');
+
+    // O contentor tem de ficar abaixo da navegacao e dos modais
     const mapContainer = document.getElementById('map');
     if (mapContainer) {
         mapContainer.style.zIndex = '1';
         mapContainer.style.position = 'relative';
     }
-    
-    // Get user location
-    getUserLocation();
-    
-    // Add markers for all monuments
-    state.monuments.forEach(monument => {
-        const marker = L.marker([monument.lat, monument.lng]).addTo(map);
-        applyMarkerBehaviour(marker, monument);
-        markers.push({ marker, monument });
-    });
 
+    // A localizacao so e pedida quando o Mapa abre — nunca no
+    // arranque da app (ponto 49). E o fluxo que ja existia.
+    getUserLocation();
+
+    MapUI.render();
     focusMonumentOnMap();
 }
 
@@ -370,58 +405,14 @@ function focusMonumentOnMap() {
     // O contentor pode ter acabado de deixar de estar escondido. Sem
     // o medir outra vez, a animacao de zoom do Leaflet e descartada e
     // o mapa ficava exactamente onde estava.
-    map.invalidateSize();
-    map.setView([monument.lat, monument.lng], 17, { animate: false });
+    MapUI.invalidate();
 
-    // Abre o balao do monumento (os descobertos abrem a pagina propria)
-    const targetMarker = markers.find(m => m.monument.id === monument.id);
-    if (targetMarker && targetMarker.marker.getPopup()) {
-        targetMarker.marker.openPopup();
-    }
+    // `explore` faz o voo suave, destaca o marcador e abre a folha
+    // do lugar — o mesmo caminho do botao "Explorar" (ponto 12).
+    MapUI.explore(monument.id);
 
     // O pedido e consumido uma unica vez
     state.currentMonumentForMap = null;
-}
-
-// Conteudo do balao de um monumento ainda por descobrir
-function monumentPopupHtml(monument) {
-    return `
-        <div class="text-center">
-            <img src="${monument.image}" alt="${monument.name}" class="w-full h-24 object-cover rounded mb-2">
-            <b>${monument.name}</b><br>
-            <span class="text-sm">${monument.description}</span><br>
-            <span class="text-blue-600 font-bold">${monument.points} ${t('pointsWord')}</span>
-        </div>
-    `;
-}
-
-// Um monumento descoberto abre a pagina propria; os restantes mostram o balao
-function applyMarkerBehaviour(marker, monument) {
-    const isScanned = state.scannedMonuments.some(m => m.id === monument.id);
-
-    if (isScanned) {
-        marker.setIcon(L.icon({
-            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
-            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-            iconSize: [25, 41],
-            iconAnchor: [12, 41],
-            popupAnchor: [1, -34],
-            shadowSize: [41, 41]
-        }));
-    }
-
-    if (marker.hhOpenPage) {
-        marker.off('click', marker.hhOpenPage);
-        marker.hhOpenPage = null;
-    }
-
-    if (isScanned) {
-        if (marker.getPopup()) marker.unbindPopup();
-        marker.hhOpenPage = () => openMonumentPhotos(monument.id);
-        marker.on('click', marker.hhOpenPage);
-    } else {
-        marker.bindPopup(monumentPopupHtml(monument));
-    }
 }
 
 function getUserLocation() {
@@ -433,39 +424,20 @@ function getUserLocation() {
                 
                 state.userLocation = { lat, lng };
                 state.userLocationIsPrecise = true;
-                
-                // Add user location marker
-                if (state.userLocationMarker) {
-                    map.removeLayer(state.userLocationMarker);
-                }
-                
-                if (state.userLocationCircle) {
-                    map.removeLayer(state.userLocationCircle);
-                }
-                
-                // Add proximity circle (50m radius)
-                state.userLocationCircle = L.circle([lat, lng], {
-                    radius: 50,
-                    className: 'user-location-circle'
-                }).addTo(map);
-                
-                state.userLocationMarker = L.marker([lat, lng])
-                    .addTo(map)
-                    .bindPopup(createUserLocationPopup())
-                    .setIcon(L.icon({
-                        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
-                        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-                        iconSize: [25, 41],
-                        iconAnchor: [12, 41],
-                        popupAnchor: [1, -34],
-                        shadowSize: [41, 41]
-                    }));
+
+                // O ponto e o halo passaram a ser desenhados pelo
+                // MapUI, que tambem actualiza as distancias do cartao
+                // e da folha agora que ha localizacao.
+                MapUI.render();
             },
             function(error) {
-                console.log("Erro ao obter localização:", error);
-                // Use default location (Mindelo center) if geolocation fails
+                // Recusar a localizacao nao e um erro de que se avise
+                // (ponto 49): o mapa continua inteiro, so sem o ponto
+                // e sem distancias.
+                console.log("Localização indisponível:", error && error.message);
                 state.userLocation = { lat: 16.8907, lng: -24.9874 };
                 state.userLocationIsPrecise = false;
+                MapUI.render();
             },
             {
                 enableHighAccuracy: true,
@@ -508,63 +480,18 @@ function findNearestUndiscoveredMonument() {
     return nearest;
 }
 
-function createUserLocationPopup() {
-    if (!state.userLocation) return t('currentLocation');
-    
-    const nearestMonument = findNearestMonument();
-    if (!nearestMonument) return t('currentLocation');
-    
-    const distance = calculateDistance(
-        state.userLocation.lat, 
-        state.userLocation.lng, 
-        nearestMonument.monument.lat, 
-        nearestMonument.monument.lng
-    );
-    
-    return `
-        <div class="text-center">
-            <b>📍 ${t('myLocation')}</b><br>
-            <div class="mt-2 p-2 bg-blue-50 rounded">
-                <div class="text-sm font-semibold text-blue-800">${t('nearestMonument')}</div>
-                <div class="text-sm font-bold">${nearestMonument.monument.name}</div>
-                <div class="text-xs text-blue-600">${t('distanceAway', { d: distance.toFixed(0) })}</div>
-            </div>
-        </div>
-    `;
-}
+// O balao do utilizador e a procura do monumento mais proximo
+// viviam aqui. Sairam com os popups do Leaflet: o ponto do
+// utilizador passou a ter um rotulo proprio ("Estás aqui") e a
+// pergunta "o que ha perto?" e agora respondida pelo cartao da
+// proxima descoberta, que sabe mais do que a distancia.
 
-function findNearestMonument() {
-    if (!state.userLocation || !state.monuments.length) return null;
-    
-    let nearest = null;
-    let minDistance = Infinity;
-    
-    state.monuments.forEach(monument => {
-        const distance = calculateDistance(
-            state.userLocation.lat,
-            state.userLocation.lng,
-            monument.lat,
-            monument.lng
-        );
-        
-        if (distance < minDistance) {
-            minDistance = distance;
-            nearest = { monument, distance };
-        }
-    });
-    
-    return nearest;
-}
-
+// Distancia em linha recta, em metros. A conta vive em map.js (com
+// testes); aqui fica so o nome que o resto da app ja usava — dois
+// Haversine no mesmo projecto seriam um a mais.
 function calculateDistance(lat1, lng1, lat2, lng2) {
-    const R = 6371000; // Earth's radius in meters
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLng = (lng2 - lng1) * Math.PI / 180;
-    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-              Math.sin(dLng/2) * Math.sin(dLng/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return R * c;
+    const metres = MapGeo.distance(lat1, lng1, lat2, lng2);
+    return metres === null ? 0 : metres;
 }
 
 function locateUser() {
@@ -572,9 +499,6 @@ function locateUser() {
 
     if (state.userLocation) {
         map.setView([state.userLocation.lat, state.userLocation.lng], 17);
-        if (state.userLocationMarker) {
-            state.userLocationMarker.openPopup();
-        }
     } else {
         getUserLocation();
     }
@@ -644,7 +568,12 @@ const OVERLAY_IDS = [
     'monumentPhotosModal', 'monumentModal', 'cameraModal',
     'badgeModal', 'achievementModal', 'levelUpModal',
     'xpHistoryModal', 'journeyModal', 'levelJourneyModal',
-    'streakDayModal', 'streakCelebrationModal', 'discoveryModal'
+    'streakDayModal', 'streakCelebrationModal', 'discoveryModal',
+    'missionModal',
+    // A folha do lugar esta POR CIMA do mapa e trata do seu proprio
+    // Esc: fechar as duas de uma vez seria fechar o que o utilizador
+    // nao pediu.
+    'mapSheet'
 ];
 
 function hasOverlayOpen() {
@@ -812,6 +741,11 @@ function createEmptyProfile(name, email, cloudId) {
         scannedMonuments: [],
         xp: XP.createEmptyWallet(),
         explorationStreak: ExplorationStreak.createEmptyStreak(),
+        // A missao da semana e o funil da beta vivem no perfil, ao
+        // lado da carteira e da sequencia, e sobem pela mesma
+        // escrita atomica (pontos 23 e 42).
+        weeklyMission: WeeklyMissions.createEmpty(),
+        analytics: Analytics.createEmpty(),
         // Toda a gente comeca Explorador, sem celebracao (ponto 3)
         levelSeen: Levels.getLevelFromXP(0).level
     };
@@ -830,6 +764,8 @@ function remoteToProfile(remote, session) {
         scannedMonuments: remote.scannedMonuments || [],
         xp: remote.xp || XP.createEmptyWallet(),
         explorationStreak: remote.explorationStreak || ExplorationStreak.createEmptyStreak(),
+        weeklyMission: remote.weeklyMission || WeeklyMissions.createEmpty(),
+        analytics: remote.analytics || Analytics.createEmpty(),
         levelSeen: remote.levelSeen || Levels.getLevelFromXP(0).level
     };
 }
@@ -854,6 +790,97 @@ function localProfileFor(local, session) {
     }
 
     return null;
+}
+
+// ============================================================
+// Reconciliacao do que NAO e "maior ganha" (ponto 53)
+//
+// `pickProfile` escolhe UM retrato, pelo XP. Serve para o
+// progresso, que so cresce, mas nao serve para estas duas coisas:
+//
+//   - um marco do funil que aconteceu num aparelho aconteceu para
+//     a conta, e nao pode desaparecer por o outro aparelho ter
+//     mais XP;
+//   - o progresso da missao desta semana pode ter avancado nos
+//     dois lados (uma fotografia aqui, uma memoria la).
+//
+// Por isso estes dois juntam-se em vez de se escolherem.
+// ============================================================
+
+function mergeAnalytics(local, remote) {
+    const left = Analytics.normalize(local);
+    const right = Analytics.normalize(remote);
+    const merged = Analytics.normalize(left);
+
+    // De cada marco fica a data MAIS ANTIGA: foi quando aconteceu
+    Object.keys(right.first).forEach(event => {
+        const known = merged.first[event];
+        const other = right.first[event];
+        if (!known || other < known) merged.first[event] = other;
+    });
+
+    const union = (a, b, limit) => a.concat(b)
+        .filter((value, index, all) => all.indexOf(value) === index)
+        .sort().reverse().slice(0, limit);
+
+    merged.activeDays = union(left.activeDays, right.activeDays, 120);
+    merged.missionWeeks = union(left.missionWeeks, right.missionWeeks, 26);
+
+    // Um contador de intencao fica no valor mais alto conhecido:
+    // somar os dois contaria duas vezes o que sincronizou nos dois.
+    Object.keys(right.counts).forEach(event => {
+        const known = merged.counts[event] || 0;
+        if (right.counts[event] > known) merged.counts[event] = right.counts[event];
+    });
+
+    // Um segundo dia distinto fecha o marco do regresso, venha ele
+    // de que aparelho vier.
+    if (merged.activeDays.length >= 2 && !merged.first[Analytics.EVENT.APP_RETURNED_OTHER_DAY]) {
+        merged.first[Analytics.EVENT.APP_RETURNED_OTHER_DAY] = new Date().toISOString();
+    }
+
+    return merged;
+}
+
+function mergeWeeklyMission(local, remote) {
+    const left = WeeklyMissions.normalize(local);
+    const right = WeeklyMissions.normalize(remote);
+
+    const week = WeeklyMissions.getWeekKey();
+
+    // Semanas diferentes, ou de semanas passadas: fica o que for
+    // desta semana. Uma missao antiga nao tem nada a dizer.
+    const leftIsNow = left.weekKey === week && left.missionId;
+    const rightIsNow = right.weekKey === week && right.missionId;
+
+    if (!leftIsNow) return rightIsNow ? right : left;
+    if (!rightIsNow) return left;
+
+    // Missoes diferentes para a mesma semana (dois aparelhos que
+    // atribuiram antes de sincronizar): ganha a mais avancada.
+    if (left.missionId !== right.missionId) {
+        const weight = (state) => Object.keys(state.refs)
+            .reduce((total, type) => total + state.refs[type].length, 0);
+        return weight(right) > weight(left) ? right : left;
+    }
+
+    // A mesma missao: o progresso e a UNIAO das referencias. Como
+    // sao referencias e nao contadores, juntar nunca conta a mesma
+    // fotografia duas vezes (pontos 24 e 53).
+    const merged = WeeklyMissions.normalize(left);
+
+    Object.keys(right.refs).forEach(type => {
+        const current = merged.refs[type] || [];
+        merged.refs[type] = current
+            .concat(right.refs[type])
+            .filter((ref, index, all) => all.indexOf(ref) === index);
+    });
+
+    merged.completedAt = left.completedAt || right.completedAt;
+    // Se qualquer um dos lados ja pagou, nao se paga outra vez
+    merged.rewardedAt = left.rewardedAt || right.rewardedAt;
+
+    return merged;
 }
 
 // Qual dos dois retratos vale: o deste aparelho ou o da nuvem?
@@ -923,6 +950,18 @@ async function enterWithSession(session, fallbackName) {
     // Uma fotografia ainda por subir e deste aparelho, e fica: e
     // mais recente que qualquer caminho ja guardado.
     if (localProfile && localProfile.photo) profile.photo = localProfile.photo;
+
+    // O funil e a missao da semana juntam-se em vez de se
+    // escolherem: nenhum dos dois cresce com o XP (ponto 53).
+    profile.analytics = mergeAnalytics(
+        localProfile ? localProfile.analytics : null,
+        remoteProfile ? remoteProfile.analytics : null
+    );
+
+    profile.weeklyMission = mergeWeeklyMission(
+        localProfile ? localProfile.weeklyMission : null,
+        remoteProfile ? remoteProfile.weeklyMission : null
+    );
 
     state.user = profile;
 
@@ -1019,6 +1058,10 @@ async function register() {
         }
 
         await enterWithSession(result, name);
+
+        // O topo do funil. Marcado depois de a sessao existir, para
+        // que o evento caia no perfil certo (ponto 42).
+        Analytics.track(Analytics.EVENT.ACCOUNT_CREATED);
     } finally {
         setAuthBusy(registerBtn, 'signingUp', false);
     }
@@ -1046,6 +1089,7 @@ async function logout() {
     XPUI.render();
     LevelsUI.render();
     JourneyUI.render();
+    renderEngagement();
     RankingUI.closeInfo();
     document.body.classList.remove('hh-dark-bg');
     authScreen.classList.remove('hidden');
@@ -1091,6 +1135,29 @@ function loadUserData() {
 
         // Os monumentos guardados podem ter sido gravados noutro idioma
         applyContentLanguage();
+
+        // Funil da beta. `trackAppOpen` e que fecha o marco
+        // APP_RETURNED_OTHER_DAY, ao ver o segundo dia distinto.
+        Analytics.trackAppOpen();
+
+        // Quem ja explorava antes deste sistema existir nao pode
+        // aparecer como quem nunca descobriu nada: os marcos que ja
+        // aconteceram sao marcados agora, uma unica vez.
+        trackDiscoveryFunnel();
+
+        // A missao da semana e atribuida no arranque, e fica. Se a
+        // semana mudou, comeca uma nova aqui — nunca a meio de uma
+        // accao (ponto 22).
+        WeeklyMissions.ensureWeek();
+
+        // Uma missao que ficou completa sem rede e cuja recompensa
+        // nao chegou a sair (o XP falhou a gravar, a app fechou)
+        // fecha-se agora. `markRewarded` garante que isto nao repete
+        // a celebracao nem a recompensa (pontos 24 e 53).
+        const pendingMission = WeeklyMissions.getStatus();
+        if (pendingMission.isComplete && !pendingMission.isRewarded) {
+            completeWeeklyMission(pendingMission);
+        }
 
         // A partir daqui, qualquer subida de nivel aconteceu mesmo agora
         levelCelebrationsReady = true;
@@ -1517,6 +1584,311 @@ function showStreakMilestone(milestoneId) {
     if (badge) showAchievementDetails(badge);
 }
 
+// ============================================================
+// Loop de descoberta e missao semanal — ligacao entre os dominios
+// (engagement.js, missions.js, analytics.js), os dados reais e a
+// interface (engagement-ui.js, missions-ui.js)
+//
+// Nada disto e um sistema novo de progresso: o XP continua em
+// xp.js, o percurso em journey.js, a sequencia em streak.js. Aqui
+// so se responde a "o que posso descobrir a seguir?" e se da uma
+// razao para voltar durante a semana.
+// ============================================================
+
+// Zona a que um monumento pertence (a fonte sao as zonas existentes)
+function monumentZoneId(monumentId) {
+    const zone = state.zones.find(z => z.monumentIds.indexOf(monumentId) !== -1);
+    return zone ? zone.id : null;
+}
+
+// Uma experiencia so "existe" com conteudo real, a mesma regra que
+// decide se ela rende XP (ponto 13).
+//
+// O nome NAO e `monumentNoteText`: essa e a constante do elemento do
+// DOM, declarada no topo deste ficheiro. Duas coisas com o mesmo nome
+// seria uma delas a desaparecer — e a que desaparecia era o elemento,
+// deixando a pagina do monumento sem conseguir escrever a nota.
+function savedNoteFor(monumentId) {
+    return (localStorage.getItem(monumentKey('note', monumentId)) || '').trim();
+}
+
+function hasMonumentExperience(monumentId) {
+    return savedNoteFor(monumentId).length >= MIN_EXPERIENCE_LENGTH;
+}
+
+// O que a pessoa construiu, para o resumo dos 12/12 (ponto 38)
+function memoryCounts() {
+    let photos = 0;
+    let experiences = 0;
+
+    state.scannedMonuments.forEach(monument => {
+        photos += getMonumentPhotos(monument.id).length;
+        if (hasMonumentExperience(monument.id)) experiences += 1;
+    });
+
+    return { photos: photos, experiences: experiences };
+}
+
+// Contexto de elegibilidade das missoes (pontos 40 e 41): o que
+// esta conta AINDA consegue fazer hoje. E isto que impede
+// "Descobre 2 monumentos" de cair a quem ja tem 12/12.
+function missionContext() {
+    const discovered = discoveredMonumentIds();
+
+    return {
+        undiscoveredCount: state.monuments.filter(
+            m => discovered.indexOf(m.id) === -1
+        ).length,
+
+        undiscoveredInZone: (zoneId) => {
+            const zone = state.zones.find(z => z.id === zoneId);
+            if (!zone) return 0;
+            return zone.monumentIds.filter(id => discovered.indexOf(id) === -1).length;
+        },
+
+        // Lugares descobertos onde ainda cabe uma fotografia
+        photoEligibleCount: state.scannedMonuments.filter(
+            m => getMonumentPhotos(m.id).length < MONUMENT_PHOTO_LIMIT
+        ).length,
+
+        // Lugares descobertos que ainda nao tem memoria escrita
+        experienceEligibleCount: state.scannedMonuments.filter(
+            m => !hasMonumentExperience(m.id)
+        ).length,
+
+        incompleteZoneCount: state.zones.filter(
+            zone => !zone.monumentIds.every(id => discovered.indexOf(id) !== -1)
+        ).length
+    };
+}
+
+function initEngagement() {
+    // Todas as fontes apontam para os sistemas que JA existem: o
+    // engagement nao guarda progresso proprio nenhum (ponto 1).
+    Engagement.configure({
+        getMonuments: () => state.monuments,
+        getZones: () => state.zones,
+        getDiscoveredIds: () => discoveredMonumentIds(),
+        getJourneyProgress: () => Journey.getJourneyProgress(),
+        getCurrentStep: () => Journey.getCurrentJourneyStep(),
+        getZoneProgress: (zoneId) => Journey.getZoneProgress(zoneId),
+        getLevelProgress: () => Levels.getProgress(XP.getTotalXP()),
+
+        // So ha distancia quando a localizacao ja foi obtida e e
+        // precisa. Nunca a pedimos para desenhar um cartao (ponto 4).
+        getDistanceTo: (monument) => {
+            if (!state.userLocation || !state.userLocationIsPrecise) return null;
+            if (!monument) return null;
+            return calculateDistance(
+                state.userLocation.lat,
+                state.userLocation.lng,
+                monument.lat,
+                monument.lng
+            );
+        },
+
+        getMemoryCounts: memoryCounts
+    });
+
+    WeeklyMissions.configure({
+        getContext: missionContext,
+        getZoneIdOf: monumentZoneId
+    });
+
+    // A missao vive dentro do perfil autenticado, como a carteira e
+    // a sequencia: uma unica escrita cobre tudo, e sobe pela fila da
+    // nuvem que ja existe — por isso funciona offline (ponto 24).
+    WeeklyMissions.configureStorage({
+        load: () => (state.user ? state.user.weeklyMission : null),
+        save: (data) => {
+            if (!state.user) throw new Error('sem utilizador autenticado');
+
+            const previous = state.user.weeklyMission;
+            state.user.weeklyMission = data;
+
+            try {
+                saveUserData();
+            } catch (error) {
+                state.user.weeklyMission = previous;
+                throw error;
+            }
+        }
+    });
+
+    // O dia do funil e o MESMO dia da sequencia: duas definicoes de
+    // "hoje" na mesma app dariam dois numeros diferentes.
+    Analytics.configure({ getDayKey: StreakDate.getLocalDateKey });
+
+    Analytics.configureStorage({
+        load: () => (state.user ? state.user.analytics : null),
+        save: (data) => {
+            if (!state.user) return;
+            state.user.analytics = data;
+            saveUserData();
+        }
+    });
+
+    EngagementUI.init({
+        onShowOnMap: (monumentId) => focusMonumentFromJourney(monumentId),
+        onOpenAlbum: (monumentId) => openMonumentPhotos(monumentId),
+        onOpenJourney: () => JourneyUI.openJourney(),
+        // 12/12: o CTA leva ao album, nao a um beco sem saida (ponto 38)
+        onOpenMemories: () => showProfileView(),
+        onNextDiscoveryClick: () => Analytics.count(Analytics.EVENT.NEXT_DISCOVERY_CLICKED)
+    });
+
+    MissionsUI.init({
+        onContinue: routeMissionCta,
+        // Fechar devolve o lugar a fila de celebracoes (ponto 17)
+        onClosed: () => scheduleNextBadge(400)
+    });
+}
+
+// Estado da missao desta semana, ou null sem sessao
+function currentMissionStatus() {
+    return state.user ? WeeklyMissions.getStatus() : null;
+}
+
+// Redesenha os dois lugares onde o loop aparece. Chamado de
+// updateProgress(), por isso reage a qualquer mudanca sem refresh.
+function renderEngagement() {
+    if (!state.user) {
+        EngagementUI.renderFocus(null);
+        EngagementUI.renderMap();
+        return;
+    }
+
+    const mission = currentMissionStatus();
+    EngagementUI.render(mission);
+
+    // O cartao da missao so ocupa o lugar enquanto ela nao esta
+    // feita: e exactamente nesse caso que ela foi mesmo vista.
+    if (mission && mission.mission && !mission.isComplete) {
+        Analytics.trackMissionViewed(mission.weekKey);
+    }
+}
+
+// Ponto unico de entrada para o progresso das missoes. Recebe
+// accoes REAIS, as mesmas que ja alimentam o XP e a sequencia.
+function registerMissionAction(type, monumentId, extra) {
+    if (!state.user) return null;
+
+    const options = extra || {};
+
+    const result = WeeklyMissions.registerAction({
+        type: type,
+        monumentId: monumentId === undefined ? null : monumentId,
+        zoneId: options.zoneId !== undefined ? options.zoneId : monumentZoneId(monumentId),
+        ref: options.ref || null
+    });
+
+    // `completed` e true SO na transicao, por isso a recompensa sai
+    // uma unica vez por semana (pontos 25 e 53).
+    if (result && result.completed) completeWeeklyMission(result.status);
+
+    return result;
+}
+
+// A missao fechou: recompensa, sequencia, funil e celebracao.
+function completeWeeklyMission(status) {
+    if (!state.user || !status || !status.mission) return;
+
+    // O XP passa pelo caminho unico da app, e por isso entra no
+    // ledger do servidor e no ranking semanal como qualquer outro
+    // (pontos 31 e 53). Nao ha pontos especiais para o ranking.
+    const batch = awardXP([{
+        action: XP.ACTION.WEEKLY_MISSION_COMPLETED,
+        entityId: status.weekKey
+    }]);
+
+    const earned = batch && batch.persisted ? batch.totalAwarded : 0;
+
+    // Conta como actividade cultural do dia, com a semantica que a
+    // sequencia ja tinha reservada (pontos 29 e 30).
+    const streakResult = registerExploration(
+        ExplorationStreak.ACTIVITY.MISSION_COMPLETED,
+        null,
+        { missionId: status.mission.id, weekKey: status.weekKey }
+    );
+
+    Analytics.track(Analytics.EVENT.WEEKLY_MISSION_COMPLETED);
+
+    // `markRewarded` devolve true uma unica vez: a celebracao nunca
+    // volta depois de um refresh (o mesmo papel do `levelSeen`).
+    if (WeeklyMissions.markRewarded()) {
+        enqueueMission(WeeklyMissions.getStatus(), earned);
+    }
+
+    updateProgress();
+    if (streakResult && streakResult.registered) StreakUI.render();
+}
+
+// A celebracao da missao entra na fila que ja existe: nunca abre
+// por cima da celebracao de uma descoberta (pontos 17 e 26).
+function enqueueMission(status, rewardXp) {
+    if (!status || !status.mission) return;
+    if (state.settings && !state.settings.achievementAlerts) return;
+
+    badgeQueue.push({ kind: 'mission', status: status, rewardXp: rewardXp });
+    scheduleNextBadge(1000);
+}
+
+// "Continuar" leva sempre a uma accao util (ponto 28). Um botao que
+// nao sabe para onde vai nao devia existir.
+function routeMissionCta(nextGoal) {
+    const status = currentMissionStatus();
+    const goal = nextGoal || (status ? status.nextGoal : null);
+
+    if (!goal) {
+        showMapView();
+        return;
+    }
+
+    // Falta descobrir: o mapa, centrado na proxima descoberta
+    if (goal.type === WeeklyMissions.GOAL.DISCOVER_MONUMENT ||
+        goal.type === WeeklyMissions.GOAL.COMPLETE_ZONE) {
+        const next = Engagement.getNextDiscovery();
+        if (next) {
+            focusMonumentFromJourney(next.monumentId);
+            return;
+        }
+        showMapView();
+        return;
+    }
+
+    // Falta guardar memoria: um monumento onde isso e possivel
+    const monument = firstMonumentForMemory(goal.type);
+    if (monument) {
+        openMonumentPhotos(monument.id);
+        return;
+    }
+
+    showMapView();
+}
+
+// O primeiro lugar descoberto onde o objectivo ainda e possivel
+function firstMonumentForMemory(goalType) {
+    if (goalType === WeeklyMissions.GOAL.WRITE_EXPERIENCE) {
+        return state.scannedMonuments.find(m => !hasMonumentExperience(m.id)) ||
+            state.scannedMonuments[0] || null;
+    }
+
+    return state.scannedMonuments.find(
+        m => getMonumentPhotos(m.id).length < MONUMENT_PHOTO_LIMIT
+    ) || state.scannedMonuments[0] || null;
+}
+
+// Marcos do funil que dependem de quanto ja foi descoberto.
+// Chamado depois de cada descoberta: cada um conta uma vez.
+function trackDiscoveryFunnel() {
+    const total = state.scannedMonuments.length;
+
+    if (total >= 1) Analytics.track(Analytics.EVENT.FIRST_DISCOVERY);
+    if (total >= 2) Analytics.track(Analytics.EVENT.SECOND_DISCOVERY);
+    if (total >= 4) Analytics.track(Analytics.EVENT.FOUR_MONUMENTS_DISCOVERED);
+    if (total >= state.monuments.length) Analytics.track(Analytics.EVENT.ALL_MONUMENTS_DISCOVERED);
+}
+
 function updateUserInterface() {
     if (state.user) {
         userName.textContent = state.user.name.split(' ')[0];
@@ -1731,8 +2103,15 @@ function applyLanguage() {
         DiscoveryUI.refresh();
     }
 
-    // Botao de ecra inteiro do mapa (o rotulo muda com o estado)
+    // Botoes de ecra inteiro (o rotulo muda com o estado)
     updateMapFullscreenButton();
+    updateCamFullscreenButton();
+    updateCamTipButton();
+
+    // A barra do zoom tem o seu proprio rotulo acessivel
+    if (camZoomBar && !camZoomBar.classList.contains('hidden')) {
+        camZoomBar.setAttribute('aria-label', t('scanZoomLabel'));
+    }
 
     // Cartao da sequencia (textos e dias da semana)
     StreakUI.render();
@@ -1746,6 +2125,13 @@ function applyLanguage() {
 
     // Jornada cultural (nomes das zonas, estados e microcopy)
     JourneyUI.render();
+
+    // Cartoes do loop de descoberta e da missao da semana
+    renderEngagement();
+
+    // Celebracao da missao, caso esteja aberta: volta a desenhar a
+    // partir do MESMO estado, sem voltar a recompensar.
+    if (MissionsUI.isOpen()) MissionsUI.refresh();
 
     // Botão do scanner (só quando está em repouso, para não interromper uma leitura)
     if (!state.qrScanner) {
@@ -1896,11 +2282,19 @@ function showMapView() {
     mapView.classList.remove('hidden');
     renderZonesView();
     initMap();
+
+    // O mapa ja existia: as camadas reflectem o que mudou entretanto
+    // e a revelacao pendente, se houver, corre agora que ha ecra.
+    MapUI.render();
+
     // Tambem quando o mapa ja estava criado (initMap so corre uma vez)
     focusMonumentOnMap();
     updateNavButtons('map');
     setTimeout(() => {
-        if (map) map.invalidateSize();
+        MapUI.invalidate();
+        // Segunda tentativa depois de o contentor ter medida real:
+        // a revelacao precisa do marcador ja desenhado no ecra.
+        MapUI.render();
     }, 100);
 }
 
@@ -1939,6 +2333,217 @@ function updateNavButtons(activeView) {
     });
 }
 
+
+// ============================================================
+// Scanner em ecra inteiro
+//
+// A camara e SEMPRE a mesma: o que muda e a caixa que a envolve.
+// O `srcObject` do video nunca e trocado, por isso a leitura nao e
+// interrompida ao abrir nem ao fechar — e a mesma disciplina que o
+// mapa segue.
+//
+// Em ecra inteiro o cartao passa a ter o desenho do enunciado: a
+// marca ao centro, o X a esquerda, a lanterna a direita, a dica em
+// pilula, os cantos dourados a volta do centro, o zoom (quando o
+// aparelho o suporta) e o cartao do simbolo em baixo.
+// ============================================================
+const scanCard = document.querySelector('.hh-scan-card');
+
+// Guardamos se fomos nos a empilhar a entrada de historico, para o
+// botao Voltar do Android fechar o ecra inteiro em vez de sair.
+let camFullscreenPushed = false;
+
+function isCamFullscreen() {
+    return !!scanCard && scanCard.classList.contains('is-fullscreen');
+}
+
+// O rotulo e o icone descrevem a accao, nao o estado actual
+function updateCamFullscreenButton() {
+    if (!camFullscreenBtn) return;
+
+    const open = isCamFullscreen();
+    const label = t(open ? 'scanFullscreenClose' : 'scanFullscreenOpen');
+
+    camFullscreenBtn.setAttribute('aria-label', label);
+    camFullscreenBtn.setAttribute('aria-pressed', open ? 'true' : 'false');
+    camFullscreenBtn.title = label;
+
+    const icon = camFullscreenBtn.querySelector('i');
+    if (icon) icon.className = open ? 'fas fa-compress' : 'fas fa-expand';
+}
+
+// Esc fecha — excepto quando ha uma folha por cima, que trata do seu
+// proprio Esc. Corre na fase de CAPTURA pela mesma razao que no mapa:
+// os modais fecham-se na fase de bolha, e ja nao os veriamos abertos.
+function handleCamFullscreenKey(event) {
+    if (event.key !== 'Escape') return;
+    if (hasOverlayOpen()) return;
+    closeCamFullscreen();
+}
+
+function openCamFullscreen() {
+    if (!scanCard || isCamFullscreen()) return;
+
+    scanCard.classList.add('is-fullscreen');
+    document.body.classList.add('cam-fullscreen-open');
+    updateCamFullscreenButton();
+
+    document.addEventListener('keydown', handleCamFullscreenKey, true);
+
+    // Uma entrada de historico so para o Voltar fechar o ecra inteiro
+    try {
+        history.pushState({ hhCamFullscreen: true }, '');
+        camFullscreenPushed = true;
+    } catch (e) {
+        camFullscreenPushed = false;
+    }
+
+    // Um scanner em ecra inteiro com a camara desligada seria uma
+    // fotografia: se ainda nao esta a ler, comeca agora.
+    if (!state.qrScanner) startScanner();
+}
+
+// `fromHistory` evita voltar a mexer no historico quando ja foi o
+// proprio Voltar a fechar.
+function closeCamFullscreen(options) {
+    if (!isCamFullscreen()) return;
+
+    scanCard.classList.remove('is-fullscreen');
+    document.body.classList.remove('cam-fullscreen-open');
+    updateCamFullscreenButton();
+
+    document.removeEventListener('keydown', handleCamFullscreenKey, true);
+
+    const fromHistory = !!(options && options.fromHistory);
+    const pushed = camFullscreenPushed;
+    camFullscreenPushed = false;
+
+    if (pushed && !fromHistory) history.back();
+}
+
+function toggleCamFullscreen() {
+    if (isCamFullscreen()) closeCamFullscreen();
+    else openCamFullscreen();
+}
+
+// O cartao do simbolo recolhe-se: em paisagem, ou depois de ja se
+// saber o que procurar, ele sai da frente sem desaparecer.
+function updateCamTipButton() {
+    if (!camTipCard || !camTipToggle) return;
+
+    const collapsed = camTipCard.classList.contains('is-collapsed');
+    const label = t(collapsed ? 'scanTipExpand' : 'scanTipCollapse');
+
+    camTipToggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+    camTipToggle.setAttribute('aria-label', label);
+    camTipToggle.title = label;
+}
+
+function toggleCamTip() {
+    if (!camTipCard) return;
+    camTipCard.classList.toggle('is-collapsed');
+    updateCamTipButton();
+}
+
+// ============================================================
+// Zoom da camara (pontos do enunciado: 0.5 / 1x / 2)
+//
+// ZOOM A SERIO, ou nenhum. Ampliar a imagem por CSS mostrava um
+// detalhe maior sem dar mais detalhe ao leitor de QR: parecia
+// funcionar e nao ajudava a ler nada.
+//
+// Por isso os degraus saem das capacidades REAIS da camara deste
+// aparelho. Onde nao ha `zoom`, ou onde so um degrau cabe no
+// intervalo suportado, a barra nao aparece de todo.
+// ============================================================
+const CAM_ZOOM_STEPS = [0.5, 1, 2];
+
+function cameraTrack() {
+    const stream = scannerVideo && scannerVideo.srcObject;
+    if (!stream || typeof stream.getVideoTracks !== 'function') return null;
+    return stream.getVideoTracks()[0] || null;
+}
+
+function hideCamZoom() {
+    if (!camZoomBar) return;
+    camZoomBar.classList.add('hidden');
+    camZoomBar.innerHTML = '';
+}
+
+function setupCamZoom() {
+    if (!camZoomBar) return;
+    hideCamZoom();
+
+    const track = cameraTrack();
+    if (!track || typeof track.getCapabilities !== 'function') return;
+
+    let zoom = null;
+    try {
+        zoom = track.getCapabilities().zoom;
+    } catch (e) {
+        return;
+    }
+
+    if (!zoom || typeof zoom.min !== 'number' || typeof zoom.max !== 'number') return;
+
+    const steps = CAM_ZOOM_STEPS.filter(function (value) {
+        return value >= zoom.min && value <= zoom.max;
+    });
+
+    // Um botao sozinho nao e uma escolha
+    if (steps.length < 2) return;
+
+    let current = 1;
+    try {
+        const settings = track.getSettings();
+        if (typeof settings.zoom === 'number') current = settings.zoom;
+    } catch (e) {
+        current = 1;
+    }
+
+    camZoomBar.setAttribute('aria-label', t('scanZoomLabel'));
+    camZoomBar.innerHTML = steps.map(function (value) {
+        const active = Math.abs(value - current) < 0.01;
+        // O degrau neutro escreve-se "1x"; os outros ficam so com o numero,
+        // como na camara do telemovel.
+        const label = value === 1 ? '1x' : String(value);
+        return '<button type="button" class="hh-cam-zoom-step' + (active ? ' is-on' : '') + '"' +
+            ' data-zoom="' + value + '" aria-pressed="' + (active ? 'true' : 'false') + '">' +
+            label +
+        '</button>';
+    }).join('');
+
+    camZoomBar.querySelectorAll('[data-zoom]').forEach(function (button) {
+        button.addEventListener('click', function () {
+            applyCamZoom(Number(button.dataset.zoom));
+        });
+    });
+
+    camZoomBar.classList.remove('hidden');
+}
+
+function applyCamZoom(value) {
+    const track = cameraTrack();
+    if (!track || typeof track.applyConstraints !== 'function') return;
+
+    Promise.resolve(track.applyConstraints({ advanced: [{ zoom: value }] }))
+        .then(function () {
+            if (!camZoomBar) return;
+            camZoomBar.querySelectorAll('[data-zoom]').forEach(function (button) {
+                const on = Number(button.dataset.zoom) === value;
+                button.classList.toggle('is-on', on);
+                button.setAttribute('aria-pressed', on ? 'true' : 'false');
+            });
+        })
+        .catch(function (err) {
+            console.error('Zoom error:', err);
+        });
+}
+
+window.addEventListener('popstate', function () {
+    if (isCamFullscreen()) closeCamFullscreen({ fromHistory: true });
+});
+
 // QR Scanner functions
 function startScanner() {
     startScannerBtn.innerHTML = `<i class="fas fa-spinner fa-spin mr-3"></i> ${t('starting')}`;
@@ -1955,6 +2560,10 @@ function startScanner() {
         scannerOverlay.classList.remove('hidden');
         closeScannerBtn.classList.remove('hidden');
         startScannerBtn.innerHTML = `<i class="fas fa-search mr-3"></i> ${t('scanning')}`;
+
+        // Funil: a camara abriu mesmo. Um clique que falhou por falta
+        // de permissao nao e uma leitura (ponto 42).
+        Analytics.track(Analytics.EVENT.FIRST_SCAN);
         
         // Initialize QR Scanner
         state.qrScanner = new QrScanner(scannerVideo, result => {
@@ -1965,7 +2574,12 @@ function startScanner() {
             highlightCodeOutline: true,
         });
         
-        state.qrScanner.start().then(() => setupTorch()).catch(err => console.error('Scanner start error:', err));
+        state.qrScanner.start()
+            .then(() => {
+                setupTorch();
+                setupCamZoom();
+            })
+            .catch(err => console.error('Scanner start error:', err));
         
     }).catch(err => {
         console.error("Camera error: ", err);
@@ -2031,6 +2645,11 @@ function handleQRResult(qrData) {
         total: state.monuments.length
     };
 
+    // O mesmo para a zona: "3 / 4 Centro Historico" precisa de saber
+    // que vinha de 2 / 4 (pontos 10 e 16).
+    const discoveryZoneId = monumentZoneId(monument.id);
+    const previousZone = discoveryZoneId ? Journey.getZoneProgress(discoveryZoneId) : null;
+
     // A partir daqui, as recompensas que forem desbloqueadas ficam
     // retidas para a celebracao em vez de abrirem modais proprios
     // (pontos 13, 14 e 28). O portao fecha-se em qualquer saida.
@@ -2080,13 +2699,46 @@ function handleQRResult(qrData) {
         checkForBadges();
         saveUserData();
 
+        // Funil da beta: primeira descoberta, segunda, quatro, todas
+        trackDiscoveryFunnel();
+
+        // O mapa fica a saber que ESTA descoberta acabou de
+        // acontecer. A animacao nao corre agora — corre quando o
+        // mapa estiver mesmo visivel, para nao competir com a
+        // celebracao que vai abrir a seguir (pontos 31 e 32).
+        MapUI.markRevealed(monument.id);
+
+        // Zonas que ESTA descoberta fechou (vem do lote de XP, nao de
+        // uma segunda contagem) — contam para a missao e para o funil.
+        const closedZones = xpBatch.awarded
+            .filter(result => result.action === XP.ACTION.ZONE_COMPLETED)
+            .map(result => (result.transaction || {}).zoneId)
+            .filter(Boolean);
+
+        if (closedZones.length) Analytics.track(Analytics.EVENT.FIRST_ZONE_COMPLETED);
+
+        // Missao da semana: a descoberta e as zonas que ela fechou.
+        // Registado DEPOIS de tudo estar gravado — uma missao nunca
+        // avanca por causa de uma descoberta que nao aconteceu.
+        registerMissionAction(
+            WeeklyMissions.GOAL.DISCOVER_MONUMENT,
+            monument.id,
+            { zoneId: discoveryZoneId }
+        );
+
+        closedZones.forEach(zoneId => {
+            registerMissionAction(WeeklyMissions.GOAL.COMPLETE_ZONE, null, { zoneId: zoneId });
+        });
+
         // Tudo ja esta gravado e contabilizado: so agora se constroi o
         // que a celebracao vai mostrar (pontos 3 e 46).
         celebration = buildDiscoveryCelebration({
             monument: monument,
             xpBatch: xpBatch,
             streakResult: streakResult,
-            previousProgress: previousProgress
+            previousProgress: previousProgress,
+            zoneId: discoveryZoneId,
+            previousZoneDiscovered: previousZone ? previousZone.discovered : 0
         });
     } finally {
         closeDiscoveryCapture();
@@ -2131,6 +2783,16 @@ function buildDiscoveryCelebration(input) {
     const journeyId = Journey.getDefaultJourneyId();
     const journeyConfig = Journey.getJourneys().filter(j => j.id === journeyId)[0] || null;
 
+    // Progresso da zona onde a descoberta aconteceu, com o valor
+    // anterior para a barra animar (pontos 10 e 16)
+    const zoneNow = input.zoneId ? Journey.getZoneProgress(input.zoneId) : null;
+    const zoneProgress = zoneNow ? {
+        zoneId: input.zoneId,
+        discovered: zoneNow.discovered,
+        total: zoneNow.total,
+        previousDiscovered: input.previousZoneDiscovered || 0
+    } : null;
+
     return Discovery.buildCelebration({
         monument: input.monument,
         zones: state.zones,
@@ -2146,6 +2808,16 @@ function buildDiscoveryCelebration(input) {
         // O progresso real da jornada, ja actualizado
         progress: Journey.getJourneyProgress(journeyId),
         previousProgress: input.previousProgress,
+        zoneProgress: zoneProgress,
+
+        // A recompensa cultural (ponto 14). O texto nao passa por
+        // aqui: vive no i18n, e a interface busca-o pelo id.
+        hasStory: hasMonumentStory(input.monument.id),
+
+        // "Quase la" e a proxima descoberta vem do loop, para serem
+        // as MESMAS que o mapa e o scanner mostram (pontos 7 e 9)
+        almostThere: Engagement.getAlmostThere(),
+        nextDiscovery: Engagement.getNextDiscovery(),
         nextStep: Journey.getCurrentJourneyStep(journeyId),
 
         // Recompensas retidas durante esta descoberta
@@ -2169,7 +2841,16 @@ function initDiscoveryCelebration() {
             JourneyUI.openJourney();
         },
 
-        onShowOnMap: (monumentId) => focusMonumentFromJourney(monumentId),
+        onShowOnMap: (monumentId) => {
+            Analytics.count(Analytics.EVENT.NEXT_DISCOVERY_CLICKED);
+            focusMonumentFromJourney(monumentId);
+        },
+
+        // "Saber mais" abre a pagina do monumento que ja existe
+        onLearnMore: (monumentId) => {
+            const monument = state.monuments.find(m => m.id === monumentId);
+            if (monument) showMonumentDetails(monument);
+        },
 
         // Fechar devolve o lugar a fila de conquistas
         onClosed: () => scheduleNextBadge(400)
@@ -2188,6 +2869,12 @@ function focusMonumentFromJourney(monumentId) {
 
 function stopScanner() {
     hideTorch();
+    hideCamZoom();
+
+    // Sem camara, um scanner em ecra inteiro nao tem o que mostrar.
+    // Este e o ponto mais baixo por onde TODAS as saidas passam —
+    // fechar aqui cobre o X, o erro de camara e a descoberta lida.
+    closeCamFullscreen();
 
     if (state.qrScanner) {
         state.qrScanner.stop();
@@ -2236,6 +2923,10 @@ function updateProgress() {
     // A jornada reage a qualquer mudanca nas descobertas, sem
     // recarregar a pagina (ponto 24). Deriva sempre do estado real.
     JourneyUI.render();
+
+    // O loop de descoberta vem depois da jornada: le o mesmo estado
+    // e responde a "o que posso descobrir a seguir?"
+    renderEngagement();
 }
 
 function checkForBadges() {
@@ -2302,6 +2993,7 @@ function scheduleNextBadge(delay) {
         const next = badgeQueue.shift();
         if (!next) return;
         if (next.kind === 'level') LevelsUI.showLevelUp(next.level);
+        else if (next.kind === 'mission') MissionsUI.showCelebration(next.status, next.rewardXp);
         else showBadge(next.badge);
     }, delay);
 }
@@ -2453,20 +3145,12 @@ function updateMonumentsList() {
     });
 }
 
+// Uma descoberta nao reconstroi o mapa: so as camadas que mudaram
+// sao redesenhadas, e o centro, o zoom, o ecra inteiro e a posicao
+// do utilizador ficam exactamente onde estavam (ponto 21).
 function updateMapMarkers() {
     if (!map) return;
-    
-    // Update user location popup if it exists
-    if (state.userLocationMarker) {
-        state.userLocationMarker.setPopupContent(createUserLocationPopup());
-    }
-    
-    markers.forEach(({ marker, monument }) => {
-        applyMarkerBehaviour(marker, monument);
-        if (marker.getPopup()) {
-            marker.setPopupContent(monumentPopupHtml(monument));
-        }
-    });
+    MapUI.render();
 }
 
 function updateProfileView() {
@@ -2819,7 +3503,16 @@ function saveExperience() {
         );
     }
 
+    // A missao e o funil usam a MESMA regra de elegibilidade do XP:
+    // uma memoria com conteudo real, nao uma linha em branco com
+    // etiquetas (ponto 13).
+    if (note.length >= MIN_EXPERIENCE_LENGTH) {
+        Analytics.track(Analytics.EVENT.FIRST_EXPERIENCE);
+        registerMissionAction(WeeklyMissions.GOAL.WRITE_EXPERIENCE, monumentId);
+    }
+
     announceReward(xpBatch, streakResult, t('experienceSaved'));
+    renderEngagement();
 }
 
 function takePhoto() {
@@ -2949,7 +3642,17 @@ async function savePhoto(source) {
         monumentId
     );
 
+    Analytics.track(Analytics.EVENT.FIRST_PHOTO);
+
+    // Missao da semana: a fotografia leva o proprio id, para que
+    // duas fotografias contem como duas — e a mesma fotografia
+    // registada outra vez nunca conte como duas (ponto 41).
+    registerMissionAction(WeeklyMissions.GOAL.ADD_PHOTO, monumentId, { ref: photo.id });
+
     announceReward(xpBatch, streakResult, photoSavedMessage(photo, compressed));
+
+    // O cartao do loop reflecte a memoria acabada de guardar
+    renderEngagement();
 }
 
 // O aviso conta o que aconteceu: que ficou a espera de rede, ou
@@ -3118,6 +3821,8 @@ logoutBtn.addEventListener('click', logout);
 startScannerBtn.addEventListener('click', startScanner);
 closeScannerBtn.addEventListener('click', closeScanner);
 if (torchBtn) torchBtn.addEventListener('click', toggleTorch);
+if (camFullscreenBtn) camFullscreenBtn.addEventListener('click', toggleCamFullscreen);
+if (camTipToggle) camTipToggle.addEventListener('click', toggleCamTip);
 navScanner.addEventListener('click', showScannerView);
 navProfile.addEventListener('click', showProfileView);
 navMap.addEventListener('click', showMapView);
@@ -3183,6 +3888,8 @@ async function initApp() {
     initXPSystem();
     initExplorationStreak();
     initJourney();
+    // Depois da jornada: o loop le o percurso, o XP e as zonas
+    initEngagement();
     initDiscoveryCelebration();
     initRanking();
 
@@ -3216,6 +3923,7 @@ async function initApp() {
     XPUI.render();
     LevelsUI.render();
     JourneyUI.render();
+    renderEngagement();
 }
 
 // Start the app

@@ -3,7 +3,8 @@
 > Documento de referência do percurso completo da aplicação: cada ecrã, cada
 > elemento visível e para que serve. Gerado a partir da leitura do código
 > (`index.html`, `script.js`, `xp.js`, `levels.js`, `streak.js`, `journey.js`,
-> `i18n.js` e respectivas camadas `*-ui.js`).
+> `engagement.js`, `missions.js`, `map.js`, `analytics.js`, `i18n.js` e
+> respectivas camadas `*-ui.js`).
 
 **O que é:** uma web app mobile-first (contentor `max-w-md`) que transforma a
 visita aos monumentos de Mindelo, São Vicente, numa caça ao património: o
@@ -39,18 +40,37 @@ ficheiro de domínio toca no DOM nem no `localStorage` directamente.
 | `journey-ui.js` | Resumo da jornada + modal do percurso completo |
 | `discovery.js` | **Domínio** da celebração: reúne o que mostrar depois de uma descoberta já persistida |
 | `discovery-ui.js` | A folha de celebração da descoberta |
+| `engagement.js` | **Domínio** do loop: "o que posso descobrir a seguir?" — não é um sistema novo, liga os que já existem |
+| `engagement-ui.js` | O cartão de foco (Scanner) e o cartão da próxima descoberta (Mapa) |
+| `missions.js` | **Domínio** da missão da semana: catálogo, semana de Cabo Verde, progresso sem duplicados |
+| `missions-ui.js` | Cartão da missão, objectivos e celebração sóbria de missão concluída |
+| `map.js` | **Domínio** da geometria do mapa: distâncias, estados dos marcadores, troços e halos das zonas |
+| `map-ui.js` | O ecrã do mapa: marcadores, linha da jornada, zonas e *bottom sheet* |
+| `analytics.js` | **Domínio** do funil da beta: marcos de produto e dias de actividade — nunca localização |
 
 Bibliotecas externas: **Tailwind** (CDN), **Font Awesome**, **Leaflet** (mapa),
 **qr-scanner** (leitura de QR), fontes Google (Playfair Display / Cormorant).
 
 ### Ordem de carregamento (fim de `index.html`)
 
-`i18n.js` → `streak.js` → `streak-ui.js` → `xp.js` → `xp-ui.js` → `levels.js` →
+`image-compressor.js` → `supabase-config.js` → `cloud.js` → `i18n.js` →
+`streak.js` → `streak-ui.js` → `xp.js` → `xp-ui.js` → `levels.js` →
 `levels-ui.js` → `journey.js` → `journey-ui.js` → `discovery.js` →
-`discovery-ui.js` → `script.js`
+`discovery-ui.js` → `analytics.js` → `missions.js` → `missions-ui.js` →
+`engagement.js` → `engagement-ui.js` → `map.js` → `map-ui.js` → `ranking.js` →
+`ranking-ui.js` → `script.js`
 
 O domínio carrega sempre antes da UI que o consome; `script.js` é o último,
 porque liga tudo.
+
+Três dependências dentro desta ordem não são arbitrárias:
+
+- `engagement.js` lê `journey.js`, `xp.js` e `levels.js` (por funções
+  injectadas, nunca por acesso directo), por isso vem depois deles
+- `engagement-ui.js` desenha o cartão da missão através de `MissionsUI`, por
+  isso as missões vêm antes
+- `map-ui.js` pergunta a próxima descoberta ao `engagement.js` — nunca a
+  escolhe — por isso vem depois dele
 
 ---
 
@@ -173,6 +193,48 @@ As Definições **não** têm botão na barra — abrem pelo ícone do cabeçalh
 ## 5. ECRÃ 2 — Scanner (`#scannerView`) — vista por omissão
 
 O coração da aplicação: é aqui que a descoberta acontece.
+
+### 5.0 Cartão de foco (`#engagementFocus`) — o topo do ecrã
+
+Antes da câmara, uma frase. O ecrã de entrada não pergunta "o que queres
+fazer?": responde a **"o que posso descobrir a seguir?"**.
+
+O lugar é um só, e mostra **uma coisa de cada vez** — nunca sete cartões a
+competir pela mesma atenção. `Engagement.getFocus(missão)` decide qual, por
+esta ordem:
+
+| Estado | O que aparece | Quem desenha |
+|---|---|---|
+| Missão da semana por terminar | Cartão da missão, com objectivos e progresso | `missions-ui.js` |
+| Jornada completa (12/12) | Fecho da jornada: o que construiu, não o que falta | `engagement-ui.js` |
+| Zero descobertas | Primeira descoberta: um objectivo, uma frase, um botão | `engagement-ui.js` |
+| A explorar | Próxima descoberta, com fotografia, motivo e "Ver no mapa" | `engagement-ui.js` |
+
+A missão vem primeiro porque é o objectivo mais curto que existe. Quando não
+há missão por fechar, o lugar volta à próxima descoberta.
+
+**O cartão da próxima descoberta** (`.hh-eng-next`) traz fotografia, nome,
+zona, distância (só se a localização já for precisa — nunca se pede a
+localização por causa dele), o **motivo** da escolha em linguagem corrente, e
+um botão que leva ao Mapa já focado nesse lugar. A 11/12 ganha peso próprio
+(`.is-major`): é o momento mais importante da jornada antes do fim.
+
+Por baixo, quando há, **uma** linha de "Quase lá" (`.hh-eng-almost`) — e uma
+só, mesmo que várias regras se apliquem ao mesmo tempo:
+
+| Regra | Quando | Mensagem |
+|---|---|---|
+| `JOURNEY_ONE_LEFT` | Falta 1 monumento na jornada inteira | Vence tudo o resto |
+| `ZONE_ONE_LEFT` | Falta 1 numa zona **começada** | A zona actual primeiro |
+| `ZONE_FEW_LEFT` | Faltam 2 numa zona começada | Ainda é uma promessa credível |
+| `LEVEL_CLOSE` | Faltam ≤ 60 XP para o nível seguinte | Uma descoberta atravessa-o |
+| `JOURNEY_PROGRESS` | Nada iminente | O progresso da jornada informa na mesma |
+
+Uma zona onde ainda não se descobriu nada **não** conta como "quase lá" — isso
+é estar no início, não perto do fim.
+
+O estado "zero descobertas" é deliberadamente pobre: sem percentagens a zero,
+sem medalhas por desbloquear, sem ranking. Um objectivo e um caminho para ele.
 
 ### 5.1 Bloco da câmara (`.hh-cam`)
 
@@ -379,28 +441,82 @@ como assinatura visual neste ecrã, nas Definições e no mapa.
 
 ### 7.1 Mapa Leaflet (`.hh-map-card`)
 
+O mapa deixou de dizer *"aqui estão os monumentos"*. Passou a dizer, num
+relance: **estou aqui; já explorei estes; estes faltam; estou quase a fechar
+esta zona; vou aqui a seguir.**
+
+A instância do Leaflet é **uma só** e cria-se **uma vez** (`MapUI.create()`).
+Trocar de ecrã, entrar em ecrã inteiro ou mudar de idioma nunca recria o mapa:
+só se redesenham as camadas (`MapUI.render()`) ou se corrige o tamanho
+(`MapUI.invalidate()`).
+
 | Elemento | Para que serve |
 |---|---|
 | `.hh-map-title` | "Mapa de Mindelo" + subtítulo |
-| `.hh-legend` | Legenda: pin verde = Descoberto · pin azul = Por descobrir |
-| `#map` | Mapa Leaflet com os 12 marcadores |
+| `#mapProgressCount` | Progresso da jornada, sempre à vista ("X / 12") |
+| `.hh-legend` | Legenda dos três estados, cada um com o **seu** ícone |
+| `#map` | O mapa, com marcadores, linha da jornada e halos das zonas |
 | `#locateUserBtn` | Alvo de mira → `locateUser()` |
+| `#mapSheet` | *Bottom sheet* do lugar seleccionado — substitui o popup branco do Leaflet |
 
-**Comportamento dos marcadores** (`applyMarkerBehaviour()`):
+**Os marcadores** (`L.divIcon`, HTML + CSS — nenhum PNG novo). Nenhum estado se
+distingue **só** pela cor: cada um tem o seu ícone.
 
-- **Por descobrir** (azul) → clicar abre um *popup* com foto, nome, descrição e
-  pontos;
-- **Descoberto** (verde) → o *popup* é removido e clicar abre directamente a
-  **página do monumento** (álbum).
+| Estado | Ícone | Tamanho | Pane |
+|---|---|---|---|
+| `NEXT` — a próxima descoberta | seta de localização | 46 px, com anel a pulsar | `hhNextPane` |
+| `USER` — onde a pessoa está | ponto com halo | 26 px | pane do utilizador |
+| `DISCOVERED` | visto | 34 px | `hhMonumentPane` |
+| `UNDISCOVERED` | monumento | 34 px | `hhMonumentPane` |
+
+**Só um marcador** pode estar em `NEXT`, e um monumento já descoberto nunca lá
+chega. A hierarquia de atenção resolve-se pelos *panes* do Leaflet, não por
+`!important`.
+
+**A linha da Jornada** (`renderJourney()`) liga os monumentos pela **ordem
+narrativa** do percurso, em três estados — concluído (dourado cheio), actual
+(pontilhado claro) e futuro (azul ténue e esbatido). Fica **abaixo** dos
+marcadores e sem interacção: é contexto, não o assunto.
+
+> **Não há *routing*.** A linha não conhece ruas, e as distâncias são em linha
+> recta (Haversine). Por isso nunca se escreve "a pé" nem "em N minutos".
+
+**Os halos das zonas** (`renderZones()`) são círculos derivados **apenas** das
+coordenadas dos monumentos de cada zona (raio mínimo 130 m). O projecto não tem
+polígonos, GeoJSON nem limites oficiais — e não se inventam fronteiras. O
+domínio devolve `isApproximate`, e a folha da zona diz isso à pessoa, por
+escrito.
+
+> **Não há cartão a pairar sobre o mapa.** O mapa é o mapa: a próxima
+> descoberta anuncia-se no cartão acima dele (7.2.1) e destaca-se no próprio
+> marcador `NEXT`. Um painel permanente por cima do mapa tapava exactamente
+> aquilo que se foi lá ver.
+
+**O *bottom sheet* `#mapSheet`** abre ao tocar num marcador ou num halo, com o
+mapa sempre visível por trás:
+
+| Toque em | O que a folha mostra |
+|---|---|
+| Monumento descoberto | Fotografia nítida, zona, distância, data da descoberta, descrição → **Abrir álbum** |
+| Monumento por descobrir | Fotografia **com véu** e ícone de QR, mas o **nome legível** — é preciso saber para onde se vai → **Explorar** |
+| Halo de uma zona | Nome, "X/Y", barra, o que falta, o aviso de que o halo é aproximado → **Ver o que falta** ou **Rever descobertas** |
+
+**`MapUI.explore(id)`** (o destino de todos os "Ver no mapa") aterra no
+monumento a zoom 17 — perto o suficiente para se ver a rua — e abre a folha
+desse lugar em vez de empilhar outra por cima. Com `prefers-reduced-motion`,
+salta em vez de voar.
+
+**A revelação depois de uma descoberta** (`markRevealed()` →
+`playPendingReveal()`) só corre quando o mapa está mesmo visível: durante a
+celebração o mapa está escondido, e animar às escondidas era gastar a animação.
+A intenção fica pendente até haver ecrã, e é consumida mesmo que o marcador já
+não exista — nunca fica à espera para sempre. É uma revelação curta (760 ms),
+sem confetti: a celebração já aconteceu.
 
 **`locateUser()` / `getUserLocation()`** — pede geolocalização, coloca o
 marcador do utilizador com círculo de precisão e calcula a distância ao
-monumento mais próximo (fórmula de Haversine em `calculateDistance()`, raio da
-Terra 6 371 000 m). A localização **nunca** é pedida só para desenhar distâncias
-na jornada.
-
-**`focusMonumentOnMap()`** — quando se chega ao mapa vindo de outro ecrã ("Ver
-no mapa", "Localização"), centra e abre o marcador desse monumento.
+monumento mais próximo. A localização **nunca** é pedida só para desenhar
+distâncias: sem ela, os cartões mostram-se na mesma, apenas sem distância.
 
 ### 7.2 Cartão "Zonas de Mindelo" (`.hh-zones-card`)
 
@@ -418,6 +534,17 @@ visto quando completa.
 | `cultura_viva` | Casa da Morna, Centro Nacional de Artesanato, Casa da Cultura |
 
 `#openJourneyFromMap` — "Ver percurso completo" → abre o modal da jornada.
+
+### 7.2.1 Cartão "Próxima descoberta" (`#engagementMapCard`)
+
+No topo do ecrã, **acima** do mapa, o mesmo cartão do Scanner — é daqui que o
+*loop* arranca: "o Mercado Municipal está por descobrir" → **Ver no mapa** →
+`MapUI.explore()`. Desenhado por `engagement-ui.js`, com os dados de
+`Engagement.getNextDiscovery()`.
+
+É o **único** cartão de próxima descoberta neste ecrã. Dentro do mapa, essa
+informação vive apenas no marcador `NEXT` e, quando se toca nele, na folha do
+lugar.
 
 ### 7.3 Cartão "Monumentos de Mindelo" (`#monumentsList`)
 
@@ -599,13 +726,15 @@ refresh nunca a repete.
 | `#levelUpModal` | Subida de nível **fora** de uma descoberta | Brasão, nome, patente, descrição |
 | `#streakDayModal` | Clique num dia com actividade | O que foi feito nesse dia |
 | `#streakCelebrationModal` | Primeira actividade do dia por foto ou experiência | Chama, contagem e XP ganho |
+| `#missionModal` | Missão da semana concluída | Ícone, objectivos feitos, +50 XP e "Continuar a explorar" |
+| `#mapSheet` | Toque num marcador ou num halo de zona | *Bottom sheet* do lugar, com o mapa visível por trás (secção 7.1) |
 | `#cameraModal` | "Tirar foto" | Vídeo ao vivo + botão redondo de captura |
 | `#xpToast` | Ganho de XP sem novo dia | Aviso discreto (`aria-live="polite"`) |
 
 ### Regra de ouro: uma celebração de cada vez
 
-Medalhas de progresso, marcos de sequência e subidas de nível partilham a
-**mesma fila** (`badgeQueue`).
+Medalhas de progresso, marcos de sequência, subidas de nível e a missão da
+semana partilham a **mesma fila** (`badgeQueue`).
 
 Durante uma descoberta, um **portão** (`discoveryCapture`) desvia tudo o que for
 desbloqueado para dentro da própria celebração, em vez de o pôr na fila. E
@@ -644,7 +773,7 @@ enviar sobe assim que a ligação voltar.
 
 | Chave | Conteúdo |
 |---|---|
-| `heritageUser` | Perfil: dados, foto, `cloudId`, `scannedMonuments`, `xp` (carteira), `explorationStreak`, `levelSeen` |
+| `heritageUser` | Perfil: dados, foto, `cloudId`, `scannedMonuments`, `xp` (carteira), `explorationStreak`, `levelSeen`, `weeklyMission`, `analytics` |
 | `heritageSettings` | `{ theme, lang, achievementAlerts }` |
 | `monument_note_<id>__<dono>` | Texto da experiência de um monumento |
 | `monument_tags_<id>__<dono>` | Etiquetas de memória de um monumento |
@@ -659,7 +788,7 @@ entrar com o mesmo email (`adoptLegacyMonumentKeys()`).
 
 | Tabela | Conteúdo |
 |---|---|
-| `profiles` | Uma linha por conta: `name`, `points`, `level_seen`, `xp`, `exploration_streak`, `scanned_monuments`, `settings` |
+| `profiles` | Uma linha por conta: `name`, `points`, `level_seen`, `xp`, `exploration_streak`, `scanned_monuments`, `settings`, `weekly_mission`, `analytics` |
 | `monument_entries` | Uma linha por monumento visitado: `note`, `tags` |
 | `monument_photos` | Metadados do álbum: `path`, medidas, `bytes`, `original_bytes` |
 | `monument-photos` *(bucket)* | Os ficheiros das fotografias, privados |
@@ -668,7 +797,7 @@ entrar com o mesmo email (`adoptLegacyMonumentKeys()`).
 
 Ambas com **RLS**: cada explorador só lê e escreve o que é seu.
 
-Os agregados de domínio (carteira, sequência) sobem como `jsonb` **inteiros**,
+Os agregados de domínio (carteira, sequência, missão da semana, funil) sobem como `jsonb` **inteiros**,
 de propósito — assim uma gravação continua a ser **uma escrita atómica**, tal
 como o ponto 4 da secção 13 exige.
 
@@ -885,6 +1014,204 @@ qualquer código antigo continue a ler um valor correcto.
 
 ---
 
+## 11.3. Loop de descoberta (`engagement.js`)
+
+Este módulo existe para responder a **uma** pergunta: *"o que posso descobrir a
+seguir?"*.
+
+Não é um sistema novo. O XP vive em `xp.js`, o nível em `levels.js`, o percurso
+em `journey.js`, a sequência em `streak.js`. O `engagement.js` **liga** o que já
+existe e escolhe, de tudo o que está a acontecer, a **uma** coisa que vale a
+pena dizer a seguir. Não guarda nada: tudo é derivado do estado real.
+
+### A escolha da próxima descoberta
+
+`getNextDiscovery()` devolve um monumento e, com ele, o **motivo** — e é o
+motivo que decide a frase que a pessoa lê:
+
+| Motivo | Quando |
+|---|---|
+| `LAST_IN_JOURNEY` | Falta um único lugar para fechar a jornada inteira |
+| `FIRST` | Ainda não descobriu nada — o objectivo tem de ser simples |
+| `LAST_IN_ZONE` | Falta um único lugar para completar uma zona |
+| `JOURNEY_STEP` | A etapa seguinte do percurso editorial |
+| `NEAREST` | Defensivo: o percurso não resolveu, fica o mais próximo |
+
+O motivo é escolhido **aqui**, com regras testáveis, e não dentro do
+componente. A interface recebe ids e números e traduz-os
+(`engagement.reason.<motivo>`, `engagement.almost.<regra>`): o domínio não
+conhece traduções.
+
+### Uma decisão, um sítio
+
+A próxima descoberta aparece em três sítios — cartão de foco do Scanner,
+cartão acima do mapa e marcador `NEXT`. São **três desenhos da mesma
+decisão**, todos a perguntar ao `engagement.js`. Nem o `map-ui.js` nem o
+`discovery-ui.js` escolhem o que vem a seguir.
+
+### O que este módulo não faz
+
+- não toca no DOM nem no `localStorage`;
+- não atribui XP, não mexe em níveis, zonas nem na sequência;
+- não conhece as missões: o estado da missão **entra por parâmetro** em
+  `getFocus(missão)`, para que a regra de prioridade continue testável sozinha.
+
+---
+
+## 11.4. Missão da semana (`missions.js`)
+
+Uma razão simples para voltar durante a semana. **Não** há missões diárias,
+temporadas, passes nem dezenas de tipos — há uma missão, e ela muda à
+segunda-feira.
+
+### O catálogo é conteúdo, não infraestrutura
+
+`WEEKLY_MISSION_CONFIG` tem **9 missões**, em código, como `JOURNEY_CONFIG`,
+`LEVEL_CONFIG` e `STREAK_MILESTONES`. Acrescentar uma missão é acrescentar uma
+entrada e o texto no `i18n.js`. Nenhuma tabela nova precisa de existir para
+isso.
+
+| Missão | Objectivos |
+|---|---|
+| `first_steps` | 1 descoberta + 1 fotografia |
+| `keep_the_story` | 1 descoberta + 1 experiência escrita |
+| `explore_mindelo` | 2 descobertas + 1 fotografia |
+| `city_memories` | 2 fotografias em monumentos **diferentes** + 1 experiência |
+| `historic_centre` | 1 descoberta no Centro Histórico + 1 experiência |
+| `sea_front` | 1 descoberta na Frente-Mar + 1 fotografia |
+| `close_a_zone` | Completar 1 zona |
+| `album_keeper` | 2 fotografias em monumentos diferentes |
+| `two_memories` | 2 experiências escritas |
+
+Os quatro tipos de objectivo — `DISCOVER_MONUMENT`, `ADD_PHOTO`,
+`WRITE_EXPERIENCE`, `COMPLETE_ZONE` — são acções que a app **já** fazia.
+Nenhuma interacção nova foi inventada para as missões existirem.
+
+As contagens são pequenas de propósito: uma missão descreve uso natural, nunca
+"adiciona 10 fotografias". As duas últimas não exigem descobrir nada — são as
+que continuam a fazer sentido a 12/12.
+
+### A semana é de Cabo Verde, não do aparelho
+
+Segunda 00:00 a domingo 23:59, **hora de Cabo Verde** — o mesmo fuso que o
+`week_start()` do Postgres usa para o ranking. Não é um detalhe: se a missão
+usasse a hora do aparelho, uma missão fechada ao domingo à noite podia cair
+numa semana diferente daquela em que o XP que ela gerou entra no ranking. Cabo
+Verde é UTC−1 todo o ano, por isso a conversão é uma subtracção, não uma tabela.
+
+A chave da semana é a data da segunda-feira (`YYYY-MM-DD`), e a escolha da
+missão é **determinística** a partir dela: o mesmo instante dá a mesma missão em
+qualquer aparelho, sem servidor.
+
+Só entram no sorteio as missões cujos objectivos a conta **ainda consegue**
+cumprir — a quem já descobriu tudo nunca sai "descobre 2 monumentos".
+
+### Progresso por referências, não por contadores
+
+Cada acção guarda uma **referência** (`m_<monumento>`, `z_<zona>`,
+`p_<foto>`), não um `+1`. Daí resultam duas propriedades de graça:
+
+- duas fotografias do mesmo monumento **não** contam duas vezes quando o
+  objectivo pede monumentos diferentes — é assim que se evita o *spam*;
+- ao sincronizar, o progresso de dois aparelhos é a **união** das referências,
+  e juntar nunca conta a mesma acção duas vezes.
+
+Quando dois aparelhos atribuíram missões **diferentes** para a mesma semana
+antes de sincronizarem, ganha a mais avançada; se qualquer um dos lados já
+pagou a recompensa, não se paga outra vez.
+
+### A recompensa
+
+50 XP, pela acção `WEEKLY_MISSION_COMPLETED`, **pelo caminho único do XP** — e
+por isso entra no `xp_events` do servidor e no ranking semanal como qualquer
+outro ponto. Não há pontos especiais para o ranking.
+
+- o valor vive em `XP_CONFIG`, como todos os outros; `missions.js` só diz *que*
+  acção recompensa, nunca *quanto* vale;
+- `uniquePerEntity` com a chave da semana garante que rende **uma vez** nessa
+  semana e volta a poder render na seguinte — a mesma idempotência que trava o
+  resto do XP;
+- conta como actividade do dia na sequência, com a semântica
+  `MISSION_COMPLETED` que já estava reservada;
+- `markRewarded()` devolve `true` uma única vez: a celebração nunca volta depois
+  de um *refresh* — o mesmo papel do `levelSeen`.
+
+### A celebração
+
+`#missionModal`, desenhada por `missions-ui.js`: um ícone, os objectivos, a
+recompensa e um convite. Entra na **fila de celebrações** que já existe, por
+isso nunca abre por cima da celebração de uma descoberta. O botão "Continuar"
+leva sempre a uma acção útil — um botão que não sabe para onde vai não devia
+existir.
+
+---
+
+## 11.5. Analytics da beta (`analytics.js`)
+
+Mede **comportamento de produto, não pessoas**.
+
+O que guarda, e só isto:
+
+- que um marco do funil aconteceu, e quando;
+- em que **dias** a app foi aberta (chaves de dia, nada de horas);
+- quantas vezes um cartão levou a uma acção.
+
+O que **nunca** guarda: localização (nem uma vez, muito menos contínua),
+movimento, percursos, tempo em ecrã, texto de experiências, nomes de
+fotografias ou qualquer conteúdo escrito pela pessoa.
+
+### O funil
+
+`ACCOUNT_CREATED` → `FIRST_SCAN` → `FIRST_DISCOVERY` → `SECOND_DISCOVERY` →
+`FOUR_MONUMENTS_DISCOVERED` → … → `ALL_MONUMENTS_DISCOVERED`, mais os marcos de
+regresso (`APP_RETURNED_OTHER_DAY`) e da missão. Cada marco conta **uma vez por
+conta, para sempre** — a data do primeiro, e nada mais.
+
+Guarda 120 dias de actividade e 26 semanas: chega para se ver o regresso sem o
+perfil crescer sem fim.
+
+### Onde vive
+
+Dentro do perfil, como a carteira de XP e a sequência. Sobe para
+`profiles.analytics` pela fila de sincronização que **já** existe — por isso
+funciona offline sem uma linha de código nova, e o funil responde-se com uma
+consulta a essa coluna: sem tabela de eventos, sem RPC, sem infraestrutura nova.
+
+---
+
+## 11.6. A migração da beta (`migrations/001_engagement_beta.sql`)
+
+Duas colunas e uma regra. Nada mais. Seguro de correr mais de uma vez.
+
+```sql
+alter table public.profiles
+    add column if not exists weekly_mission jsonb not null default '{}'::jsonb,
+    add column if not exists analytics      jsonb not null default '{}'::jsonb;
+
+insert into public.xp_rules (action, amount)
+values ('WEEKLY_MISSION_COMPLETED', 50)
+on conflict (action) do update set amount = excluded.amount;
+```
+
+**Porque não há tabelas novas.** O catálogo de missões é conteúdo, e todo o
+conteúdo desta app vive em código. O progresso segue o padrão que `xp` e
+`exploration_streak` já usavam: um agregado `jsonb` dentro do perfil — assim
+uma gravação continua a ser **uma** escrita atómica, e sobe pela fila que já
+existe. O RLS de `profiles` protege as duas colunas sem política própria.
+
+**A linha em `xp_rules` é crítica.** `xp_rules` é o espelho de `XP_CONFIG`: o
+cliente decide **se** recompensa, o servidor decide **quanto** vale. Sem ela, o
+XP da missão nunca chega a `xp_events` — a carteira local subia e o ranking
+ficava atrás, calado. Os 50 têm de ser iguais aos de
+`XP_CONFIG.WEEKLY_MISSION_COMPLETED`.
+
+Depois de correr, vale confirmar que `award_xp` aceita uma acção **sem
+monumento nem zona** (a entidade da missão é a semana). E notar que o tecto de
+XP mudou: 1 165 passa a 1 165 + 50 por cada semana em que a missão for
+concluída.
+
+---
+
 ## 12. Percurso completo do utilizador
 
 ```
@@ -899,12 +1226,19 @@ ABRIR A APP
                       ▼
               SCANNER (vista por omissão)
                       │
-        ┌─────────────┼──────────────┐
-        ▼             ▼              ▼
-     SCANNER        PERFIL          MAPA       RANKING   [⚙ DEFINIÇÕES]
+                      ├─ CARTÃO DE FOCO: missão da semana
+                      │                  OU próxima descoberta
+                      │                  OU a primeira descoberta
+                      │                  OU o fecho da jornada
+                      │                       └─ Ver no mapa ─┐
+        ┌─────────────┼──────────────┐                        │
+        ▼             ▼              ▼                        │
+     SCANNER        PERFIL          MAPA  ◄───────────────────┘   RANKING   [⚙]
         │             │              │
-        │             │              ├─ marcador azul  → popup informativo
-        │             │              ├─ marcador verde → PÁGINA DO MONUMENTO
+        │             │              ├─ marcador NEXT  → folha: Explorar
+        │             │              ├─ por descobrir  → folha com véu, nome legível
+        │             │              ├─ descoberto     → folha → ÁLBUM
+        │             │              ├─ halo de zona   → progresso + o que falta
         │             │              ├─ zonas          → progresso, +100 XP cada
         │             │              └─ lista          → PÁGINA DO MONUMENTO
         │             │
@@ -926,7 +1260,10 @@ ABRIR A APP
         │                ├─ conta o dia na sequência
         │                ├─ pode desbloquear medalha (25/50/75/100 %)
         │                ├─ pode subir de nível (250/600/1200 XP)
-        │                └─ avança a etapa da jornada
+        │                ├─ avança a etapa da jornada
+        │                └─ conta para a missão da semana
+        │                       └─ missão fechada → +50 XP → CELEBRAÇÃO DA MISSÃO
+        │                          (na mesma fila: nunca por cima da descoberta)
         │                       │
         │                       ▼
         │              CELEBRAÇÃO DE DESCOBERTA
@@ -947,6 +1284,7 @@ ABRIR A APP
                  ├─ tirar / carregar foto → +5 XP (3 primeiras), até 10 fotos
                  ├─ etiquetas de memória
                  └─ guardar → conta o dia na sequência
+                              e conta para a missão da semana
 ```
 
 ---
@@ -956,7 +1294,8 @@ ABRIR A APP
 Regras que o código respeita de forma consistente e que devem manter-se:
 
 1. **O domínio não toca no DOM nem no `localStorage`.** `xp.js`, `levels.js`,
-   `streak.js` e `journey.js` recebem tudo por injecção.
+   `streak.js`, `journey.js`, `engagement.js`, `missions.js`, `map.js` e
+   `analytics.js` recebem tudo por injecção.
 2. **O valor de cada recompensa é decidido no domínio**, nunca por quem chama —
    quem chama envia a **acção**, não o montante.
 3. **O nível nunca é guardado**: é sempre derivado do XP total. Só se persiste
@@ -970,13 +1309,19 @@ Regras que o código respeita de forma consistente e que devem manter-se:
 7. **Acrescentar conteúdo é acrescentar configuração**: um nível novo é uma
    entrada em `LEVEL_CONFIG` + texto no i18n; uma acção nova de XP é uma entrada
    em `XP_ACTION` e outra em `XP_CONFIG`; uma jornada nova é uma entrada em
-   `JOURNEY_CONFIG`. Nenhum limiar (250, 600, 1200) existe fora da configuração.
+   `JOURNEY_CONFIG`; uma missão nova é uma entrada em `WEEKLY_MISSION_CONFIG`. Nenhum limiar (250, 600, 1200) existe fora da configuração.
 8. **Nenhum texto visível está fixo no código**: tudo passa por `i18n.js`.
 9. **A câmara é sempre libertada** — nunca fica ligada em segundo plano.
 10. **Uma celebração de cada vez**, e um único aviso por acção. Durante uma
     descoberta, as recompensas entram na celebração em vez de abrirem modais
     próprios.
-11. **A celebração não é estado**: não é guardada em lado nenhum, por isso um
+11. **Uma decisão, um sítio.** A próxima descoberta é escolhida **só** no
+    `engagement.js` e desenhada em quatro lugares. Nenhum componente decide por
+    conta própria o que vem a seguir.
+12. **Não se inventa o que não existe.** Sem geometria de zonas, desenha-se um
+    halo assumidamente aproximado; sem rotas, não se escreve "a pé" nem
+    "em N minutos".
+13. **A celebração não é estado**: não é guardada em lado nenhum, por isso um
     refresh nunca a repete e reabrir um monumento nunca volta a celebrá-lo.
 
 ---
@@ -1004,22 +1349,35 @@ Regras que o código respeita de forma consistente e que devem manter-se:
 - 3 idiomas, 3 temas, alertas configuráveis
 - Celebração de descoberta com três variantes, hierarquia de recompensas e
   ligação directa ao álbum
+- **Loop de descoberta**: um único sítio a responder "o que posso descobrir a
+  seguir?", com motivo em linguagem corrente e uma só linha de "Quase lá"
+- **Missão da semana**: 9 missões em catálogo, semana de Cabo Verde,
+  determinística e igual em todos os aparelhos, 50 XP pelo caminho normal do XP
+- **Mapa de exploração**: marcadores com estado (incluindo o da próxima
+  descoberta), linha da jornada em três estados, halos aproximados das zonas,
+  *bottom sheet* do lugar e revelação depois da descoberta
+- **Funil da beta** dentro do perfil, sem localização, sem percursos e sem
+  tabela de eventos
+- Migração `001_engagement_beta.sql`: duas colunas `jsonb` e a regra de XP da
+  missão
 - Testes de domínio: `xp.test.js`, `levels.test.js`, `streak.test.js`,
   `journey.test.js`, `discovery.test.js`, `image-compressor.test.js`,
-  `ranking.test.js` (211 testes)
+  `ranking.test.js`, `engagement.test.js`, `missions.test.js`, `map.test.js`
+  (328 testes)
 
 ### Já previsto no código, por implementar
 
 - **Acções de XP reservadas**: `QUIZ_COMPLETED`, `CULTURAL_CHALLENGE_COMPLETED`,
   `ROUTE_COMPLETED`, `ISLAND_COMPLETED`, `EVENT_ATTENDED`
-- **Actividade de sequência reservada**: `MISSION_COMPLETED` (missões culturais)
 - **Novas jornadas**: `JOURNEY_CONFIG` já tem `islandId` e `cityId` — a estrutura
   está pronta para outras ilhas e cidades
 
 ### Limitações conhecidas
 
-- **Nível 4 inalcançável hoje**: o máximo de XP obtenível (1 165) fica abaixo do
-  limiar de 1 200 (ver 7.4)
+- **Nível 4 só com missões**: as descobertas e as zonas rendem 1 165 XP, abaixo
+  do limiar de 1 200 (ver 7.4). A missão da semana é o que atravessa a
+  diferença — 50 XP por semana concluída. Quem nunca fizer uma missão continua
+  a não chegar a Lenda de Mindelo
 - **Um álbum só se vê com ligação.** As imagens deixaram de estar no aparelho,
   por isso offline mostram-se vazias — excepto as que ainda estão pendentes.
   Guardar miniaturas locais resolveria, ao custo de voltar a gastar quota
@@ -1031,6 +1389,19 @@ Regras que o código respeita de forma consistente e que devem manter-se:
   `profiles.ranking_opt_in`, que é por pessoa. Um `ranking_enabled` para toda a
   app — para desligar a funcionalidade de uma vez — não existe, e exigiria uma
   tabela de configuração que ainda não se justifica
+- **Os halos das zonas são aproximados, e dizem-no.** O projecto não tem
+  geometria de zonas — só listas de monumentos. O círculo vem das coordenadas
+  dos próprios monumentos, nunca de um limite administrativo, e a folha da zona
+  avisa a pessoa disso por escrito
+- **O mapa não faz *routing*.** A linha da Jornada é a ordem narrativa dos
+  monumentos, e as distâncias são em linha recta. Por isso nunca se escreve "a
+  pé" nem "em N minutos"
+- **A missão da semana é atribuída no cliente.** É determinística e em hora de
+  Cabo Verde, por isso dois aparelhos chegam à mesma missão sem servidor — mas
+  um relógio muito errado no aparelho vê a semana errada até se corrigir
+- **O funil lê-se por consulta.** Não há painel: as respostas da beta saem de um
+  `select` sobre `profiles.analytics`. Foi a troca deliberada por não criar
+  uma tabela de eventos
 - **O ranking filtra por ilha mas só existe São Vicente.** `profiles.island_id`
   e o parâmetro da consulta já estão lá; faltam as outras ilhas no conteúdo.
   Não há filtros de Amigos nem de Cabo Verde — e não se mostram botões que

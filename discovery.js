@@ -234,14 +234,66 @@
 
     // Próxima etapa (ponto 17). Numa jornada concluída não há
     // próxima história por procurar.
-    function buildNext(step, isComplete) {
-        if (isComplete || !step || !step.monument) return null;
+    //
+    // A recomendação preferida é a do loop de descoberta
+    // (engagement.js): é ela que sabe que às vezes vale mais fechar
+    // uma zona do que seguir a ordem do percurso. Sem ela, a etapa
+    // da jornada continua a servir.
+    function buildNext(step, isComplete, recommended) {
+        if (isComplete) return null;
+
+        if (recommended && recommended.monumentId !== undefined && recommended.monumentId !== null) {
+            return {
+                monumentId: recommended.monumentId,
+                name: recommended.title || '',
+                image: recommended.image || '',
+                points: toNonNegativeInt(recommended.points),
+                zoneId: recommended.zoneId || null,
+                // Metros, ou null quando não há localização (ponto 49)
+                distance: typeof recommended.distance === 'number' ? recommended.distance : null,
+                reason: recommended.reason || null
+            };
+        }
+
+        if (!step || !step.monument) return null;
 
         return {
             monumentId: step.monumentId,
             name: step.monument.name || '',
+            image: step.monument.image || '',
             points: toNonNegativeInt(step.monument.points),
-            zoneId: step.zoneId || null
+            zoneId: step.zoneId || null,
+            distance: null,
+            reason: null
+        };
+    }
+
+    // ==========================================================
+    // Progresso da zona onde a descoberta aconteceu (ponto 10)
+    //
+    // Diferente de `zone`, que só existe quando a zona FICOU
+    // completa: isto é o "3 / 4 Centro Histórico" que se mostra
+    // mesmo quando ainda falta gente. O valor anterior vem para a
+    // barra animar de onde estava (ponto 47).
+    // ==========================================================
+    function buildZoneProgress(progress) {
+        if (!progress || !progress.zoneId) return null;
+
+        const total = toNonNegativeInt(progress.total);
+        if (!total) return null;
+
+        const discovered = Math.min(total, toNonNegativeInt(progress.discovered));
+        const previous = Math.max(0, Math.min(discovered, toNonNegativeInt(progress.previousDiscovered)));
+
+        return {
+            zoneId: progress.zoneId,
+            discovered: discovered,
+            total: total,
+            percent: toPercent(discovered, total),
+            previousDiscovered: previous,
+            previousPercent: toPercent(previous, total),
+            remaining: Math.max(0, total - discovered),
+            isComplete: discovered === total
         };
     }
 
@@ -282,7 +334,11 @@
                 name: monument.name || '',
                 image: monument.image || '',
                 points: toNonNegativeInt(monument.points),
-                discoveredAt: monument.discoveredAt || null
+                discoveredAt: monument.discoveredAt || null,
+                // A recompensa cultural existe? O TEXTO não passa por
+                // aqui — vive no i18n, e a interface vai buscá-lo pelo
+                // id (pontos 14 e 15).
+                hasStory: !!data.hasStory
             },
 
             journey: {
@@ -293,11 +349,17 @@
 
             xp: buildXP(data.xpBatch, actions),
             progress: progress,
+            zoneProgress: buildZoneProgress(data.zoneProgress),
             streak: streak,
             zone: zone,
             badges: badges,
             levelUp: levelUp,
-            next: buildNext(data.nextStep, progress.isComplete),
+
+            // "Quase lá": UMA mensagem, escolhida por engagement.js.
+            // Aqui só se transporta — a regra não se repete (ponto 9).
+            almostThere: data.almostThere || null,
+
+            next: buildNext(data.nextStep, progress.isComplete, data.nextDiscovery),
 
             // Ordem em que os blocos especiais devem ser desenhados,
             // já sem os que não se aplicam (ponto 23: não mostrar o

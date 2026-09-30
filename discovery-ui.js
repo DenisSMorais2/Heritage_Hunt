@@ -26,6 +26,7 @@ const DiscoveryUI = (function () {
         onOpenAlbum: null,
         onContinueJourney: null,
         onShowOnMap: null,
+        onLearnMore: null,
         onClosed: null
     };
 
@@ -271,31 +272,88 @@ const DiscoveryUI = (function () {
             '</div>';
     }
 
-    // Próxima etapa (ponto 17): a recompensa vira intenção de voltar
+    // ==========================================================
+    // Recompensa cultural (pontos 14 e 15)
+    //
+    // "Aprendi alguma coisa nova" é metade do que uma descoberta
+    // devolve. O texto vem do i18n pelo id do monumento — nunca
+    // está escrito aqui dentro.
+    // ==========================================================
+    function storyHtml(result) {
+        if (!result.monument.hasStory) return '';
+
+        const story = monumentStory(result.monument.id);
+        if (!story) return '';
+
+        return '' +
+            '<div class="hh-dc-story" data-dc-step>' +
+                '<p class="hh-dc-story-kicker">' +
+                    '<i class="fas fa-book-open" aria-hidden="true"></i> ' +
+                    escapeHtml(t('engagement.storyUnlocked')) +
+                '</p>' +
+                '<p class="hh-dc-story-lead">' + escapeHtml(t('engagement.didYouKnow')) + '</p>' +
+                '<p class="hh-dc-story-text">' + escapeHtml(story) + '</p>' +
+                '<button type="button" class="hh-dc-story-btn" data-dc-action="learn">' +
+                    '<span>' + escapeHtml(t('engagement.learnMore')) + '</span>' +
+                    '<i class="fas fa-chevron-right" aria-hidden="true"></i>' +
+                '</button>' +
+            '</div>';
+    }
+
+    // Progresso da zona (ponto 10): "3 / 4 Centro Histórico".
+    // Reutiliza a barra do componente de engagement, para a zona ter
+    // o mesmo aspecto aqui, no mapa e no perfil (ponto 16).
+    function zoneProgressHtml(result) {
+        const zone = result.zoneProgress;
+        if (!zone) return '';
+
+        // A zona que ACABOU de ficar completa já é celebrada no bloco
+        // especial: não se diz duas vezes a mesma coisa (ponto 7).
+        if (result.zone && result.zone.id === zone.zoneId) return '';
+
+        return EngagementUI.zoneBarHtml({
+            zoneId: zone.zoneId,
+            total: zone.total,
+            discovered: zone.discovered,
+            percent: zone.percent,
+            isComplete: zone.isComplete
+        }).replace('data-eng-step', 'data-dc-step');
+    }
+
+    // "Quase lá" (pontos 8 e 9): uma linha, escolhida pelo domínio
+    function almostHtml(result) {
+        if (!result.almostThere) return '';
+        return EngagementUI.almostHtml(result.almostThere).replace('data-eng-step', 'data-dc-step');
+    }
+
+    // Próxima descoberta (pontos 7 e 17): a recompensa vira intenção
+    // de voltar. É o MESMO cartão do mapa e do scanner, na variante
+    // compacta — aqui a fotografia que manda é a do monumento que
+    // acabou de ser descoberto.
     function nextHtml(result) {
         if (!result.next) return '';
 
-        return '' +
-            '<div class="hh-dc-next" data-dc-step>' +
-                '<span class="hh-dc-next-icon" aria-hidden="true"><i class="fas fa-location-dot"></i></span>' +
-                '<div class="hh-dc-next-text">' +
-                    '<p class="hh-dc-next-kicker">' + escapeHtml(t('discovery.nextStory')) + '</p>' +
-                    '<p class="hh-dc-next-name">' + escapeHtml(result.next.name) + '</p>' +
-                    (result.next.points
-                        ? '<p class="hh-dc-next-xp">' + escapeHtml(xpAmountText(result.next.points)) + '</p>'
-                        : '') +
-                '</div>' +
-                '<button type="button" class="hh-dc-next-btn" data-dc-action="map">' +
-                    escapeHtml(t('journeyViewMap')) +
-                '</button>' +
-            '</div>';
+        const card = EngagementUI.nextCardHtml({
+            monumentId: result.next.monumentId,
+            title: result.next.name,
+            image: result.next.image,
+            points: result.next.points,
+            zoneId: result.next.zoneId,
+            distance: result.next.distance,
+            reason: result.next.reason || Engagement.REASON.JOURNEY_STEP
+        }, { variant: 'compact' });
+
+        return card.replace('data-eng-step', 'data-dc-step');
     }
 
     // CTAs (pontos 18, 19 e 20). O principal leva sempre ao álbum.
     function actionsHtml(result) {
         const isComplete = result.variant === 'complete';
 
-        const primaryLabel = isComplete ? t('discovery.viewAlbum') : t('discovery.addToAlbum');
+        // "Guardar esta memória" diz o que o botão faz para quem
+        // acabou de descobrir um lugar; "Adicionar ao álbum" descreve
+        // o mecanismo (pontos 12 e 45).
+        const primaryLabel = isComplete ? t('discovery.viewAlbum') : t('discovery.saveMemory');
         const primaryIcon = isComplete ? 'fas fa-images' : 'fas fa-camera';
 
         const secondaryLabel = isComplete ? t('discovery.reviewJourney') : t('journeyContinue');
@@ -464,6 +522,15 @@ const DiscoveryUI = (function () {
                 run(button.dataset.dcAction);
             });
         });
+
+        // O cartão da próxima descoberta vem do componente partilhado
+        // e traz os botões dele. Aqui têm de fechar a celebração
+        // primeiro: nunca fica um modal aberto por baixo (ponto 28).
+        elements.modal.querySelectorAll('[data-eng-action="map"]').forEach(function (button) {
+            button.addEventListener('click', function () {
+                run('map');
+            });
+        });
     }
 
     // Cada acção fecha a celebração antes de fazer o que faz: nunca
@@ -484,6 +551,14 @@ const DiscoveryUI = (function () {
             return;
         }
 
+        // "Saber mais" abre a página do monumento que já existe: a
+        // história desbloqueada é uma porta, não um destino (ponto 14).
+        if (action === 'learn') {
+            close();
+            if (handlers.onLearnMore) handlers.onLearnMore(result.monument.id);
+            return;
+        }
+
         if (action === 'continue') {
             close();
             if (handlers.onContinueJourney) handlers.onContinueJourney(result);
@@ -498,13 +573,20 @@ const DiscoveryUI = (function () {
     // volta a contar o XP do zero.
     function render(result, animate) {
         elements.modal.dataset.variant = result.variant;
+        // A ordem é a hierarquia do ponto 11, e não a ordem em que as
+        // coisas foram calculadas:
+        //   1 monumento · 2 XP · 3 progresso · 4 recompensa especial
+        //   5 quase lá  · 6 próxima acção
         elements.body.innerHTML = '' +
             heroHtml(result) +
             '<div class="hh-dc-content">' +
                 xpHtml(result) +
-                streakHtml(result) +
+                zoneProgressHtml(result) +
                 progressHtml(result) +
+                streakHtml(result) +
                 specialsHtml(result) +
+                storyHtml(result) +
+                almostHtml(result) +
                 completeHtml(result) +
                 nextHtml(result) +
             '</div>';
@@ -599,6 +681,7 @@ const DiscoveryUI = (function () {
         handlers.onOpenAlbum = config.onOpenAlbum || null;
         handlers.onContinueJourney = config.onContinueJourney || null;
         handlers.onShowOnMap = config.onShowOnMap || null;
+        handlers.onLearnMore = config.onLearnMore || null;
         handlers.onClosed = config.onClosed || null;
 
         elements = {

@@ -116,6 +116,17 @@ const XPUI = (function () {
             };
         }
 
+        if (transaction.action === XP.ACTION.WEEKLY_MISSION_COMPLETED) {
+            return {
+                icon: icon,
+                variant: 'is-gold',
+                title: t('mission.completedTitle'),
+                // A entidade e a semana: dizer "de 29 de Setembro" no
+                // historico ajuda a distinguir uma semana da seguinte.
+                subtitle: t('mission.weekly')
+            };
+        }
+
         // Accoes futuras ainda sem texto proprio: mostram algo util
         return { icon: icon, variant: 'is-gold', title: transaction.action, subtitle: '' };
     }

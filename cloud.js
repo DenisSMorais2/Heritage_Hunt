@@ -241,6 +241,37 @@ const HeritageCloud = (function () {
         return sessionUserId;
     }
 
+    // --- Colunas do loop de engajamento --------------------------
+    //
+    // `weekly_mission` e `analytics` chegaram depois do resto do
+    // esquema. Uma instalacao sem a migracao aplicada NAO pode ficar
+    // sem sincronizar nada: se o Postgres disser que a coluna nao
+    // existe, deixamos de a enviar e a app segue, com a missao e o
+    // funil guardados so neste aparelho.
+    //
+    // Isto e uma rede de seguranca para a beta, nao o caminho normal:
+    // ver migrations/001_engagement_beta.sql.
+    let engagementColumns = true;
+
+    const BASE_COLUMNS = 'name, email, points, level_seen, xp, exploration_streak, ' +
+        'scanned_monuments, settings, avatar_path, ranking_opt_in';
+
+    function profileColumns() {
+        return engagementColumns
+            ? BASE_COLUMNS + ', weekly_mission, analytics'
+            : BASE_COLUMNS;
+    }
+
+    function isMissingEngagementColumn(error) {
+        if (!error) return false;
+
+        // 42703 = undefined_column no Postgres
+        if (error.code === '42703') return true;
+
+        const message = (error.message || '').toLowerCase();
+        return message.indexOf('weekly_mission') !== -1 || message.indexOf('analytics') !== -1;
+    }
+
     // --- Perfil: puxar -------------------------------------------
 
     async function pullProfile() {
@@ -252,12 +283,33 @@ const HeritageCloud = (function () {
         try {
             result = await client
                 .from('profiles')
-                .select('name, email, points, level_seen, xp, exploration_streak, scanned_monuments, settings, avatar_path, ranking_opt_in')
+                .select(profileColumns())
                 .eq('id', sessionUserId)
                 .maybeSingle();
         } catch (error) {
             setStatus('offline');
             return null;
+        }
+
+        // Projecto sem a migracao do loop aplicada: as colunas novas
+        // ainda nao existem. Em vez de deixar o perfil inteiro sem
+        // sincronizar, desligamos as duas e voltamos a tentar sem
+        // elas — a app continua a funcionar, so com a missao e o
+        // funil guardados apenas neste aparelho.
+        if (result.error && isMissingEngagementColumn(result.error)) {
+            engagementColumns = false;
+            console.warn('[cloud] colunas weekly_mission/analytics em falta — aplica a migracao do loop de engajamento');
+
+            try {
+                result = await client
+                    .from('profiles')
+                    .select(profileColumns())
+                    .eq('id', sessionUserId)
+                    .maybeSingle();
+            } catch (error) {
+                setStatus('offline');
+                return null;
+            }
         }
 
         if (result.error) {
@@ -285,7 +337,9 @@ const HeritageCloud = (function () {
             scannedMonuments: Array.isArray(row.scanned_monuments) ? row.scanned_monuments : [],
             settings: isFilledObject(row.settings) ? row.settings : null,
             avatarPath: row.avatar_path || null,
-            rankingOptIn: row.ranking_opt_in !== false
+            rankingOptIn: row.ranking_opt_in !== false,
+            weeklyMission: isFilledObject(row.weekly_mission) ? row.weekly_mission : null,
+            analytics: isFilledObject(row.analytics) ? row.analytics : null
         };
     }
 
@@ -299,7 +353,7 @@ const HeritageCloud = (function () {
     // imagem — a foto de perfil e o album dos monumentos — fica de
     // fora por construcao, e nao por filtro.
     function toRow(user, settings) {
-        return {
+        const row = {
             id: sessionUserId,
             name: user.name || '',
             email: user.email || '',
@@ -316,6 +370,19 @@ const HeritageCloud = (function () {
             // pode declarar e quanto XP tem — isso vive no ledger.
             ranking_opt_in: settings && settings.rankingOptIn === false ? false : true
         };
+
+        // A missao da semana e o funil sobem como `jsonb` inteiros,
+        // como a carteira e a sequencia: assim uma gravacao continua
+        // a ser UMA escrita atomica.
+        //
+        // O funil NAO leva localizacao, percursos nem conteudo
+        // escrito: leva marcos e chaves de dia (ponto 43).
+        if (engagementColumns) {
+            row.weekly_mission = user.weeklyMission || {};
+            row.analytics = user.analytics || {};
+        }
+
+        return row;
     }
 
     // Os monumentos descobertos sao guardados inteiros, e um
@@ -355,6 +422,23 @@ const HeritageCloud = (function () {
             result = await client.from('profiles').upsert(row, { onConflict: 'id' });
         } catch (error) {
             result = { error: error };
+        }
+
+        // Sem a migracao aplicada, a linha inteira era recusada e o
+        // perfil deixava de sincronizar. Preferimos perder as duas
+        // colunas novas a perder o progresso todo.
+        if (result.error && engagementColumns && isMissingEngagementColumn(result.error)) {
+            engagementColumns = false;
+            console.warn('[cloud] colunas weekly_mission/analytics em falta — aplica a migracao do loop de engajamento');
+
+            delete row.weekly_mission;
+            delete row.analytics;
+
+            try {
+                result = await client.from('profiles').upsert(row, { onConflict: 'id' });
+            } catch (error) {
+                result = { error: error };
+            }
         }
 
         if (result.error) {

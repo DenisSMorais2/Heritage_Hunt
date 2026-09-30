@@ -43,7 +43,8 @@
         MONUMENT_DISCOVERED: 'MONUMENT_DISCOVERED',
         PHOTO_ADDED: 'PHOTO_ADDED',
         EXPERIENCE_ADDED: 'EXPERIENCE_ADDED',
-        ZONE_COMPLETED: 'ZONE_COMPLETED'
+        ZONE_COMPLETED: 'ZONE_COMPLETED',
+        WEEKLY_MISSION_COMPLETED: 'WEEKLY_MISSION_COMPLETED'
 
         // Reservado para o futuro (nao implementado):
         // QUIZ_COMPLETED, CULTURAL_CHALLENGE_COMPLETED,
@@ -89,6 +90,17 @@
             uniquePerEntity: true,
             entityPrefix: 'zone',
             icon: 'fas fa-map-marked-alt'
+        },
+        // A entidade e a SEMANA (a chave da segunda-feira), por isso
+        // `uniquePerEntity` chega para garantir que a missao rende uma
+        // unica vez naquela semana — e volta a poder render na
+        // seguinte (ponto 25). Sem tabela nova e sem contador proprio:
+        // a idempotencia e a mesma que trava o resto do XP.
+        WEEKLY_MISSION_COMPLETED: {
+            amount: 50,
+            uniquePerEntity: true,
+            entityPrefix: 'mission',
+            icon: 'fas fa-compass'
         }
     };
 

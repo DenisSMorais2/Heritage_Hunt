@@ -325,15 +325,31 @@ const JourneyUI = (function () {
                 '</div>';
         }
 
-        const label = progress.isEmpty ? t('journeyFirstStep') : t('journeyCurrent');
         const intro = progress.isEmpty
             ? '<p class="hh-jp-sum-note">' + escapeHtml(t('journeyEmptyTitle')) + '</p>'
             : '';
 
-        const distance = current ? distanceText(current.monument) : '';
+        // A recomendacao e a MESMA em toda a app (ponto 7): quem a
+        // escolhe e o engagement.js, nao cada ecra por si. Duas
+        // sugestoes diferentes no mesmo produto seriam duas respostas
+        // a mesma pergunta.
+        //
+        // Sem o modulo de engagement carregado, a etapa da jornada
+        // continua a servir — este ficheiro nunca depende dele.
+        const recommended = (typeof Engagement !== 'undefined' && typeof EngagementUI !== 'undefined')
+            ? Engagement.getNextDiscovery()
+            : null;
 
-        const next = current
-            ? '<div class="hh-jp-next">' +
+        let next = '';
+
+        if (recommended) {
+            next = EngagementUI.nextCardHtml(recommended, { variant: 'compact' }) +
+                EngagementUI.almostHtml(Engagement.getAlmostThere());
+        } else if (current) {
+            const label = progress.isEmpty ? t('journeyFirstStep') : t('journeyCurrent');
+            const distance = distanceText(current.monument);
+
+            next = '<div class="hh-jp-next">' +
                   '<span class="hh-jp-next-icon" aria-hidden="true"><i class="fas fa-location-dot"></i></span>' +
                   '<div class="hh-jp-next-text">' +
                       '<p class="hh-jp-next-label">' + escapeHtml(label) + '</p>' +
@@ -343,8 +359,8 @@ const JourneyUI = (function () {
                   '<button type="button" class="hh-jp-next-btn" data-journey-action="map" data-journey-map-id="' + current.monumentId + '">' +
                       escapeHtml(t('journeyViewMap')) +
                   '</button>' +
-              '</div>'
-            : '';
+              '</div>';
+        }
 
         return '' +
             '<div class="hh-jp-sum">' +
@@ -380,6 +396,15 @@ const JourneyUI = (function () {
                 })[0];
                 if (step && handlers.onShowOnMap) handlers.onShowOnMap(step.monument);
             });
+        }
+
+        // Os botoes do cartao partilhado sao ligados por quem os
+        // desenha, para levarem ao mesmo lugar em todos os ecras.
+        // `reveal` e o que faz o cartao aparecer: sem ele ficava
+        // desenhado mas transparente.
+        if (typeof EngagementUI !== 'undefined') {
+            EngagementUI.bind(elements.summary);
+            EngagementUI.reveal(elements.summary);
         }
     }
 

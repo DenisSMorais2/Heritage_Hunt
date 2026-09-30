@@ -8463,3 +8463,1800 @@ html:not(.dark) .hh-rk-confirm {
         font-size: 0.82rem;
     }
 }
+
+/* ==========================================================
+   Heritage — loop de descoberta e missao da semana
+   (engagement-ui.js e missions-ui.js)
+
+   Nao ha identidade nova aqui: os mesmos navy, dourado e neutros,
+   os mesmos cartoes, a mesma tipografia. O que muda e o que se
+   diz, nao o aspecto (ponto 46).
+   ========================================================== */
+
+/* O cartao do loop e o primeiro do ecra, por isso nao leva a
+   margem de topo que separa cartoes irmaos. */
+.hh-eng-card {
+    margin-top: 0;
+}
+.hh-eng-card.hidden {
+    display: none;
+}
+
+/* Entrada suave, uma so vez (ponto 47) */
+[data-eng-step] {
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.34s ease, transform 0.34s ease;
+}
+[data-eng-step].is-in {
+    opacity: 1;
+    transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+    [data-eng-step] {
+        opacity: 1;
+        transform: none;
+        transition: none;
+    }
+}
+
+/* --- Proxima descoberta ----------------------------------- */
+
+.hh-eng-next-kicker {
+    font-size: 0.66rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--hh-gold);
+    margin-bottom: 10px;
+}
+.hh-eng-next-body {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+.hh-eng-next-shot {
+    flex: 0 0 auto;
+    width: 84px;
+    height: 84px;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid var(--hh-line);
+    background: rgba(10, 23, 41, 0.6);
+}
+.hh-eng-next-shot img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+.hh-eng-next-text {
+    min-width: 0;
+    flex: 1 1 auto;
+}
+.hh-eng-next-name {
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 1.06rem;
+    line-height: 1.25;
+    color: var(--hh-cream);
+}
+.hh-eng-next-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 10px;
+    margin-top: 5px;
+    font-size: 0.76rem;
+    color: var(--hh-muted);
+}
+.hh-eng-next-distance {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--hh-gold-soft);
+}
+.hh-eng-next-reason {
+    margin-top: 8px;
+    font-size: 0.82rem;
+    line-height: 1.45;
+    color: var(--hh-cream);
+    opacity: 0.86;
+}
+.hh-eng-next-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    margin-top: 14px;
+    padding: 11px 16px;
+    border-radius: 12px;
+    border: 1px solid rgba(214, 178, 116, 0.44);
+    background: rgba(214, 178, 116, 0.12);
+    color: var(--hh-gold-soft);
+    font-size: 0.86rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+.hh-eng-next-btn:hover,
+.hh-eng-next-btn:focus-visible {
+    background: rgba(214, 178, 116, 0.2);
+    border-color: var(--hh-gold);
+}
+
+/* Variante compacta: dentro da celebracao e do resumo da jornada,
+   onde a fotografia que manda e outra. */
+.hh-eng-next.is-compact {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 10px 12px;
+    align-items: center;
+    margin-top: 14px;
+    padding: 13px 14px;
+    border-radius: 14px;
+    border: 1px solid var(--hh-line);
+    background: rgba(10, 23, 41, 0.42);
+}
+.hh-eng-next.is-compact .hh-eng-next-kicker {
+    margin-bottom: 3px;
+}
+.hh-eng-next.is-compact .hh-eng-next-name {
+    font-size: 0.98rem;
+}
+.hh-eng-next.is-compact .hh-eng-next-btn {
+    grid-column: 1 / -1;
+    margin-top: 2px;
+}
+.hh-eng-next-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: 1px solid rgba(214, 178, 116, 0.36);
+    background: rgba(214, 178, 116, 0.12);
+    color: var(--hh-gold-soft);
+    font-size: 0.92rem;
+}
+
+/* 11/12: o momento merece peso proprio (ponto 37) */
+.hh-eng-next.is-major {
+    position: relative;
+    padding: 16px 15px 15px;
+    border-radius: 16px;
+    border: 1px solid rgba(214, 178, 116, 0.5);
+    background:
+        radial-gradient(120% 120% at 0% 0%, rgba(214, 178, 116, 0.16), transparent 62%),
+        rgba(10, 23, 41, 0.5);
+}
+.hh-eng-next.is-major .hh-eng-next-kicker {
+    color: var(--hh-gold-soft);
+}
+.hh-eng-next.is-major .hh-eng-next-name {
+    font-size: 1.2rem;
+}
+
+/* --- Quase la --------------------------------------------- */
+
+.hh-eng-almost {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    margin-top: 12px;
+    padding: 11px 13px;
+    border-radius: 12px;
+    border: 1px solid var(--hh-line);
+    background: rgba(10, 23, 41, 0.34);
+    font-size: 0.83rem;
+    line-height: 1.45;
+    color: var(--hh-cream);
+}
+.hh-eng-almost i {
+    margin-top: 2px;
+    color: var(--hh-gold);
+    font-size: 0.8rem;
+}
+.hh-eng-almost.is-major {
+    border-color: rgba(214, 178, 116, 0.46);
+    background: rgba(214, 178, 116, 0.11);
+    font-weight: 600;
+}
+
+/* --- Progresso de uma zona -------------------------------- */
+
+.hh-eng-zone {
+    margin-top: 14px;
+    padding: 13px 14px;
+    border-radius: 14px;
+    border: 1px solid var(--hh-line);
+    background: rgba(10, 23, 41, 0.38);
+}
+.hh-eng-zone-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+}
+.hh-eng-zone-name {
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 0.96rem;
+    color: var(--hh-cream);
+}
+.hh-eng-zone-count {
+    font-size: 0.86rem;
+    font-weight: 700;
+    color: var(--hh-gold-soft);
+    font-variant-numeric: tabular-nums;
+}
+.hh-eng-zone-track {
+    height: 7px;
+    margin-top: 9px;
+    border-radius: 999px;
+    background: rgba(157, 176, 200, 0.2);
+    overflow: hidden;
+}
+.hh-eng-zone-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #C9A263, #E7CE9A);
+    /* A barra avanca suavemente (ponto 47) */
+    transition: width 0.7s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.hh-eng-zone-note {
+    margin-top: 7px;
+    font-size: 0.76rem;
+    color: var(--hh-muted);
+}
+.hh-eng-zone.is-complete {
+    border-color: rgba(214, 178, 116, 0.42);
+    background: rgba(214, 178, 116, 0.1);
+}
+.hh-eng-zone.is-complete .hh-eng-zone-note {
+    color: var(--hh-gold-soft);
+    font-weight: 600;
+}
+@media (prefers-reduced-motion: reduce) {
+    .hh-eng-zone-fill {
+        transition: none;
+    }
+}
+
+/* --- Primeira descoberta (0/12) --------------------------- */
+
+.hh-eng-first {
+    text-align: center;
+}
+.hh-eng-first-crest {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 54px;
+    height: 54px;
+    margin-bottom: 12px;
+    border-radius: 50%;
+    border: 1px solid rgba(214, 178, 116, 0.4);
+    background: rgba(214, 178, 116, 0.12);
+    color: var(--hh-gold-soft);
+    font-size: 1.2rem;
+}
+.hh-eng-first-kicker {
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 1.18rem;
+    color: var(--hh-cream);
+}
+.hh-eng-first-note {
+    max-width: 30ch;
+    margin: 7px auto 0;
+    font-size: 0.86rem;
+    line-height: 1.5;
+    color: var(--hh-muted);
+}
+
+/* --- Jornada concluida (12/12) ---------------------------- */
+
+.hh-eng-done {
+    text-align: center;
+}
+.hh-eng-done-crest {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 58px;
+    height: 58px;
+    margin-bottom: 12px;
+    border-radius: 50%;
+    border: 1px solid rgba(214, 178, 116, 0.5);
+    background: rgba(214, 178, 116, 0.16);
+    color: var(--hh-gold-soft);
+    font-size: 1.3rem;
+}
+.hh-eng-done-kicker {
+    font-size: 0.66rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--hh-gold);
+}
+.hh-eng-done-count {
+    margin-top: 6px;
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 1.9rem;
+    line-height: 1;
+    color: var(--hh-cream);
+    font-variant-numeric: tabular-nums;
+}
+.hh-eng-done-title {
+    margin-top: 8px;
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 1.1rem;
+    color: var(--hh-gold-soft);
+}
+.hh-eng-done-note {
+    margin-top: 6px;
+    font-size: 0.85rem;
+    color: var(--hh-muted);
+}
+.hh-eng-done-stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 16px;
+}
+.hh-eng-done-stat {
+    padding: 10px 4px;
+    border-radius: 12px;
+    border: 1px solid var(--hh-line);
+    background: rgba(10, 23, 41, 0.38);
+}
+.hh-eng-done-stat i {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--hh-gold);
+}
+.hh-eng-done-stat b {
+    display: block;
+    margin-top: 4px;
+    font-size: 1.02rem;
+    color: var(--hh-cream);
+    font-variant-numeric: tabular-nums;
+}
+.hh-eng-done-stat span {
+    display: block;
+    margin-top: 1px;
+    font-size: 0.62rem;
+    letter-spacing: 0.04em;
+    color: var(--hh-muted);
+}
+.hh-eng-done-onward {
+    margin-top: 12px;
+    font-size: 0.78rem;
+    line-height: 1.5;
+    color: var(--hh-muted);
+}
+
+/* --- Historia desbloqueada (na celebracao) ---------------- */
+
+.hh-dc-story {
+    margin-top: 16px;
+    padding: 14px 15px;
+    border-radius: 14px;
+    border: 1px solid rgba(214, 178, 116, 0.34);
+    background:
+        radial-gradient(130% 130% at 100% 0%, rgba(214, 178, 116, 0.12), transparent 60%),
+        rgba(10, 23, 41, 0.42);
+}
+.hh-dc-story-kicker {
+    font-size: 0.64rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--hh-gold);
+}
+.hh-dc-story-lead {
+    margin-top: 8px;
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 1rem;
+    color: var(--hh-gold-soft);
+}
+.hh-dc-story-text {
+    margin-top: 6px;
+    font-size: 0.86rem;
+    line-height: 1.55;
+    color: var(--hh-cream);
+}
+.hh-dc-story-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 10px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--hh-gold-soft);
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+.hh-dc-story-btn i {
+    font-size: 0.66rem;
+}
+
+/* --- Cartao da missao da semana --------------------------- */
+
+.hh-mi-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.hh-mi-crest {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    border: 1px solid rgba(214, 178, 116, 0.38);
+    background: rgba(214, 178, 116, 0.12);
+    color: var(--hh-gold-soft);
+    font-size: 1rem;
+}
+.hh-mi-titles {
+    min-width: 0;
+}
+.hh-mi-kicker {
+    font-size: 0.64rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--hh-gold);
+}
+.hh-mi-name {
+    margin-top: 2px;
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 1.04rem;
+    line-height: 1.25;
+    color: var(--hh-cream);
+}
+.hh-mi-zone {
+    margin-top: 1px;
+    font-size: 0.74rem;
+    color: var(--hh-muted);
+}
+.hh-mi-desc {
+    margin-top: 10px;
+    font-size: 0.82rem;
+    line-height: 1.5;
+    color: var(--hh-muted);
+}
+.hh-mi-goals {
+    margin-top: 12px;
+    list-style: none;
+    padding: 0;
+    display: grid;
+    gap: 7px;
+}
+.hh-mi-goal {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-size: 0.85rem;
+    color: var(--hh-cream);
+}
+.hh-mi-goal i {
+    width: 15px;
+    text-align: center;
+    font-size: 0.86rem;
+    color: var(--hh-muted);
+    /* O visto aparece (ponto 47) */
+    transition: color 0.25s ease, transform 0.25s ease;
+}
+.hh-mi-goal.is-done i {
+    color: var(--hh-gold);
+    transform: scale(1.08);
+}
+.hh-mi-goal.is-done span {
+    opacity: 0.72;
+}
+.hh-mi-goal-count {
+    margin-left: auto;
+    font-size: 0.76rem;
+    color: var(--hh-muted);
+    font-variant-numeric: tabular-nums;
+}
+.hh-mi-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 14px;
+}
+.hh-mi-track {
+    flex: 1 1 auto;
+    height: 7px;
+    border-radius: 999px;
+    background: rgba(157, 176, 200, 0.2);
+    overflow: hidden;
+}
+.hh-mi-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #C9A263, #E7CE9A);
+    transition: width 0.7s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.hh-mi-count {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--hh-gold-soft);
+    font-variant-numeric: tabular-nums;
+}
+.hh-mi-cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    margin-top: 14px;
+    padding: 11px 16px;
+    border-radius: 12px;
+    border: 1px solid rgba(214, 178, 116, 0.44);
+    background: rgba(214, 178, 116, 0.12);
+    color: var(--hh-gold-soft);
+    font-size: 0.86rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+.hh-mi-cta:hover,
+.hh-mi-cta:focus-visible {
+    background: rgba(214, 178, 116, 0.2);
+    border-color: var(--hh-gold);
+}
+.hh-mi-done-note {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-top: 14px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--hh-gold-soft);
+}
+.hh-mi-card.is-complete .hh-mi-crest {
+    border-color: rgba(214, 178, 116, 0.55);
+    background: rgba(214, 178, 116, 0.2);
+}
+@media (prefers-reduced-motion: reduce) {
+    .hh-mi-fill,
+    .hh-mi-goal i {
+        transition: none;
+    }
+}
+
+/* --- Celebracao da missao --------------------------------- */
+
+.hh-mi-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 70;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding: var(--hh-gutter);
+    padding-bottom: calc(var(--hh-gutter) + var(--hh-safe-bottom));
+    background: rgba(4, 11, 22, 0.72);
+    backdrop-filter: blur(3px);
+}
+.hh-mi-modal.hidden {
+    display: none;
+}
+.hh-mi-sheet {
+    width: 100%;
+    max-width: 420px;
+    padding: 24px 20px 18px;
+    border-radius: 20px;
+    border: 1px solid rgba(214, 178, 116, 0.3);
+    background: linear-gradient(170deg, rgba(23, 50, 90, 0.96), rgba(12, 28, 51, 0.99));
+    box-shadow: 0 22px 46px rgba(3, 9, 19, 0.6);
+    /* Uma transicao curta, nao uma festa (ponto 26) */
+    opacity: 0;
+    transform: translateY(14px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.hh-mi-sheet.is-in {
+    opacity: 1;
+    transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+    .hh-mi-sheet {
+        opacity: 1;
+        transform: none;
+        transition: none;
+    }
+}
+.hh-mi-cel {
+    text-align: center;
+}
+.hh-mi-cel-crest {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+    margin-bottom: 14px;
+    border-radius: 50%;
+    border: 1px solid rgba(214, 178, 116, 0.5);
+    background: rgba(214, 178, 116, 0.16);
+    color: var(--hh-gold-soft);
+    font-size: 1.36rem;
+}
+.hh-mi-cel-kicker {
+    font-size: 0.64rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--hh-gold);
+}
+.hh-mi-cel-name {
+    margin-top: 7px;
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 1.32rem;
+    line-height: 1.2;
+    color: var(--hh-cream);
+}
+.hh-mi-cel-zone {
+    margin-top: 3px;
+    font-size: 0.8rem;
+    color: var(--hh-muted);
+}
+.hh-mi-cel-goals {
+    margin-top: 12px;
+    font-size: 0.84rem;
+    color: var(--hh-muted);
+    font-variant-numeric: tabular-nums;
+}
+.hh-mi-cel-xp {
+    margin-top: 6px;
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 1.7rem;
+    line-height: 1;
+    color: var(--hh-gold-soft);
+    font-variant-numeric: tabular-nums;
+}
+.hh-mi-cel-note {
+    max-width: 32ch;
+    margin: 12px auto 0;
+    font-size: 0.85rem;
+    line-height: 1.55;
+    color: var(--hh-cream);
+    opacity: 0.86;
+}
+.hh-mi-foot {
+    margin-top: 4px;
+}
+
+/* ==========================================================
+   Loop de descoberta — tema claro
+   (so as cores mudam; a estrutura acima serve os dois)
+   ========================================================== */
+
+html:not(.dark) .hh-eng-next-shot {
+    background: rgba(18, 41, 74, 0.05);
+}
+html:not(.dark) .hh-eng-next.is-compact,
+html:not(.dark) .hh-eng-almost,
+html:not(.dark) .hh-eng-zone,
+html:not(.dark) .hh-eng-done-stat {
+    background: rgba(18, 41, 74, 0.035);
+}
+html:not(.dark) .hh-eng-next.is-major {
+    background:
+        radial-gradient(120% 120% at 0% 0%, rgba(168, 129, 63, 0.12), transparent 62%),
+        rgba(18, 41, 74, 0.03);
+    border-color: rgba(168, 129, 63, 0.42);
+}
+html:not(.dark) .hh-eng-next-btn,
+html:not(.dark) .hh-mi-cta {
+    border-color: rgba(168, 129, 63, 0.42);
+    background: rgba(168, 129, 63, 0.08);
+    color: #7A5C25;
+}
+html:not(.dark) .hh-eng-next-btn:hover,
+html:not(.dark) .hh-eng-next-btn:focus-visible,
+html:not(.dark) .hh-mi-cta:hover,
+html:not(.dark) .hh-mi-cta:focus-visible {
+    background: rgba(168, 129, 63, 0.16);
+    border-color: var(--hh-gold);
+}
+html:not(.dark) .hh-eng-next-distance,
+html:not(.dark) .hh-eng-zone-count,
+html:not(.dark) .hh-eng-done-title,
+html:not(.dark) .hh-mi-count,
+html:not(.dark) .hh-mi-done-note,
+html:not(.dark) .hh-dc-story-lead,
+html:not(.dark) .hh-dc-story-btn,
+html:not(.dark) .hh-mi-cel-xp {
+    color: #7A5C25;
+}
+html:not(.dark) .hh-eng-almost.is-major,
+html:not(.dark) .hh-eng-zone.is-complete {
+    background: rgba(168, 129, 63, 0.1);
+    border-color: rgba(168, 129, 63, 0.4);
+}
+html:not(.dark) .hh-eng-zone-track,
+html:not(.dark) .hh-mi-track {
+    background: rgba(18, 41, 74, 0.14);
+}
+html:not(.dark) .hh-eng-zone-fill,
+html:not(.dark) .hh-mi-fill {
+    background: linear-gradient(90deg, #A8813F, #C79A58);
+}
+html:not(.dark) .hh-eng-first-crest,
+html:not(.dark) .hh-eng-done-crest,
+html:not(.dark) .hh-mi-crest,
+html:not(.dark) .hh-mi-cel-crest,
+html:not(.dark) .hh-eng-next-icon {
+    border-color: rgba(168, 129, 63, 0.4);
+    background: rgba(168, 129, 63, 0.1);
+    color: #7A5C25;
+}
+html:not(.dark) .hh-dc-story {
+    background:
+        radial-gradient(130% 130% at 100% 0%, rgba(168, 129, 63, 0.1), transparent 60%),
+        rgba(18, 41, 74, 0.03);
+    border-color: rgba(168, 129, 63, 0.3);
+}
+html:not(.dark) .hh-mi-modal {
+    background: rgba(24, 40, 66, 0.5);
+}
+html:not(.dark) .hh-mi-sheet {
+    border-color: rgba(168, 129, 63, 0.28);
+    background: linear-gradient(170deg, #FFFFFF, #FAF5EA);
+    box-shadow: 0 20px 44px rgba(24, 40, 66, 0.2);
+}
+
+/* ==========================================================
+   Loop de descoberta — ecras estreitos
+   (320 / 360 / 390 / 430 px)
+   ========================================================== */
+
+@media (max-width: 380px) {
+    .hh-eng-next-shot {
+        width: 68px;
+        height: 68px;
+    }
+    .hh-eng-next-name {
+        font-size: 0.98rem;
+    }
+    .hh-eng-next.is-major .hh-eng-next-name {
+        font-size: 1.08rem;
+    }
+    .hh-eng-done-count {
+        font-size: 1.62rem;
+    }
+    .hh-eng-done-stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .hh-mi-cel-name {
+        font-size: 1.18rem;
+    }
+}
+
+@media (max-width: 330px) {
+    /* A 320 px a fotografia encolhe em vez de apertar o nome */
+    .hh-eng-next-body {
+        gap: 11px;
+    }
+    .hh-eng-next-shot {
+        width: 58px;
+        height: 58px;
+    }
+    .hh-eng-next.is-compact {
+        grid-template-columns: 1fr;
+    }
+    .hh-eng-next.is-compact .hh-eng-next-icon {
+        display: none;
+    }
+    .hh-eng-zone-head {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
+    }
+    .hh-mi-goal {
+        font-size: 0.8rem;
+    }
+}
+
+/* ==========================================================
+   Heritage — mapa de exploracao
+   (map-ui.js: marcadores, zonas, linha da Jornada, folha)
+
+   A identidade NAO vem das tiles — vem do que se desenha por
+   cima delas (ponto 40). Os mesmos navy, dourado e neutros do
+   resto da app.
+   ========================================================== */
+
+/* --- Marcadores (pontos 1 a 7) ---------------------------- */
+
+.heritage-marker {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+}
+.heritage-marker__body {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    font-size: 12px;
+    transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+
+/* Por descobrir: presente, mas discreto. "Ha algo aqui." */
+.heritage-marker--undiscovered .heritage-marker__body {
+    color: #C3D2E6;
+    background: rgba(16, 33, 58, 0.88);
+    border: 1.5px solid rgba(195, 210, 230, 0.45);
+    box-shadow: 0 3px 10px rgba(3, 10, 20, 0.5);
+}
+
+/* Descoberto: dourado E visto — nunca so a cor (ponto 48) */
+.heritage-marker--discovered .heritage-marker__body {
+    color: #12294A;
+    background: linear-gradient(160deg, #E7CE9A, #C9A263);
+    border: 1.5px solid rgba(255, 255, 255, 0.55);
+    box-shadow: 0 4px 12px rgba(3, 10, 20, 0.55);
+}
+
+/* Proxima descoberta: o unico com anel, e o maior (ponto 4) */
+.heritage-marker--next .heritage-marker__body {
+    width: 38px;
+    height: 38px;
+    font-size: 15px;
+    color: #12294A;
+    background: linear-gradient(160deg, #F0DCAE, #D6B274);
+    border: 2px solid #FFFFFF;
+    box-shadow: 0 6px 18px rgba(3, 10, 20, 0.6);
+}
+.heritage-marker__ring {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 2px solid rgba(214, 178, 116, 0.75);
+    /* Pulse subtil: nao pisca e nao salta (ponto 4) */
+    animation: hhMarkerPulse 2.4s ease-out infinite;
+}
+@keyframes hhMarkerPulse {
+    0%   { transform: scale(0.82); opacity: 0.85; }
+    70%  { transform: scale(1.25); opacity: 0; }
+    100% { transform: scale(1.25); opacity: 0; }
+}
+
+.heritage-marker:hover .heritage-marker__body,
+.heritage-marker.is-selected .heritage-marker__body {
+    transform: scale(1.14);
+}
+.heritage-marker.is-selected .heritage-marker__body {
+    box-shadow: 0 0 0 3px rgba(214, 178, 116, 0.45), 0 6px 16px rgba(3, 10, 20, 0.6);
+}
+
+/* Foco visivel para quem navega por teclado (ponto 48) */
+.leaflet-marker-icon:focus-visible .heritage-marker__body {
+    outline: 3px solid #E7CE9A;
+    outline-offset: 3px;
+}
+
+/* --- Localizacao do utilizador (ponto 5) ------------------ */
+
+.heritage-marker--user {
+    cursor: default;
+}
+.heritage-marker__dot {
+    position: relative;
+    z-index: 2;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #5FA0F5;
+    border: 2.5px solid #FFFFFF;
+    box-shadow: 0 2px 8px rgba(3, 10, 20, 0.55);
+}
+.heritage-marker__halo {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: rgba(95, 160, 245, 0.28);
+    animation: hhUserPulse 2.8s ease-out infinite;
+}
+@keyframes hhUserPulse {
+    0%   { transform: scale(0.6); opacity: 0.8; }
+    70%  { transform: scale(1.5); opacity: 0; }
+    100% { transform: scale(1.5); opacity: 0; }
+}
+.heritage-user-radius {
+    fill: rgba(95, 160, 245, 0.1);
+    stroke: rgba(95, 160, 245, 0.5);
+    stroke-width: 1.5;
+    stroke-dasharray: 4 6;
+}
+
+/* --- Revelacao apos descoberta (pontos 28 e 29) ----------- */
+
+.heritage-marker.is-revealing .heritage-marker__body {
+    animation: hhMarkerReveal 0.76s cubic-bezier(0.34, 1.4, 0.5, 1) both;
+}
+@keyframes hhMarkerReveal {
+    0%   { transform: scale(1); }
+    38%  { transform: scale(1.55); box-shadow: 0 0 0 10px rgba(214, 178, 116, 0.28); }
+    70%  { transform: scale(0.94); box-shadow: 0 0 0 16px rgba(214, 178, 116, 0); }
+    100% { transform: scale(1); }
+}
+
+/* Movimento reduzido: o estado chega na mesma, sem animacao */
+@media (prefers-reduced-motion: reduce) {
+    .heritage-marker__ring,
+    .heritage-marker__halo {
+        animation: none;
+        opacity: 0.55;
+    }
+    .heritage-marker.is-revealing .heritage-marker__body,
+    .heritage-marker__body {
+        animation: none;
+        transition: none;
+    }
+}
+
+/* --- Rotulo dos marcadores -------------------------------- */
+
+.heritage-tip {
+    padding: 5px 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #E9F0F9;
+    background: rgba(12, 26, 46, 0.94);
+    border: 1px solid rgba(233, 240, 249, 0.16);
+    box-shadow: 0 6px 16px rgba(3, 10, 20, 0.5);
+}
+.heritage-tip::before {
+    border-top-color: rgba(12, 26, 46, 0.94);
+}
+
+/* --- Zonas (pontos 24 e 26) ------------------------------- */
+
+.heritage-zone-label {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+    padding: 4px 10px;
+    border-radius: 9px;
+    white-space: nowrap;
+    cursor: pointer;
+    color: #C3D2E6;
+    background: rgba(10, 23, 41, 0.62);
+    border: 1px solid rgba(195, 210, 230, 0.22);
+    backdrop-filter: blur(3px);
+}
+.heritage-zone-label b {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 700;
+}
+.heritage-zone-label span {
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+    opacity: 0.9;
+}
+.heritage-zone-label.is-complete {
+    color: #F0DCAE;
+    background: rgba(28, 40, 32, 0.68);
+    border-color: rgba(214, 178, 116, 0.5);
+}
+
+/* --- Bottom sheet do lugar (pontos 13 a 17) --------------- */
+
+.hh-sheet {
+    position: absolute;
+    inset: 0;
+    z-index: 950;
+    display: flex;
+    align-items: flex-end;
+    /* O mapa continua visivel e manipulavel por tras (ponto 13) */
+    background: transparent;
+    pointer-events: none;
+}
+.hh-sheet.hidden {
+    display: none;
+}
+.hh-sheet__panel {
+    pointer-events: auto;
+    position: relative;
+    width: 100%;
+    max-height: 82%;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 10px 16px calc(16px + var(--hh-safe-bottom));
+    border-radius: 18px 18px 0 0;
+    background: rgba(11, 24, 43, 0.97);
+    border-top: 1px solid rgba(214, 178, 116, 0.34);
+    box-shadow: 0 -12px 34px rgba(3, 10, 20, 0.62);
+    backdrop-filter: blur(10px);
+    transform: translateY(100%);
+    transition: transform 0.24s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.hh-sheet.is-open .hh-sheet__panel {
+    transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+    .hh-sheet__panel {
+        transition: none;
+    }
+}
+.hh-sheet__grip {
+    display: block;
+    width: 38px;
+    height: 4px;
+    margin: 0 auto 12px;
+    border-radius: 999px;
+    background: rgba(195, 210, 230, 0.34);
+}
+.hh-sheet__close {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    /* O botao chega para fechar: o arrastar nunca e a unica via
+       (ponto 17) */
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    border: 1px solid rgba(233, 240, 249, 0.16);
+    background: rgba(10, 23, 41, 0.75);
+    color: #C3D2E6;
+    font-size: 15px;
+    cursor: pointer;
+}
+.hh-sheet__close:hover,
+.hh-sheet__close:focus-visible {
+    background: rgba(214, 178, 116, 0.22);
+    color: #F0DCAE;
+}
+.hh-sheet__shot {
+    position: relative;
+    width: 100%;
+    height: 128px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(233, 240, 249, 0.14);
+}
+.hh-sheet__shot img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+/* Por descobrir: um veu, nunca o nome escondido (ponto 16) */
+.hh-sheet__shot.is-veiled img {
+    filter: grayscale(0.7) brightness(0.55) blur(1.5px);
+}
+.hh-sheet__veil {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+    color: rgba(240, 220, 174, 0.8);
+}
+.hh-sheet__name {
+    margin-top: 12px;
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 19px;
+    line-height: 1.22;
+    color: #F2F6FC;
+}
+.hh-sheet__meta {
+    margin-top: 3px;
+    font-size: 12px;
+    color: #9DB0C8;
+}
+.hh-sheet__status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 10px;
+    padding: 5px 11px;
+    border-radius: 999px;
+    font-size: 11.5px;
+    font-weight: 600;
+}
+.hh-sheet__status.is-found {
+    color: #12294A;
+    background: linear-gradient(160deg, #E7CE9A, #C9A263);
+}
+.hh-sheet__status.is-todo {
+    color: #C3D2E6;
+    background: rgba(195, 210, 230, 0.12);
+    border: 1px solid rgba(195, 210, 230, 0.26);
+}
+.hh-sheet__desc {
+    margin-top: 10px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: #D6E1F0;
+}
+.hh-sheet__approx {
+    margin-top: 8px;
+    font-size: 11px;
+    line-height: 1.4;
+    color: #8296B0;
+    font-style: italic;
+}
+.hh-sheet__track {
+    height: 7px;
+    margin-top: 10px;
+    border-radius: 999px;
+    background: rgba(157, 176, 200, 0.22);
+    overflow: hidden;
+}
+.hh-sheet__track span {
+    display: block;
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #C9A263, #E7CE9A);
+    transition: width 0.7s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.hh-sheet__cta {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    min-height: 46px;
+    margin-top: 14px;
+    padding: 0 16px;
+    border-radius: 12px;
+    border: 1px solid rgba(214, 178, 116, 0.5);
+    background: rgba(214, 178, 116, 0.16);
+    color: #F0DCAE;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+.hh-sheet__cta:hover,
+.hh-sheet__cta:focus-visible {
+    background: rgba(214, 178, 116, 0.3);
+}
+
+/* --- Contador de progresso no cabecalho (ponto 37) -------- */
+
+.hh-map-count {
+    flex: 0 0 auto;
+    align-self: center;
+    padding: 4px 11px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #F0DCAE;
+    background: rgba(214, 178, 116, 0.14);
+    border: 1px solid rgba(214, 178, 116, 0.38);
+    font-variant-numeric: tabular-nums;
+}
+.hh-map-count:empty {
+    display: none;
+}
+.hh-legend-next i {
+    color: #E7CE9A;
+}
+
+/* ==========================================================
+   Mapa — ecra inteiro
+   ========================================================== */
+
+/* A folha sobe acima da barra do sistema, e a atribuicao do OSM
+   continua a ver-se (pontos 38 e 39). */
+.hh-map-card.is-fullscreen .hh-locate {
+    bottom: auto;
+    top: calc(74px + var(--hh-safe-top));
+}
+.hh-map-card.is-fullscreen .hh-sheet__panel {
+    max-height: 72%;
+}
+
+/* ==========================================================
+   Mapa — tema claro
+   ========================================================== */
+
+html:not(.dark) .heritage-marker--undiscovered .heritage-marker__body {
+    color: #33496B;
+    background: rgba(255, 255, 255, 0.96);
+    border-color: rgba(51, 73, 107, 0.34);
+}
+html:not(.dark) .heritage-zone-label {
+    color: #33496B;
+    background: rgba(255, 255, 255, 0.86);
+    border-color: rgba(51, 73, 107, 0.2);
+}
+html:not(.dark) .heritage-zone-label.is-complete {
+    color: #7A5C25;
+    background: rgba(255, 250, 240, 0.92);
+    border-color: rgba(168, 129, 63, 0.48);
+}
+html:not(.dark) .heritage-tip {
+    color: #12294A;
+    background: rgba(255, 255, 255, 0.96);
+    border-color: rgba(18, 41, 74, 0.14);
+}
+html:not(.dark) .heritage-tip::before {
+    border-top-color: rgba(255, 255, 255, 0.96);
+}
+html:not(.dark) .hh-sheet__name {
+    color: #12294A;
+}
+html:not(.dark) .hh-sheet__cta,
+html:not(.dark) .hh-map-count {
+    color: #7A5C25;
+}
+html:not(.dark) .hh-sheet__desc {
+    color: #3C5070;
+}
+html:not(.dark) .hh-sheet__meta {
+    color: #5D6E86;
+}
+html:not(.dark) .hh-sheet__cta {
+    background: rgba(168, 129, 63, 0.12);
+    border-color: rgba(168, 129, 63, 0.42);
+}
+html:not(.dark) .hh-sheet__panel {
+    background: rgba(255, 253, 248, 0.98);
+    border-top-color: rgba(168, 129, 63, 0.32);
+    box-shadow: 0 -12px 34px rgba(24, 40, 66, 0.2);
+}
+html:not(.dark) .hh-sheet__close {
+    background: rgba(255, 255, 255, 0.9);
+    border-color: rgba(18, 41, 74, 0.14);
+    color: #33496B;
+}
+html:not(.dark) .hh-sheet__status.is-todo {
+    color: #3C5070;
+    background: rgba(18, 41, 74, 0.06);
+    border-color: rgba(18, 41, 74, 0.18);
+}
+html:not(.dark) .hh-sheet__grip {
+    background: rgba(18, 41, 74, 0.2);
+}
+html:not(.dark) .hh-sheet__track {
+    background: rgba(18, 41, 74, 0.14);
+}
+html:not(.dark) .hh-map-count {
+    background: rgba(168, 129, 63, 0.1);
+    border-color: rgba(168, 129, 63, 0.36);
+}
+
+/* ==========================================================
+   Mapa — ecras estreitos (320 / 360 / 390 / 430 px)
+   ========================================================== */
+
+@media (max-width: 380px) {
+    .hh-sheet__shot {
+        height: 108px;
+    }
+    .hh-map-count {
+        font-size: 12px;
+        padding: 3px 9px;
+    }
+}
+
+@media (max-width: 330px) {
+    .hh-sheet__panel {
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+}
+
+/* Em paisagem o mapa tem pouca altura: a folha nao pode comer o
+   ecra todo, ou deixa de se ver o que se seleccionou. */
+@media (orientation: landscape) and (max-height: 500px) {
+    .hh-map-card.is-fullscreen .hh-sheet__panel {
+        max-height: 88%;
+    }
+    .hh-sheet__shot {
+        height: 84px;
+    }
+}
+
+/* ==========================================================
+   Scanner em ecra inteiro
+
+   A camara e a mesma; o que muda e a caixa a volta dela. Tudo o
+   que so existe em ecra inteiro (marca, pilula, zoom, cartao do
+   simbolo) nasce escondido e so aparece dentro de
+   `.hh-scan-card.is-fullscreen` — assim o cartao normal continua
+   exactamente como estava.
+   ========================================================== */
+
+/* --- Botao de expandir / fechar, e o canto que ele partilha --- */
+.hh-cam-tools {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+/* A lanterna deixa de se posicionar sozinha: agora vive na linha */
+.hh-cam-tools .hh-torch {
+    position: static;
+    top: auto;
+    right: auto;
+}
+.hh-cam-fs-btn {
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    font-size: 16px;
+    border-radius: 50%;
+    color: #F2F6FC;
+    background: rgba(12, 22, 38, 0.6);
+    border: 1px solid rgba(233, 240, 249, 0.28);
+    backdrop-filter: blur(8px);
+    transition: background 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+}
+.hh-cam-fs-btn:hover {
+    background: rgba(214, 178, 116, 0.9);
+    border-color: var(--hh-gold-soft);
+    color: #13294A;
+}
+.hh-cam-fs-btn:focus-visible {
+    outline: 2px solid var(--hh-gold-soft);
+    outline-offset: 2px;
+}
+
+/* --- O que so existe em ecra inteiro --- */
+.hh-cam-brand,
+.hh-cam-pill,
+.hh-cam-zoom,
+.hh-cam-tip {
+    display: none;
+}
+
+/* ==========================================================
+   Estado de ecra inteiro
+   ========================================================== */
+
+body.cam-fullscreen-open {
+    overflow: hidden;
+}
+
+.hh-scan-card.is-fullscreen {
+    position: fixed;
+    inset: 0;
+    /* O mesmo patamar do mapa: acima da navegacao (40) e abaixo da
+       celebracao da descoberta, que tem de abrir POR CIMA. */
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100vh;
+    height: 100dvh;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: #06101E;
+    animation: hhCamFsIn 0.22s ease;
+}
+@keyframes hhCamFsIn {
+    from { opacity: 0.55; }
+    to   { opacity: 1; }
+}
+
+/* O titulo do cartao sai: em ecra inteiro a marca esta ao centro */
+.hh-scan-card.is-fullscreen .hh-discover-head {
+    display: none;
+}
+
+/* A camara passa a ser o ecra */
+.hh-scan-card.is-fullscreen .hh-cam {
+    flex: 1 1 auto;
+    min-height: 0;
+    width: 100%;
+    height: auto;
+    max-height: none;
+    aspect-ratio: auto;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+/* O rodape com a dica e o botao dourado nao faz falta: a camara ja
+   esta a ler, e a dica vive na pilula. */
+.hh-scan-card.is-fullscreen .hh-cam-foot {
+    display: none;
+}
+
+/* Sem o rodape, os cantos usam a altura toda */
+.hh-scan-card.is-fullscreen .hh-brackets {
+    inset: 0;
+}
+
+/* --- Marca ao centro, em cima --- */
+.hh-scan-card.is-fullscreen .hh-cam-brand {
+    display: block;
+    position: absolute;
+    top: calc(14px + var(--hh-safe-top));
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 18;
+    width: max-content;
+    max-width: 62%;
+    text-align: center;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.7);
+    pointer-events: none;
+}
+.hh-cam-brand-crest {
+    font-size: 26px;
+    color: var(--hh-gold-soft);
+}
+.hh-cam-brand-name {
+    margin-top: 4px;
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: clamp(17px, 5vw, 21px);
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #F6FAFF;
+}
+.hh-cam-brand-motto {
+    margin-top: 3px;
+    font-size: clamp(9.5px, 2.9vw, 11px);
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--hh-gold-soft);
+}
+
+/* --- X e lanterna: circulos, como no desenho --- */
+.hh-scan-card.is-fullscreen .hh-cam-close {
+    top: calc(16px + var(--hh-safe-top));
+    left: 16px;
+    width: 52px;
+    height: 52px;
+    font-size: 20px;
+    /* Neutro: em ecra inteiro o X fecha o scanner, nao apaga nada */
+    color: #F6FAFF;
+    background: rgba(8, 16, 28, 0.82);
+    border-color: rgba(233, 240, 249, 0.22);
+}
+.hh-scan-card.is-fullscreen .hh-cam-close:hover {
+    background: rgba(8, 16, 28, 0.95);
+    color: #fff;
+}
+.hh-scan-card.is-fullscreen .hh-cam-tools {
+    top: calc(16px + var(--hh-safe-top));
+    right: 16px;
+}
+.hh-scan-card.is-fullscreen .hh-torch {
+    width: 52px;
+    height: 52px;
+    padding: 0;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(8, 16, 28, 0.82);
+    border: 1px solid var(--hh-gold-soft);
+    color: var(--hh-gold-soft);
+}
+.hh-scan-card.is-fullscreen .hh-torch svg {
+    width: 21px;
+    height: 21px;
+}
+/* O rotulo sai: ao lado do X, um circulo com um raio ja se explica */
+.hh-scan-card.is-fullscreen .hh-torch span {
+    display: none;
+}
+.hh-scan-card.is-fullscreen .hh-torch.hh-torch-on {
+    background: var(--hh-gold-soft);
+    color: #13294A;
+}
+/* O proprio botao de expandir sai de cena: aqui o X e a saida */
+.hh-scan-card.is-fullscreen .hh-cam-fs-btn {
+    display: none;
+}
+
+/* --- Dica em pilula --- */
+.hh-scan-card.is-fullscreen .hh-cam-pill {
+    display: flex;
+    position: absolute;
+    top: calc(104px + var(--hh-safe-top));
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 16;
+    align-items: center;
+    gap: 14px;
+    width: max-content;
+    max-width: min(88%, 420px);
+    padding: 13px 18px 13px 14px;
+    border-radius: 18px;
+    background: rgba(8, 16, 28, 0.82);
+    border: 1px solid rgba(233, 240, 249, 0.12);
+    backdrop-filter: blur(8px);
+    pointer-events: none;
+}
+.hh-cam-pill-icon {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    font-size: 22px;
+    border-radius: 11px;
+    color: #F6FAFF;
+    background: rgba(246, 250, 255, 0.08);
+}
+.hh-scan-card.is-fullscreen .hh-cam-pill p {
+    font-size: clamp(13.5px, 4vw, 15.5px);
+    line-height: 1.35;
+    color: #F0F6FC;
+}
+
+/* --- Cantos dourados, maiores e centrados --- */
+.hh-scan-card.is-fullscreen .hh-bracket {
+    width: clamp(52px, 17vw, 76px);
+    height: clamp(52px, 17vw, 76px);
+    border-width: 7px;
+    border-color: var(--hh-gold-soft);
+    border-radius: 0;
+}
+.hh-scan-card.is-fullscreen .hh-bracket-tl {
+    top: 32%;
+    left: 16%;
+    border-top-left-radius: 26px;
+}
+.hh-scan-card.is-fullscreen .hh-bracket-tr {
+    top: 32%;
+    right: 16%;
+    border-top-right-radius: 26px;
+}
+.hh-scan-card.is-fullscreen .hh-bracket-bl {
+    bottom: 32%;
+    left: 16%;
+    border-bottom-left-radius: 26px;
+}
+.hh-scan-card.is-fullscreen .hh-bracket-br {
+    bottom: 32%;
+    right: 16%;
+    border-bottom-right-radius: 26px;
+}
+/* O simbolo de repouso sai: em ecra inteiro a camara esta sempre a ler */
+.hh-scan-card.is-fullscreen .hh-qr-glyph {
+    display: none;
+}
+
+/* A linha de leitura atravessa a moldura; o rotulo sai, porque a
+   pilula em cima ja diz o que fazer. */
+.hh-scan-card.is-fullscreen .scanner-overlay {
+    align-items: center;
+}
+.hh-scan-card.is-fullscreen .hh-cam .scanner-frame {
+    width: min(68vw, 300px);
+    margin-bottom: 0;
+}
+.hh-scan-card.is-fullscreen .hh-scanning-label {
+    display: none;
+}
+
+/* --- Zoom (so quando a camara o suporta) --- */
+.hh-scan-card.is-fullscreen .hh-cam-zoom:not(.hidden) {
+    display: flex;
+    position: absolute;
+    left: 50%;
+    bottom: calc(168px + var(--hh-safe-bottom));
+    transform: translateX(-50%);
+    z-index: 16;
+    align-items: center;
+    gap: 6px;
+    padding: 5px;
+    border-radius: 999px;
+    background: rgba(8, 16, 28, 0.82);
+    border: 1px solid rgba(233, 240, 249, 0.12);
+    backdrop-filter: blur(8px);
+}
+.hh-cam-zoom-step {
+    min-width: 46px;
+    height: 44px;
+    padding: 0 12px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: #E6EEF9;
+    background: transparent;
+    border: 1px solid transparent;
+    transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+.hh-cam-zoom-step.is-on {
+    color: var(--hh-gold-soft);
+    border-color: var(--hh-gold-soft);
+    background: rgba(214, 178, 116, 0.12);
+}
+.hh-cam-zoom-step:focus-visible {
+    outline: 2px solid var(--hh-gold-soft);
+    outline-offset: 2px;
+}
+
+/* --- Cartao do simbolo a procurar --- */
+.hh-scan-card.is-fullscreen .hh-cam-tip {
+    display: block;
+    position: absolute;
+    left: 14px;
+    right: 14px;
+    bottom: calc(14px + var(--hh-safe-bottom));
+    z-index: 16;
+    padding: 10px 14px 16px;
+    border-radius: 20px;
+    background: rgba(8, 16, 28, 0.9);
+    border: 1px solid rgba(233, 240, 249, 0.12);
+    box-shadow: 0 14px 34px rgba(2, 8, 16, 0.6);
+    backdrop-filter: blur(10px);
+}
+.hh-cam-tip-grip {
+    display: block;
+    width: 42px;
+    height: 4px;
+    margin: 0 auto 12px;
+    border-radius: 999px;
+    background: rgba(233, 240, 249, 0.3);
+}
+.hh-cam-tip-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+/* A chapa: o simbolo desenhado, nao uma fotografia que nao existe */
+.hh-cam-tip-plaque {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    width: 76px;
+    height: 76px;
+    border-radius: 12px;
+    color: #2A2113;
+    background: linear-gradient(150deg, #F3E7CF 0%, #DCC79E 55%, #C9B287 100%);
+    border: 2px solid rgba(120, 96, 56, 0.45);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+.hh-cam-tip-plaque i {
+    font-size: 32px;
+}
+.hh-cam-tip-plaque-name {
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 7.5px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+.hh-cam-tip-text {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+.hh-cam-tip-title {
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: clamp(16px, 4.8vw, 19px);
+    font-weight: 700;
+    color: var(--hh-gold-soft);
+}
+.hh-cam-tip-note {
+    margin-top: 3px;
+    font-size: clamp(12.5px, 3.8vw, 14px);
+    line-height: 1.4;
+    color: rgba(240, 246, 252, 0.86);
+}
+.hh-cam-tip-btn {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    font-size: 16px;
+    color: #F0F6FC;
+    background: rgba(246, 250, 255, 0.08);
+    border: 1px solid rgba(233, 240, 249, 0.16);
+    transition: background 0.2s ease, transform 0.25s ease;
+}
+.hh-cam-tip-btn:hover {
+    background: rgba(246, 250, 255, 0.16);
+}
+.hh-cam-tip-btn:focus-visible {
+    outline: 2px solid var(--hh-gold-soft);
+    outline-offset: 2px;
+}
+
+/* Recolhido: fica o titulo e o botao. A chapa e a explicacao saem,
+   porque quem ja sabe o que procurar quer e ver a camara. */
+.hh-cam-tip.is-collapsed {
+    padding-bottom: 10px;
+}
+.hh-cam-tip.is-collapsed .hh-cam-tip-plaque,
+.hh-cam-tip.is-collapsed .hh-cam-tip-note {
+    display: none;
+}
+.hh-cam-tip.is-collapsed .hh-cam-tip-btn i {
+    transform: rotate(180deg);
+}
+.hh-cam-tip-btn i {
+    transition: transform 0.25s ease;
+}
+
+/* Com o cartao recolhido o zoom desce para o lugar que sobrou */
+.hh-scan-card.is-fullscreen:has(.hh-cam-tip.is-collapsed) .hh-cam-zoom:not(.hidden) {
+    bottom: calc(104px + var(--hh-safe-bottom));
+}
+
+/* --- Ecras baixos e paisagem --- */
+@media (max-height: 700px) {
+    .hh-scan-card.is-fullscreen .hh-cam-pill {
+        top: calc(96px + var(--hh-safe-top));
+        padding: 10px 15px 10px 12px;
+    }
+    .hh-scan-card.is-fullscreen .hh-bracket {
+        width: clamp(46px, 14vw, 62px);
+        height: clamp(46px, 14vw, 62px);
+    }
+}
+
+/* Em paisagem a altura e pouca: a marca e a pilula sairiam por cima
+   da moldura de leitura, e o cartao do simbolo comia o ecra. */
+@media (orientation: landscape) and (max-height: 500px) {
+    .hh-scan-card.is-fullscreen .hh-cam-brand,
+    .hh-scan-card.is-fullscreen .hh-cam-pill {
+        display: none;
+    }
+    .hh-scan-card.is-fullscreen .hh-bracket-tl,
+    .hh-scan-card.is-fullscreen .hh-bracket-tr {
+        top: 18%;
+    }
+    .hh-scan-card.is-fullscreen .hh-bracket-bl,
+    .hh-scan-card.is-fullscreen .hh-bracket-br {
+        bottom: 18%;
+    }
+    .hh-scan-card.is-fullscreen .hh-cam-tip {
+        left: auto;
+        right: 14px;
+        width: min(330px, 46%);
+    }
+    .hh-scan-card.is-fullscreen .hh-cam-zoom:not(.hidden) {
+        left: 26%;
+        bottom: calc(16px + var(--hh-safe-bottom));
+    }
+}
+
+/* --- Movimento reduzido: sem varrimento nem fade de entrada --- */
+@media (prefers-reduced-motion: reduce) {
+    .hh-scan-card.is-fullscreen {
+        animation: none;
+    }
+    .hh-scan-card.is-fullscreen .scanner-line {
+        animation: none;
+    }
+    .hh-cam-tip-btn i {
+        transition: none;
+    }
+}

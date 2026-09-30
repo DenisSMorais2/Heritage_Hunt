@@ -47,6 +47,14 @@ const translations = {
         "heritageQuote": "Cada monumento conta uma história.<br>Continue explorando!",
         "starting": "Iniciando...",
         "scanning": "Escaneando...",
+        "scanBrandMotto": "Explora. Descobre. Preserva.",
+        "scanFullscreenOpen": "Abrir scanner em ecrã inteiro",
+        "scanFullscreenClose": "Fechar ecrã inteiro",
+        "scanFindSymbol": "Encontre este símbolo",
+        "scanFindSymbolNote": "Nos monumentos do Heritage Hunt irá encontrar este QR code.",
+        "scanTipCollapse": "Recolher a dica",
+        "scanTipExpand": "Mostrar a dica",
+        "scanZoomLabel": "Aproximação da câmara",
         "yourProgress": "Seu Progresso",
         "level": "Nível",
         "monumentsLabel": "Monumentos",
@@ -284,6 +292,133 @@ const translations = {
         "discovery.tone.threeQuarters": "Estás cada vez mais perto de conhecer todo o percurso.",
         "discovery.tone.onward": "Mais uma história faz parte da tua jornada.",
         "discovery.tone.complete": "A próxima história já não é um lugar: é tudo o que guardaste.",
+
+        "engagement.nextDiscovery": "Próxima descoberta",
+        "engagement.firstDiscovery": "A tua primeira descoberta",
+        "engagement.firstDiscoveryNote": "Explora Mindelo e encontra o teu primeiro monumento.",
+        "engagement.lastDiscovery": "Última descoberta",
+        "engagement.viewOnMap": "Ver no mapa",
+        "engagement.almostThere": "Quase lá",
+        "engagement.reason.LAST_IN_JOURNEY": "Falta apenas um lugar para completares a {journey}.",
+        "engagement.reason.FIRST": "Começa por aqui. Cada lugar guarda uma história.",
+        "engagement.reason.LAST_IN_ZONE": "{zone}: falta apenas este lugar.",
+        "engagement.reason.JOURNEY_STEP": "A próxima etapa do teu percurso.",
+        "engagement.reason.NEAREST": "O lugar por descobrir mais próximo de ti.",
+        "engagement.almost.JOURNEY_ONE_LEFT": "Falta apenas 1 lugar para completares a Jornada de Mindelo.",
+        "engagement.almost.ZONE_ONE_LEFT": "{zone}: falta apenas 1 monumento.",
+        "engagement.almost.ZONE_FEW_LEFT": "{zone}: mais {n} descobertas para completar.",
+        "engagement.almost.LEVEL_CLOSE": "Faltam {n} XP para chegares a {level}.",
+        "engagement.almost.JOURNEY_PROGRESS": "Já descobriste {done} de {total} lugares de Mindelo.",
+        "engagement.zoneProgress": "{done} de {total} descobertos",
+        "engagement.zoneComplete": "Zona concluída",
+        "engagement.storyUnlocked": "História desbloqueada",
+        "engagement.didYouKnow": "Sabias que...?",
+        "engagement.learnMore": "Saber mais",
+        "engagement.journeyCompleted": "Jornada de Mindelo concluída",
+        "engagement.guardian": "Guardião de Mindelo",
+        "engagement.completeNote": "Exploraste todos os lugares desta jornada.",
+        "engagement.explorationContinues": "A exploração continua. Novas histórias e desafios serão adicionados ao Heritage Hunt.",
+        "engagement.viewMemories": "Ver as minhas memórias",
+        "engagement.statMonuments": "monumentos",
+        "engagement.statZones": "zonas",
+        "engagement.statPhotos": "fotografias",
+        "engagement.statMemories": "memórias",
+
+        "map.nextDiscovery": "Próxima descoberta",
+        "map.explore": "Explorar",
+        "map.discovered": "Descoberto",
+        "map.undiscovered": "Ainda por descobrir",
+        "map.undiscoveredHint": "Visita este lugar e lê o QR para revelar a sua história.",
+        "map.discoveredOn": "Descoberto a {d}",
+        "map.youAreHere": "Estás aqui",
+        "map.approxDistance": "A cerca de {d}",
+        "map.viewMonument": "Ver monumento",
+        "map.openAlbum": "Abrir álbum",
+        "map.zoneProgress": "{done} de {total} descobertos",
+        "map.zoneCompleted": "Zona concluída",
+        "map.zoneApprox": "Área aproximada, a partir dos lugares desta zona.",
+        "map.viewRemaining": "Ver o que falta",
+        "map.reviewDiscoveries": "Rever descobertas",
+        "map.closeSheet": "Fechar",
+        "map.journey": "Percurso da Jornada",
+        "map.sheetLabel": "Detalhes do lugar",
+
+        "mission.thisWeek": "Esta semana",
+        "mission.weekly": "Exploração da semana",
+        "mission.progress": "{done} / {total}",
+        "mission.goalsDone": "{done} / {total} objetivos",
+        "mission.continue": "Continuar",
+        "mission.completed": "Exploração desta semana concluída.",
+        "mission.completedTitle": "Exploração da semana concluída",
+        "mission.rewardNote": "Boa exploração. Há sempre mais uma história por descobrir.",
+        "mission.keepExploring": "Continuar a explorar",
+        "mission.goal.DISCOVER_MONUMENT": "Descobre {n} monumento",
+        "mission.goal.DISCOVER_MONUMENT_MANY": "Descobre {n} monumentos",
+        "mission.goal.DISCOVER_MONUMENT_ZONE": "Descobre {n} monumento do {zone}",
+        "mission.goal.DISCOVER_MONUMENT_ZONE_MANY": "Descobre {n} monumentos do {zone}",
+        "mission.goal.ADD_PHOTO": "Guarda {n} fotografia",
+        "mission.goal.ADD_PHOTO_MANY": "Guarda {n} fotografias",
+        "mission.goal.ADD_PHOTO_ZONE": "Guarda {n} fotografia no {zone}",
+        "mission.goal.ADD_PHOTO_ZONE_MANY": "Guarda {n} fotografias no {zone}",
+        "mission.goal.WRITE_EXPERIENCE": "Escreve {n} memória",
+        "mission.goal.WRITE_EXPERIENCE_MANY": "Escreve {n} memórias",
+        "mission.goal.WRITE_EXPERIENCE_ZONE": "Escreve {n} memória no {zone}",
+        "mission.goal.WRITE_EXPERIENCE_ZONE_MANY": "Escreve {n} memórias no {zone}",
+        "mission.goal.COMPLETE_ZONE": "Completa {n} zona",
+        "mission.goal.COMPLETE_ZONE_MANY": "Completa {n} zonas",
+        "mission.goal.COMPLETE_ZONE_ZONE": "Completa o {zone}",
+        "missions": {
+            "first_steps": {
+                "name": "Primeiros passos",
+                "description": "Descobre um lugar e guarda a primeira fotografia."
+            },
+            "keep_the_story": {
+                "name": "Guarda a história",
+                "description": "Descobre um lugar e escreve o que sentiste lá."
+            },
+            "explore_mindelo": {
+                "name": "Explora Mindelo",
+                "description": "Dois lugares novos e uma fotografia para os lembrar."
+            },
+            "city_memories": {
+                "name": "Memórias da cidade",
+                "description": "Duas fotografias em lugares diferentes e uma memória escrita."
+            },
+            "historic_centre": {
+                "name": "Centro Histórico",
+                "description": "Conhece o coração da cidade e guarda essa memória."
+            },
+            "sea_front": {
+                "name": "Frente de mar",
+                "description": "O mar fez Mindelo. Descobre um lugar da frente de mar."
+            },
+            "close_a_zone": {
+                "name": "Fecha uma zona",
+                "description": "Completa todos os lugares de uma zona da cidade."
+            },
+            "album_keeper": {
+                "name": "O teu álbum",
+                "description": "Duas fotografias em lugares diferentes do teu álbum."
+            },
+            "two_memories": {
+                "name": "Duas memórias",
+                "description": "Escreve o que viveste em dois lugares que já conheces."
+            }
+        },
+        "monumentStories": {
+            "1": "Foi aqui que o governo colonial despachava a ilha inteira. Hoje o mesmo edifício serve exposições e concertos — o poder saiu, a vida ficou.",
+            "2": "O farol foi batizado em honra da rainha D. Amélia. A luz que guiava os navios transatlânticos fazia-se com um mecanismo de relojoaria a corda.",
+            "3": "O mercado é o lugar onde se ouve o crioulo mais vivo da cidade: o regateio das peixeiras é uma forma de conversa, não um conflito.",
+            "4": "A igreja foi levantada quando Mindelo mal passava de um punhado de casas em volta da baía. A cidade cresceu à volta dela, não o contrário.",
+            "5": "É uma réplica da Torre de Belém de Lisboa, construída como posto da capitania do porto. Cabo Verde respondeu ao símbolo com uma versão sua, à beira do mesmo Atlântico.",
+            "6": "A Alfândega contava a riqueza de Mindelo: tudo o que entrava na baía passava por estes balcões antes de entrar na ilha.",
+            "7": "A morna é o blues de Cabo Verde. Cesária Évora cantou-a descalça pelo mundo inteiro e foi daqui, destas ruas, que ela saiu.",
+            "8": "O coreto da Praça Nova não é enfeite: era aqui que a filarmónica tocava ao domingo, e é ainda aqui que a cidade se encontra ao fim do dia.",
+            "9": "A cerâmica e os panos de terra que aqui se veem usam técnicas que atravessaram o Atlântico e ficaram — cada padrão tem origem e nome.",
+            "10": "Mindelo tem fama de capital cultural de Cabo Verde, e é em casas como esta que essa fama se sustenta durante todo o ano, não só no Carnaval.",
+            "11": "No século XIX este porto era escala obrigatória do carvão nas rotas do Atlântico. Foi o carvão que trouxe os ingleses, e com eles o críquete e o futebol.",
+            "12": "O fortim guardava a baía num tempo em que os corsários eram um risco real. Do alto percebe-se porquê: daqui vê-se chegar qualquer coisa."
+        },
         "journeys": {
             "mindelo_historico": {
                 "name": "Jornada de Mindelo",
@@ -476,6 +611,14 @@ const translations = {
         "heritageQuote": "Every monument tells a story.<br>Keep exploring!",
         "starting": "Starting...",
         "scanning": "Scanning...",
+        "scanBrandMotto": "Explore. Discover. Preserve.",
+        "scanFullscreenOpen": "Open scanner in full screen",
+        "scanFullscreenClose": "Close full screen",
+        "scanFindSymbol": "Look for this symbol",
+        "scanFindSymbolNote": "You will find this QR code on Heritage Hunt monuments.",
+        "scanTipCollapse": "Collapse the tip",
+        "scanTipExpand": "Show the tip",
+        "scanZoomLabel": "Camera zoom",
         "yourProgress": "Your Progress",
         "level": "Level",
         "monumentsLabel": "Monuments",
@@ -713,6 +856,133 @@ const translations = {
         "discovery.tone.threeQuarters": "You are getting closer to knowing the whole route.",
         "discovery.tone.onward": "One more story is now part of your journey.",
         "discovery.tone.complete": "The next story is not a place: it is everything you kept.",
+
+        "engagement.nextDiscovery": "Next discovery",
+        "engagement.firstDiscovery": "Your first discovery",
+        "engagement.firstDiscoveryNote": "Explore Mindelo and find your first monument.",
+        "engagement.lastDiscovery": "Last discovery",
+        "engagement.viewOnMap": "View on map",
+        "engagement.almostThere": "Almost there",
+        "engagement.reason.LAST_IN_JOURNEY": "Just one place left to complete the {journey}.",
+        "engagement.reason.FIRST": "Start here. Every place keeps a story.",
+        "engagement.reason.LAST_IN_ZONE": "Just this one left to complete {zone}.",
+        "engagement.reason.JOURNEY_STEP": "The next stop on your route.",
+        "engagement.reason.NEAREST": "The closest place still to discover.",
+        "engagement.almost.JOURNEY_ONE_LEFT": "Just 1 place left to complete the Mindelo Journey.",
+        "engagement.almost.ZONE_ONE_LEFT": "Just 1 monument left to complete {zone}.",
+        "engagement.almost.ZONE_FEW_LEFT": "{n} more discoveries to complete {zone}.",
+        "engagement.almost.LEVEL_CLOSE": "{n} XP to reach {level}.",
+        "engagement.almost.JOURNEY_PROGRESS": "You have discovered {done} of {total} places in Mindelo.",
+        "engagement.zoneProgress": "{done} of {total} discovered",
+        "engagement.zoneComplete": "Area completed",
+        "engagement.storyUnlocked": "Story unlocked",
+        "engagement.didYouKnow": "Did you know...?",
+        "engagement.learnMore": "Learn more",
+        "engagement.journeyCompleted": "Mindelo Journey complete",
+        "engagement.guardian": "Guardian of Mindelo",
+        "engagement.completeNote": "You have explored every place on this journey.",
+        "engagement.explorationContinues": "The exploration continues. New stories and challenges will be added to Heritage Hunt.",
+        "engagement.viewMemories": "View my memories",
+        "engagement.statMonuments": "monuments",
+        "engagement.statZones": "areas",
+        "engagement.statPhotos": "photos",
+        "engagement.statMemories": "memories",
+
+        "map.nextDiscovery": "Next discovery",
+        "map.explore": "Explore",
+        "map.discovered": "Discovered",
+        "map.undiscovered": "Still to discover",
+        "map.undiscoveredHint": "Visit this place and scan the QR to reveal its story.",
+        "map.discoveredOn": "Discovered on {d}",
+        "map.youAreHere": "You are here",
+        "map.approxDistance": "About {d}",
+        "map.viewMonument": "View monument",
+        "map.openAlbum": "Open album",
+        "map.zoneProgress": "{done} of {total} discovered",
+        "map.zoneCompleted": "Area completed",
+        "map.zoneApprox": "Approximate area, drawn from the places in it.",
+        "map.viewRemaining": "See what is left",
+        "map.reviewDiscoveries": "Review discoveries",
+        "map.closeSheet": "Close",
+        "map.journey": "Journey route",
+        "map.sheetLabel": "Place details",
+
+        "mission.thisWeek": "This week",
+        "mission.weekly": "Exploration of the week",
+        "mission.progress": "{done} / {total}",
+        "mission.goalsDone": "{done} / {total} goals",
+        "mission.continue": "Continue",
+        "mission.completed": "This week's exploration is complete.",
+        "mission.completedTitle": "Exploration of the week complete",
+        "mission.rewardNote": "Good exploring. There is always one more story to discover.",
+        "mission.keepExploring": "Keep exploring",
+        "mission.goal.DISCOVER_MONUMENT": "Discover {n} monument",
+        "mission.goal.DISCOVER_MONUMENT_MANY": "Discover {n} monuments",
+        "mission.goal.DISCOVER_MONUMENT_ZONE": "Discover {n} monument in {zone}",
+        "mission.goal.DISCOVER_MONUMENT_ZONE_MANY": "Discover {n} monuments in {zone}",
+        "mission.goal.ADD_PHOTO": "Keep {n} photo",
+        "mission.goal.ADD_PHOTO_MANY": "Keep {n} photos",
+        "mission.goal.ADD_PHOTO_ZONE": "Keep {n} photo in {zone}",
+        "mission.goal.ADD_PHOTO_ZONE_MANY": "Keep {n} photos in {zone}",
+        "mission.goal.WRITE_EXPERIENCE": "Write {n} memory",
+        "mission.goal.WRITE_EXPERIENCE_MANY": "Write {n} memories",
+        "mission.goal.WRITE_EXPERIENCE_ZONE": "Write {n} memory in {zone}",
+        "mission.goal.WRITE_EXPERIENCE_ZONE_MANY": "Write {n} memories in {zone}",
+        "mission.goal.COMPLETE_ZONE": "Complete {n} area",
+        "mission.goal.COMPLETE_ZONE_MANY": "Complete {n} areas",
+        "mission.goal.COMPLETE_ZONE_ZONE": "Complete {zone}",
+        "missions": {
+            "first_steps": {
+                "name": "First steps",
+                "description": "Discover a place and keep your first photo."
+            },
+            "keep_the_story": {
+                "name": "Keep the story",
+                "description": "Discover a place and write what you felt there."
+            },
+            "explore_mindelo": {
+                "name": "Explore Mindelo",
+                "description": "Two new places, and a photo to remember them."
+            },
+            "city_memories": {
+                "name": "City memories",
+                "description": "Two photos in different places and one written memory."
+            },
+            "historic_centre": {
+                "name": "Historic Centre",
+                "description": "Get to know the heart of the city and keep that memory."
+            },
+            "sea_front": {
+                "name": "Sea front",
+                "description": "The sea made Mindelo. Discover a place on the waterfront."
+            },
+            "close_a_zone": {
+                "name": "Close an area",
+                "description": "Complete every place in one area of the city."
+            },
+            "album_keeper": {
+                "name": "Your album",
+                "description": "Two photos in different places in your album."
+            },
+            "two_memories": {
+                "name": "Two memories",
+                "description": "Write what you lived in two places you already know."
+            }
+        },
+        "monumentStories": {
+            "1": "This is where the colonial government ran the whole island. Today the same building hosts exhibitions and concerts — the power left, the life stayed.",
+            "2": "The lighthouse was named after Queen Amélia. The light that guided transatlantic ships was driven by a wound clockwork mechanism.",
+            "3": "The market is where you hear the city's liveliest Creole: the fishwives' haggling is a form of conversation, not a quarrel.",
+            "4": "The church was raised when Mindelo was barely a handful of houses around the bay. The city grew around it, not the other way round.",
+            "5": "It is a replica of Lisbon's Belém Tower, built as a harbour-master's post. Cabo Verde answered the symbol with a version of its own, on the same Atlantic.",
+            "6": "The customs house measured Mindelo's wealth: everything entering the bay passed over these counters before it reached the island.",
+            "7": "The morna is Cabo Verde's blues. Cesária Évora sang it barefoot around the world, and it was from here, from these streets, that she left.",
+            "8": "The bandstand in Praça Nova is not decoration: the town band played here on Sundays, and this is still where the city meets at the end of the day.",
+            "9": "The pottery and woven cloth here use techniques that crossed the Atlantic and stayed — every pattern has an origin and a name.",
+            "10": "Mindelo is known as the cultural capital of Cabo Verde, and it is houses like this one that sustain that reputation all year, not only at Carnival.",
+            "11": "In the 19th century this port was a compulsory coaling stop on the Atlantic routes. Coal brought the English, and with them cricket and football.",
+            "12": "The fort guarded the bay when privateers were a real risk. From up here you see why: anything approaching is visible long before it arrives."
+        },
         "journeys": {
             "mindelo_historico": {
                 "name": "Mindelo Journey",
@@ -905,6 +1175,14 @@ const translations = {
         "heritageQuote": "Chaque monument raconte une histoire.<br>Continuez à explorer !",
         "starting": "Démarrage...",
         "scanning": "Analyse...",
+        "scanBrandMotto": "Explore. Découvre. Préserve.",
+        "scanFullscreenOpen": "Ouvrir le scanner en plein écran",
+        "scanFullscreenClose": "Quitter le plein écran",
+        "scanFindSymbol": "Cherchez ce symbole",
+        "scanFindSymbolNote": "Vous trouverez ce QR code sur les monuments Heritage Hunt.",
+        "scanTipCollapse": "Réduire l'astuce",
+        "scanTipExpand": "Afficher l'astuce",
+        "scanZoomLabel": "Zoom de la caméra",
         "yourProgress": "Votre progression",
         "level": "Niveau",
         "monumentsLabel": "Monuments",
@@ -1142,6 +1420,133 @@ const translations = {
         "discovery.tone.threeQuarters": "Vous approchez de la découverte de tout le parcours.",
         "discovery.tone.onward": "Une histoire de plus fait partie de votre parcours.",
         "discovery.tone.complete": "La prochaine histoire n'est plus un lieu : c'est tout ce que vous avez gardé.",
+
+        "engagement.nextDiscovery": "Prochaine découverte",
+        "engagement.firstDiscovery": "Votre première découverte",
+        "engagement.firstDiscoveryNote": "Explorez Mindelo et trouvez votre premier monument.",
+        "engagement.lastDiscovery": "Dernière découverte",
+        "engagement.viewOnMap": "Voir sur la carte",
+        "engagement.almostThere": "Presque terminé",
+        "engagement.reason.LAST_IN_JOURNEY": "Il ne reste qu'un lieu pour terminer le {journey}.",
+        "engagement.reason.FIRST": "Commencez ici. Chaque lieu garde une histoire.",
+        "engagement.reason.LAST_IN_ZONE": "{zone} : il ne reste que ce lieu.",
+        "engagement.reason.JOURNEY_STEP": "La prochaine étape de votre parcours.",
+        "engagement.reason.NEAREST": "Le lieu à découvrir le plus proche de vous.",
+        "engagement.almost.JOURNEY_ONE_LEFT": "Il ne reste qu'1 lieu pour terminer le Parcours de Mindelo.",
+        "engagement.almost.ZONE_ONE_LEFT": "{zone} : il ne reste qu'1 monument.",
+        "engagement.almost.ZONE_FEW_LEFT": "{zone} : encore {n} découvertes.",
+        "engagement.almost.LEVEL_CLOSE": "Encore {n} XP pour atteindre {level}.",
+        "engagement.almost.JOURNEY_PROGRESS": "Vous avez découvert {done} des {total} lieux de Mindelo.",
+        "engagement.zoneProgress": "{done} sur {total} découverts",
+        "engagement.zoneComplete": "Zone terminée",
+        "engagement.storyUnlocked": "Histoire débloquée",
+        "engagement.didYouKnow": "Le saviez-vous ?",
+        "engagement.learnMore": "En savoir plus",
+        "engagement.journeyCompleted": "Parcours de Mindelo terminé",
+        "engagement.guardian": "Gardien de Mindelo",
+        "engagement.completeNote": "Vous avez exploré tous les lieux de ce parcours.",
+        "engagement.explorationContinues": "L'exploration continue. De nouvelles histoires et de nouveaux défis seront ajoutés à Heritage Hunt.",
+        "engagement.viewMemories": "Voir mes souvenirs",
+        "engagement.statMonuments": "monuments",
+        "engagement.statZones": "zones",
+        "engagement.statPhotos": "photos",
+        "engagement.statMemories": "souvenirs",
+
+        "map.nextDiscovery": "Prochaine découverte",
+        "map.explore": "Explorer",
+        "map.discovered": "Découvert",
+        "map.undiscovered": "Encore à découvrir",
+        "map.undiscoveredHint": "Visitez ce lieu et scannez le QR pour révéler son histoire.",
+        "map.discoveredOn": "Découvert le {d}",
+        "map.youAreHere": "Vous êtes ici",
+        "map.approxDistance": "À environ {d}",
+        "map.viewMonument": "Voir le monument",
+        "map.openAlbum": "Ouvrir l'album",
+        "map.zoneProgress": "{done} sur {total} découverts",
+        "map.zoneCompleted": "Zone terminée",
+        "map.zoneApprox": "Zone approximative, tracée à partir des lieux qu'elle contient.",
+        "map.viewRemaining": "Voir ce qu'il reste",
+        "map.reviewDiscoveries": "Revoir les découvertes",
+        "map.closeSheet": "Fermer",
+        "map.journey": "Tracé du parcours",
+        "map.sheetLabel": "Détails du lieu",
+
+        "mission.thisWeek": "Cette semaine",
+        "mission.weekly": "Exploration de la semaine",
+        "mission.progress": "{done} / {total}",
+        "mission.goalsDone": "{done} / {total} objectifs",
+        "mission.continue": "Continuer",
+        "mission.completed": "L'exploration de cette semaine est terminée.",
+        "mission.completedTitle": "Exploration de la semaine terminée",
+        "mission.rewardNote": "Belle exploration. Il y a toujours une histoire de plus à découvrir.",
+        "mission.keepExploring": "Continuer à explorer",
+        "mission.goal.DISCOVER_MONUMENT": "Découvrez {n} monument",
+        "mission.goal.DISCOVER_MONUMENT_MANY": "Découvrez {n} monuments",
+        "mission.goal.DISCOVER_MONUMENT_ZONE": "Découvrez {n} monument dans {zone}",
+        "mission.goal.DISCOVER_MONUMENT_ZONE_MANY": "Découvrez {n} monuments dans {zone}",
+        "mission.goal.ADD_PHOTO": "Gardez {n} photo",
+        "mission.goal.ADD_PHOTO_MANY": "Gardez {n} photos",
+        "mission.goal.ADD_PHOTO_ZONE": "Gardez {n} photo dans {zone}",
+        "mission.goal.ADD_PHOTO_ZONE_MANY": "Gardez {n} photos dans {zone}",
+        "mission.goal.WRITE_EXPERIENCE": "Écrivez {n} souvenir",
+        "mission.goal.WRITE_EXPERIENCE_MANY": "Écrivez {n} souvenirs",
+        "mission.goal.WRITE_EXPERIENCE_ZONE": "Écrivez {n} souvenir dans {zone}",
+        "mission.goal.WRITE_EXPERIENCE_ZONE_MANY": "Écrivez {n} souvenirs dans {zone}",
+        "mission.goal.COMPLETE_ZONE": "Terminez {n} zone",
+        "mission.goal.COMPLETE_ZONE_MANY": "Terminez {n} zones",
+        "mission.goal.COMPLETE_ZONE_ZONE": "Terminez {zone}",
+        "missions": {
+            "first_steps": {
+                "name": "Premiers pas",
+                "description": "Découvrez un lieu et gardez votre première photo."
+            },
+            "keep_the_story": {
+                "name": "Gardez l'histoire",
+                "description": "Découvrez un lieu et écrivez ce que vous y avez ressenti."
+            },
+            "explore_mindelo": {
+                "name": "Explorez Mindelo",
+                "description": "Deux lieux nouveaux, et une photo pour s'en souvenir."
+            },
+            "city_memories": {
+                "name": "Souvenirs de la ville",
+                "description": "Deux photos dans des lieux différents et un souvenir écrit."
+            },
+            "historic_centre": {
+                "name": "Centre historique",
+                "description": "Découvrez le cœur de la ville et gardez ce souvenir."
+            },
+            "sea_front": {
+                "name": "Front de mer",
+                "description": "La mer a fait Mindelo. Découvrez un lieu du front de mer."
+            },
+            "close_a_zone": {
+                "name": "Terminez une zone",
+                "description": "Complétez tous les lieux d'une zone de la ville."
+            },
+            "album_keeper": {
+                "name": "Votre album",
+                "description": "Deux photos dans des lieux différents de votre album."
+            },
+            "two_memories": {
+                "name": "Deux souvenirs",
+                "description": "Écrivez ce que vous avez vécu dans deux lieux que vous connaissez déjà."
+            }
+        },
+        "monumentStories": {
+            "1": "C'est ici que le gouvernement colonial administrait toute l'île. Aujourd'hui le même bâtiment accueille expositions et concerts — le pouvoir est parti, la vie est restée.",
+            "2": "Le phare porte le nom de la reine Amélia. La lumière qui guidait les navires transatlantiques était entraînée par un mécanisme d'horlogerie à remonter.",
+            "3": "Le marché est l'endroit où l'on entend le créole le plus vivant de la ville : le marchandage des poissonnières est une conversation, pas une dispute.",
+            "4": "L'église fut élevée quand Mindelo n'était qu'une poignée de maisons autour de la baie. La ville a grandi autour d'elle, et non l'inverse.",
+            "5": "C'est une réplique de la tour de Belém de Lisbonne, bâtie comme poste de capitainerie. Le Cap-Vert a répondu au symbole par sa propre version, sur le même Atlantique.",
+            "6": "La douane mesurait la richesse de Mindelo : tout ce qui entrait dans la baie passait par ces comptoirs avant d'atteindre l'île.",
+            "7": "La morna est le blues du Cap-Vert. Cesária Évora l'a chantée pieds nus dans le monde entier, et c'est d'ici, de ces rues, qu'elle est partie.",
+            "8": "Le kiosque de la Praça Nova n'est pas un ornement : l'harmonie y jouait le dimanche, et c'est encore là que la ville se retrouve en fin de journée.",
+            "9": "La céramique et les tissus présentés ici emploient des techniques qui ont traversé l'Atlantique et sont restées — chaque motif a une origine et un nom.",
+            "10": "Mindelo est réputée capitale culturelle du Cap-Vert, et ce sont des maisons comme celle-ci qui entretiennent cette réputation toute l'année, pas seulement au Carnaval.",
+            "11": "Au XIXe siècle ce port était une escale charbonnière obligée des routes de l'Atlantique. Le charbon a amené les Anglais, et avec eux le cricket et le football.",
+            "12": "Le fortin gardait la baie à une époque où les corsaires étaient un risque réel. D'en haut on comprend pourquoi : on voit venir n'importe quoi."
+        },
         "journeys": {
             "mindelo_historico": {
                 "name": "Parcours de Mindelo",
@@ -1336,6 +1741,23 @@ function badgeText(id, field) {
     return entry ? entry[field] : '';
 }
 
+// --- Recompensa cultural (ponto 14) -------------------------
+//
+// A curiosidade de cada monumento e CONTEUDO, por isso vive aqui,
+// ao lado das descricoes, e nao dentro do componente que a mostra.
+// Acrescentar um monumento e acrescentar uma entrada em
+// `monumentStories`, nos idiomas que houver.
+function monumentStory(id) {
+    const dict = translations[currentLanguage] || translations.pt;
+    const own = dict.monumentStories && dict.monumentStories[id];
+    const fallback = translations.pt.monumentStories && translations.pt.monumentStories[id];
+    return own || fallback || '';
+}
+
+function hasMonumentStory(id) {
+    return !!monumentStory(id);
+}
+
 // --- Streak de exploracao -----------------------------------
 
 // Nomes curtos dos dias da semana, de segunda a domingo
@@ -1434,6 +1856,17 @@ function journeyName(id) {
 // "Cada descoberta revela uma nova parte da historia."
 function journeySubtitle(id) {
     return journeyText(id, 'subtitle');
+}
+
+// --- Missao semanal -----------------------------------------
+//
+// Texto de uma missao (ver WEEKLY_MISSION_CONFIG em missions.js).
+// O `id` e a chave estavel, igual em todos os idiomas.
+function missionText(id, field) {
+    const dict = translations[currentLanguage] || translations.pt;
+    const entry = (dict.missions && dict.missions[id]) ||
+        (translations.pt.missions && translations.pt.missions[id]);
+    return entry ? (entry[field] || '') : '';
 }
 
 // --- Lugares ------------------------------------------------

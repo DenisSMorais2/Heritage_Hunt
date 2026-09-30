@@ -231,6 +231,15 @@
                 <!-- Scanner View (default) -->
                 <div id="scannerView">
                   <div class="hh-page">
+                    <!--
+                      O lugar do loop de descoberta. UMA coisa de cada
+                      vez (pontos 33 e 34): missao da semana por
+                      terminar, ou a proxima descoberta, ou a primeira
+                      descoberta, ou o fecho da jornada.
+                      Desenhado por engagement-ui.js.
+                    -->
+                    <div id="engagementFocus" class="hh-card hh-eng-card hidden"></div>
+
                     <div class="hh-card hh-scan-card">
                         <div class="hh-discover-head">
                             <h3 class="hh-section-title hh-underlined" data-i18n="scannerCardTitle">Scanner de Monumentos</h3>
@@ -258,18 +267,83 @@
                                 <span class="hh-bracket hh-bracket-br"></span>
                                 <i class="fas fa-qrcode hh-qr-glyph"></i>
                             </div>
+                            <!--
+                              A marca so aparece em ecra inteiro: no
+                              cartao ja ha um titulo por cima dela.
+                            -->
+                            <div class="hh-cam-brand" aria-hidden="true">
+                                <i class="fas fa-landmark hh-cam-brand-crest"></i>
+                                <p class="hh-cam-brand-name">Heritage Hunt</p>
+                                <p class="hh-cam-brand-motto" data-i18n="scanBrandMotto">Explora. Descobre. Preserva.</p>
+                            </div>
+
                             <button id="closeScannerBtn" class="hh-cam-close hidden">
                                 <i class="fas fa-times"></i>
                             </button>
-                            <button id="torchBtn" class="hh-torch hidden" data-i18n-title="torch" title="Luz">
-                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 2h8l-1 4H9L8 2zm1 5h6l-.6 3H9.6L9 7zm.7 4h4.6l-.5 3.2a1 1 0 0 1-1 .8h-1.6a1 1 0 0 1-1-.8L9.7 11zm1.3 5h2v6h-2v-6z" fill="currentColor"/></svg>
-                                <span data-i18n="torch">Luz</span>
-                            </button>
+
+                            <!--
+                              Lanterna e ecra inteiro partilham o canto,
+                              numa linha, para nunca se sobreporem.
+                            -->
+                            <div class="hh-cam-tools">
+                                <button id="torchBtn" class="hh-torch hidden" data-i18n-title="torch" title="Luz">
+                                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 2h8l-1 4H9L8 2zm1 5h6l-.6 3H9.6L9 7zm.7 4h4.6l-.5 3.2a1 1 0 0 1-1 .8h-1.6a1 1 0 0 1-1-.8L9.7 11zm1.3 5h2v6h-2v-6z" fill="currentColor"/></svg>
+                                    <span data-i18n="torch">Luz</span>
+                                </button>
+                                <!-- O rotulo e o icone mudam com o estado (ver updateCamFullscreenButton) -->
+                                <button id="camFullscreenBtn" type="button" class="hh-cam-fs-btn"
+                                        aria-pressed="false" aria-label="Abrir scanner em ecrã inteiro"
+                                        title="Abrir scanner em ecrã inteiro">
+                                    <i class="fas fa-expand" aria-hidden="true"></i>
+                                </button>
+                            </div>
+
+                            <!-- A dica em pilula substitui o rodape em ecra inteiro -->
+                            <div class="hh-cam-pill">
+                                <span class="hh-cam-pill-icon" aria-hidden="true">
+                                    <i class="fas fa-qrcode"></i>
+                                </span>
+                                <p data-i18n="scanHint">Aponte a câmera para um QR Code de monumento</p>
+                            </div>
                             <div class="hh-cam-foot">
                                 <p class="hh-cam-hint" data-i18n="scanHint">Aponte a câmera para um QR Code de monumento</p>
                                 <button id="startScannerBtn" class="hh-gold-btn">
                                     <i class="fas fa-qrcode mr-3 text-xl"></i> <span data-i18n="scanQr">Escanear QR Code</span>
                                 </button>
+                            </div>
+
+                            <!--
+                              Zoom optico real, desenhado por
+                              setupCamZoom(): so aparece quando a
+                              camara deste aparelho o suporta. Nao ha
+                              zoom falso por CSS — ampliar a imagem sem
+                              ampliar o que a camara le nao ajudava a
+                              ler nada.
+                            -->
+                            <div id="camZoom" class="hh-cam-zoom hidden" role="group"></div>
+
+                            <!--
+                              O simbolo a procurar (so em ecra inteiro).
+                              O chevron recolhe o cartao: em ecras
+                              baixos, em paisagem, ele sai da frente.
+                            -->
+                            <div id="camTipCard" class="hh-cam-tip">
+                                <span class="hh-cam-tip-grip" aria-hidden="true"></span>
+                                <div class="hh-cam-tip-row">
+                                    <span class="hh-cam-tip-plaque" aria-hidden="true">
+                                        <i class="fas fa-qrcode"></i>
+                                        <span class="hh-cam-tip-plaque-name">Heritage Hunt</span>
+                                    </span>
+                                    <div class="hh-cam-tip-text">
+                                        <p class="hh-cam-tip-title" data-i18n="scanFindSymbol">Encontre este símbolo</p>
+                                        <p class="hh-cam-tip-note" data-i18n="scanFindSymbolNote">Nos monumentos do Heritage Hunt irá encontrar este QR code.</p>
+                                    </div>
+                                    <button id="camTipToggle" type="button" class="hh-cam-tip-btn"
+                                            aria-expanded="true" aria-controls="camTipCard"
+                                            aria-label="Recolher a dica">
+                                        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -734,6 +808,13 @@
                 <!-- Map View -->
                 <div id="mapView" class="hidden">
                   <div class="hh-page">
+                    <!--
+                      Proxima descoberta no Mapa (ponto 7.3): e daqui
+                      que o loop arranca — "Mercado Municipal esta por
+                      descobrir" -> Ver no mapa.
+                    -->
+                    <div id="engagementMapCard" class="hh-card hh-eng-card hidden"></div>
+
                     <div class="hh-card hh-map-card">
                         <div class="hh-map-head">
                             <div class="hh-map-title">
@@ -742,14 +823,25 @@
                                     <h3 class="hh-section-title" data-i18n="mapTitle">Mapa de Mindelo</h3>
                                     <p class="hh-map-sub" data-i18n="mapSubtitle">Explore a cidade e descubra os seus monumentos.</p>
                                 </div>
+                                <!-- Progresso da jornada, sempre a vista (ponto 37) -->
+                                <span id="mapProgressCount" class="hh-map-count"></span>
                             </div>
+                            <!--
+                              A legenda acompanha os marcadores novos: cada
+                              estado tem o SEU icone, para nao depender so
+                              da cor (ponto 48).
+                            -->
                             <div class="hh-legend">
                                 <span class="hh-legend-pill hh-legend-found">
-                                    <i class="fas fa-map-marker-alt"></i>
+                                    <i class="fas fa-check"></i>
                                     <span data-i18n="legendFound">Descoberto</span>
                                 </span>
+                                <span class="hh-legend-pill hh-legend-next">
+                                    <i class="fas fa-location-arrow"></i>
+                                    <span data-i18n="map.nextDiscovery">Próxima descoberta</span>
+                                </span>
                                 <span class="hh-legend-pill hh-legend-todo">
-                                    <i class="fas fa-map-marker-alt"></i>
+                                    <i class="fas fa-landmark"></i>
                                     <span data-i18n="legendTodo">Por descobrir</span>
                                 </span>
                             </div>
@@ -765,6 +857,25 @@
                             <button id="locateUserBtn" class="hh-locate" data-i18n-title="myLocation" title="Sua Localização" style="z-index: 1000;">
                                 <i class="fas fa-crosshairs"></i>
                             </button>
+
+                            <!--
+                              Bottom sheet do lugar seleccionado
+                              (pontos 13 a 17). Substitui o popup
+                              branco do Leaflet; o mapa continua
+                              visivel por tras.
+                            -->
+                            <div id="mapSheet" class="hh-sheet hidden" role="dialog" aria-modal="false"
+                                 aria-labelledby="mapSheetTitle" aria-hidden="true">
+                                <div class="hh-sheet__panel">
+                                    <span class="hh-sheet__grip" aria-hidden="true"></span>
+                                    <button id="mapSheetClose" type="button" class="hh-sheet__close"
+                                            data-i18n-title="map.closeSheet" title="Fechar"
+                                            aria-label="Fechar">
+                                        <i class="fas fa-times" aria-hidden="true"></i>
+                                    </button>
+                                    <div id="mapSheetBody" class="hh-sheet__body"></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -1216,6 +1327,25 @@
             </div>
         </div>
 
+        <!--
+          Celebracao da missao da semana (ponto 26). Sobria de
+          proposito: um icone, os objectivos, a recompensa e um
+          convite. Entra na mesma fila das medalhas, por isso nunca
+          abre por cima da celebracao de uma descoberta.
+        -->
+        <div id="missionModal" class="hh-mi-modal hidden" role="dialog" aria-modal="true"
+             aria-labelledby="missionBody">
+            <div class="hh-mi-sheet" id="missionSheet">
+                <div id="missionBody" class="hh-mi-cel"></div>
+                <div class="hh-mi-foot">
+                    <button type="button" class="hh-mi-cta" data-mi-action="explore">
+                        <span data-i18n="mission.keepExploring">Continuar a explorar</span>
+                        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <!-- Camera Modal for Taking Photos -->
         <div id="cameraModal" class="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-60 hidden">
             <div class="bg-white rounded-2xl max-w-sm mx-4 modal-animation shadow-2xl overflow-hidden">
@@ -1286,6 +1416,23 @@
 <script src="journey-ui.js"></script>
 <script src="discovery.js"></script>
 <script src="discovery-ui.js"></script>
+<!--
+  O loop de engajamento. `engagement.js` depende de journey.js,
+  xp.js e levels.js estarem carregados (le-os por funcoes
+  injectadas), e `engagement-ui.js` usa MissionsUI, por isso as
+  missoes vem antes.
+-->
+<script src="analytics.js"></script>
+<script src="missions.js"></script>
+<script src="missions-ui.js"></script>
+<script src="engagement.js"></script>
+<script src="engagement-ui.js"></script>
+<!--
+  Mapa. `map-ui.js` pergunta a proxima descoberta ao engagement.js,
+  por isso vem depois dele.
+-->
+<script src="map.js"></script>
+<script src="map-ui.js"></script>
 <script src="ranking.js"></script>
 <script src="ranking-ui.js"></script>
 <script src="script.js"></script>
