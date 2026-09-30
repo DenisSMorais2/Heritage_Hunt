@@ -1108,109 +1108,217 @@
             </div>
         </div>
 
-        <div id="monumentPhotosModal" class="hh-mp-overlay hidden">
-            <div class="hh-mp-sheet" role="dialog" aria-modal="true" aria-labelledby="monumentPhotosName">
-                <!-- Hero -->
-                <div class="hh-mp-hero">
-                    <img id="monumentPhotosImage" src="" alt="" class="hh-mp-hero-img">
-                    <div class="hh-mp-hero-shade"></div>
-                    <div class="hh-mp-crest">
-                        <i class="fas fa-landmark"></i>
-                        <span class="hh-mp-crest-text" data-i18n-html="heritageCrest">PATRIMÓNIO<br>DE CABO VERDE</span>
-                    </div>
-                    <button id="closeMonumentPhotosModal" class="hh-mp-close" data-i18n-title="close" title="Fechar">
-                        <i class="fas fa-times"></i>
+        <!--
+          ============================================================
+          O ÁLBUM DO MONUMENTO
+
+          Uma página editorial que se lê de cima a baixo, não um
+          formulário: capa, o que vi, o que senti, o que descobri,
+          onde foi. Desenhada por album-ui.js a partir do retrato
+          que o album.js devolve.
+
+          Continua a ser o MESMO álbum de sempre — as mesmas
+          fotografias, a mesma experiência, as mesmas etiquetas.
+          ============================================================
+        -->
+        <div id="monumentPhotosModal" class="hh-al-overlay hidden">
+            <div id="albumPage" class="hh-al-page" role="dialog" aria-modal="true"
+                 aria-labelledby="albumTitle">
+
+                <!-- Barra flutuante: volta ao contexto de onde se veio -->
+                <div class="hh-al-topbar">
+                    <button id="albumBackBtn" type="button" class="hh-al-round"
+                            data-i18n-title="album.back" title="Voltar" aria-label="Voltar">
+                        <i class="fas fa-chevron-left" aria-hidden="true"></i>
                     </button>
+                    <span id="albumTopName" class="hh-al-topname"></span>
+                    <button id="albumMenuBtn" type="button" class="hh-al-round"
+                            aria-haspopup="true" aria-expanded="false"
+                            data-i18n-title="album.menu" title="Mais opções" aria-label="Mais opções">
+                        <i class="fas fa-ellipsis" aria-hidden="true"></i>
+                    </button>
+                    <div id="albumMenu" class="hh-al-menu hidden" role="menu"></div>
                 </div>
 
-                <!-- Conteudo -->
-                <div class="hh-mp-body">
-                    <div class="hh-mp-headline">
-                        <h2 id="monumentPhotosName" class="hh-mp-title"></h2>
-                        <span class="hh-mp-status">
-                            <i class="fas fa-check-circle"></i>
-                            <span data-i18n="legendFound">Descoberto</span>
-                        </span>
+                <!-- Menu de uma fotografia (capa / remover) -->
+                <div id="albumPhotoMenu" class="hh-al-menu is-photo hidden" role="menu"></div>
+
+                <div id="albumScroll" class="hh-al-scroll">
+
+                    <!-- CAPA -->
+                    <header class="hh-al-hero">
+                        <img id="albumHeroImg" class="hh-al-hero-img" src="" alt="" decoding="async">
+                        <div class="hh-al-hero-shade" aria-hidden="true"></div>
+                        <div class="hh-al-hero-text">
+                            <p id="albumHeroKicker" class="hh-al-kicker"></p>
+                            <h2 id="albumTitle" class="hh-al-name"></h2>
+                            <p id="albumHeroZone" class="hh-al-zone"></p>
+                            <div id="albumStamp" class="hh-al-stamp"></div>
+                        </div>
+                    </header>
+
+                    <!--
+                      Âncoras dentro da MESMA página, não quatro
+                      páginas. Cola ao topo depois de a capa sair.
+                    -->
+                    <nav id="albumNav" class="hh-al-nav" role="tablist"
+                         data-i18n-title="album.myAlbum" aria-label="O meu álbum"></nav>
+
+                    <div class="hh-al-body">
+
+                        <!-- A MINHA VISITA -->
+                        <section id="albumVisit" class="hh-al-sec" role="tabpanel" tabindex="-1"
+                                 aria-labelledby="albumVisitTitle">
+                            <div class="hh-al-sec-head">
+                                <h3 id="albumVisitTitle" class="hh-al-sec-title">
+                                    <i class="fas fa-camera" aria-hidden="true"></i>
+                                    <span data-i18n="album.myPhotos">As minhas fotografias</span>
+                                </h3>
+                                <span id="albumVisitCount" class="hh-al-sec-count"></span>
+                            </div>
+                            <div id="albumVisitBody" class="hh-al-visit"></div>
+                        </section>
+
+                        <!-- A MINHA MEMÓRIA -->
+                        <section id="albumMemory" class="hh-al-sec" role="tabpanel" tabindex="-1"
+                                 aria-labelledby="albumMemoryTitle">
+                            <div class="hh-al-sec-head">
+                                <h3 id="albumMemoryTitle" class="hh-al-sec-title">
+                                    <i class="fas fa-feather-pointed" aria-hidden="true"></i>
+                                    <span data-i18n="album.myMemory">A minha memória</span>
+                                </h3>
+                                <button id="albumMemoryEdit" type="button" class="hh-al-ghost" hidden>
+                                    <i class="fas fa-pen" aria-hidden="true"></i>
+                                    <span data-i18n="album.editMemory">Editar</span>
+                                </button>
+                            </div>
+                            <div id="albumMemoryBody"></div>
+                        </section>
+
+                        <!--
+                          A HISTÓRIA DO LUGAR — escondida quando o
+                          monumento não tem conteúdo cultural. Nunca
+                          se inventa um facto para encher o espaço.
+                        -->
+                        <section id="albumStory" class="hh-al-sec" role="tabpanel" tabindex="-1"
+                                 aria-labelledby="albumStoryTitle" hidden>
+                            <div class="hh-al-sec-head">
+                                <h3 id="albumStoryTitle" class="hh-al-sec-title">
+                                    <i class="fas fa-book-open" aria-hidden="true"></i>
+                                    <span data-i18n="album.storyOfPlace">A história que descobriste</span>
+                                </h3>
+                            </div>
+                            <div id="albumStoryBody"></div>
+                        </section>
+
+                        <!-- RESUMO -->
+                        <section id="albumSummary" class="hh-al-sec" role="tabpanel" tabindex="-1"
+                                 aria-labelledby="albumSummaryTitle">
+                            <div class="hh-al-sec-head">
+                                <h3 id="albumSummaryTitle" class="hh-al-sec-title">
+                                    <i class="fas fa-chart-simple" aria-hidden="true"></i>
+                                    <span data-i18n="album.visitInNumbers">A minha visita em números</span>
+                                </h3>
+                            </div>
+                            <div id="albumSummaryBody" class="hh-al-stats"></div>
+                        </section>
+
+                        <!-- A MINHA JORNADA -->
+                        <section id="albumJourney" class="hh-al-sec">
+                            <div class="hh-al-sec-head">
+                                <h3 class="hh-al-sec-title">
+                                    <i class="fas fa-location-dot" aria-hidden="true"></i>
+                                    <span data-i18n="album.myJourney">A minha jornada</span>
+                                </h3>
+                            </div>
+                            <div id="albumJourneyBody"></div>
+                        </section>
+
+                        <div id="albumCta" class="hh-al-foot"></div>
                     </div>
-                    <p class="hh-mp-place">
-                        <i class="fas fa-map-marker-alt"></i>
-                        <span id="monumentPageLocation"></span>
-                    </p>
-                    <p class="hh-mp-sub" data-i18n="yourAlbumOf">O teu álbum deste monumento</p>
+                </div>
 
-                    <!-- Chips de resumo -->
-                    <div class="hh-mp-chips">
-                        <span class="hh-mp-chip" id="monumentPageXpChip">
-                            <i class="fas fa-star hh-chip-gold"></i>
-                            <b id="monumentPagePoints">0</b>
-                            <span data-i18n="xpLabel">XP</span>
-                        </span>
-                        <span class="hh-mp-chip">
-                            <i class="fas fa-images hh-chip-blue"></i>
-                            <span id="monumentPagePhotoCount">0</span>
-                        </span>
-                        <span class="hh-mp-chip">
-                            <i class="fas fa-calendar-alt hh-chip-blue"></i>
-                            <span id="monumentPageVisit"></span>
-                        </span>
-                    </div>
+                <!-- Aviso discreto: a celebração grande é da descoberta -->
+                <p id="albumToast" class="hh-al-toast hidden" role="status" aria-live="polite"></p>
+            </div>
+        </div>
 
-                    <!-- Minha experiencia -->
-                    <section class="hh-mp-card">
-                        <div class="hh-mp-card-head">
-                            <h3 class="hh-mp-card-title">
-                                <span class="hh-mp-card-icon"><i class="fas fa-file-alt"></i></span>
-                                <span data-i18n="myExperience">Minha experiência</span>
-                            </h3>
-                            <button id="editNoteBtn" class="hh-mp-ghost-btn">
-                                <i class="fas fa-pen"></i>
-                                <span id="editNoteBtnLabel" data-i18n="edit">Editar</span>
-                            </button>
-                        </div>
-                        <p id="monumentPageExperienceXp" class="hh-xp-hint"></p>
-                        <div class="hh-mp-note">
-                            <p id="monumentNoteText" class="hh-mp-note-text is-empty"></p>
-                            <textarea id="monumentNote" class="hh-mp-note-input hidden" data-i18n-placeholder="notePlaceholder" placeholder="Escreva suas impressões sobre este monumento..."></textarea>
-                        </div>
-                    </section>
+        <!-- Visualizador de fotografias -->
+        <div id="albumViewer" class="hh-al-viewer hidden" role="dialog" aria-modal="true"
+             aria-hidden="true" aria-labelledby="albumViewerCount">
+            <div class="hh-al-viewer-bar">
+                <span id="albumViewerCount" class="hh-al-viewer-count"></span>
+                <button id="albumViewerClose" type="button" class="hh-al-round"
+                        data-i18n-title="close" title="Fechar" aria-label="Fechar">
+                    <i class="fas fa-times" aria-hidden="true"></i>
+                </button>
+            </div>
+            <button id="albumViewerPrev" type="button" class="hh-al-viewer-nav is-prev"
+                    data-i18n-title="album.prevPhoto" title="Fotografia anterior"
+                    aria-label="Fotografia anterior">
+                <i class="fas fa-chevron-left" aria-hidden="true"></i>
+            </button>
+            <img id="albumViewerImg" class="hh-al-viewer-img" src="" alt="">
+            <button id="albumViewerNext" type="button" class="hh-al-viewer-nav is-next"
+                    data-i18n-title="album.nextPhoto" title="Fotografia seguinte"
+                    aria-label="Fotografia seguinte">
+                <i class="fas fa-chevron-right" aria-hidden="true"></i>
+            </button>
+            <div class="hh-al-viewer-foot">
+                <p id="albumViewerDate" class="hh-al-viewer-date"></p>
+                <p id="albumViewerPending" class="hh-al-viewer-pending" hidden>
+                    <i class="fas fa-cloud-arrow-up" aria-hidden="true"></i>
+                    <span data-i18n="album.pendingSync">A aguardar sincronização</span>
+                </p>
+            </div>
+        </div>
 
-                    <!-- Album de fotos -->
-                    <section class="hh-mp-card">
-                        <div class="hh-mp-card-head">
-                            <h3 class="hh-mp-card-title">
-                                <span class="hh-mp-card-icon"><i class="fas fa-image"></i></span>
-                                <span data-i18n="photoAlbum">Álbum de Fotos</span>
-                            </h3>
-                            <span id="monumentPageAlbumCount" class="hh-mp-count"></span>
-                        </div>
-                        <p id="monumentPagePhotoXp" class="hh-xp-hint"></p>
-                        <div id="userPhotosGrid" class="hh-mp-grid"></div>
-                        <div class="hh-mp-actions">
-                            <button id="takePhotoBtn" class="hh-mp-action is-blue">
-                                <i class="fas fa-camera"></i>
-                                <span data-i18n="takePhotoShort">Tirar foto</span>
-                            </button>
-                            <button id="uploadPhotoBtn" class="hh-mp-action is-green">
-                                <i class="fas fa-upload"></i>
-                                <span data-i18n="uploadPhotoShort">Carregar foto</span>
-                            </button>
-                        </div>
-                    </section>
+        <!--
+          De onde vem a fotografia. O fluxo é o mesmo de sempre —
+          câmara ou galeria; o que mudou é que o álbum passou a ter
+          um só botão, e a escolha faz-se aqui.
+        -->
+        <div id="albumPick" class="hh-al-editor hidden" role="dialog" aria-modal="true"
+             aria-hidden="true" aria-labelledby="albumPickTitle">
+            <div class="hh-al-editor-panel is-short">
+                <span class="hh-al-editor-grip" aria-hidden="true"></span>
+                <h3 id="albumPickTitle" class="hh-al-editor-title" data-i18n="album.addPhoto">Adicionar fotografia</h3>
+                <div class="hh-al-pick">
+                    <button id="albumPickCamera" type="button" class="hh-al-pick-btn">
+                        <i class="fas fa-camera" aria-hidden="true"></i>
+                        <span data-i18n="takePhotoShort">Tirar foto</span>
+                    </button>
+                    <button id="albumPickGallery" type="button" class="hh-al-pick-btn">
+                        <i class="fas fa-image" aria-hidden="true"></i>
+                        <span data-i18n="uploadPhotoShort">Carregar foto</span>
+                    </button>
+                </div>
+                <button id="albumPickCancel" type="button" class="hh-al-ghost is-wide">
+                    <span data-i18n="cancel">Cancelar</span>
+                </button>
+            </div>
+        </div>
 
-                    <!-- Memorias rapidas -->
-                    <section class="hh-mp-card">
-                        <div class="hh-mp-card-head">
-                            <h3 class="hh-mp-card-title">
-                                <span class="hh-mp-card-icon"><i class="fas fa-tag"></i></span>
-                                <span data-i18n="quickMemories">Memórias rápidas</span>
-                            </h3>
-                        </div>
-                        <p class="hh-mp-card-sub" data-i18n="quickMemoriesSub">Adiciona etiquetas que representam a tua experiência</p>
-                        <div id="monumentPageTags" class="hh-mp-tags"></div>
-                    </section>
-
-                    <button id="saveNoteBtn" class="hh-mp-save">
-                        <i class="fas fa-save"></i>
+        <!--
+          Editor da memória. Só aparece depois de uma acção
+          explícita — o álbum nunca mostra um textarea à espera.
+        -->
+        <div id="albumEditor" class="hh-al-editor hidden" role="dialog" aria-modal="true"
+             aria-hidden="true" aria-labelledby="albumEditorTitle">
+            <div class="hh-al-editor-panel">
+                <span class="hh-al-editor-grip" aria-hidden="true"></span>
+                <h3 id="albumEditorTitle" class="hh-al-editor-title" data-i18n="album.myMemory">A minha memória</h3>
+                <textarea id="albumEditorInput" class="hh-al-editor-input" rows="6"
+                          data-i18n-placeholder="notePlaceholder"
+                          placeholder="Escreva suas impressões sobre este monumento..."></textarea>
+                <p class="hh-al-editor-q" data-i18n="album.howWouldYouDescribe">Como descreverias este lugar?</p>
+                <div id="albumEditorTags" class="hh-al-tags"></div>
+                <div class="hh-al-editor-foot">
+                    <button id="albumEditorCancel" type="button" class="hh-al-ghost">
+                        <span data-i18n="cancel">Cancelar</span>
+                    </button>
+                    <button id="albumEditorSave" type="button" class="hh-al-cta is-compact">
+                        <i class="fas fa-check" aria-hidden="true"></i>
                         <span data-i18n="saveExperience">Guardar experiência</span>
                     </button>
                 </div>
@@ -1422,6 +1530,13 @@
   injectadas), e `engagement-ui.js` usa MissionsUI, por isso as
   missoes vem antes.
 -->
+<!--
+  O álbum. `album-ui.js` pergunta o retrato ao `album.js`, que por
+  sua vez lê o XP, as fotografias e a experiência que já existem.
+-->
+<script src="album.js"></script>
+<script src="album-ui.js"></script>
+
 <script src="analytics.js"></script>
 <script src="missions.js"></script>
 <script src="missions-ui.js"></script>

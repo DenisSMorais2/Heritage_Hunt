@@ -9,7 +9,6 @@ const state = {
     userLocationIsPrecise: false,
     // O ponto e o halo do utilizador pertencem agora ao MapUI
     currentMonumentForPhotos: null,
-    monumentTagsDraft: [],
     cameraStream: null,
     settings: null,
     monuments: [
@@ -280,24 +279,16 @@ const locateUserBtn = document.getElementById('locateUserBtn');
 
 // Monument Photos Modal elements
 const monumentPhotosModal = document.getElementById('monumentPhotosModal');
-const monumentPhotosImage = document.getElementById('monumentPhotosImage');
-const monumentPhotosName = document.getElementById('monumentPhotosName');
-const closeMonumentPhotosModal = document.getElementById('closeMonumentPhotosModal');
-const takePhotoBtn = document.getElementById('takePhotoBtn');
-const uploadPhotoBtn = document.getElementById('uploadPhotoBtn');
+// A pagina do album e desenhada por `album-ui.js` a partir do
+// retrato que o `album.js` devolve. Aqui ficam so as pecas que
+// este ficheiro continua a operar: o input de ficheiro e a camara.
 const photoUploadInput = document.getElementById('photoUploadInput');
-const monumentNote = document.getElementById('monumentNote');
-const monumentNoteText = document.getElementById('monumentNoteText');
-const editNoteBtn = document.getElementById('editNoteBtn');
-const editNoteBtnLabel = document.getElementById('editNoteBtnLabel');
-const saveNoteBtn = document.getElementById('saveNoteBtn');
-const userPhotosGrid = document.getElementById('userPhotosGrid');
-const monumentPageLocation = document.getElementById('monumentPageLocation');
-const monumentPagePoints = document.getElementById('monumentPagePoints');
-const monumentPagePhotoCount = document.getElementById('monumentPagePhotoCount');
-const monumentPageVisit = document.getElementById('monumentPageVisit');
-const monumentPageAlbumCount = document.getElementById('monumentPageAlbumCount');
-const monumentPageTags = document.getElementById('monumentPageTags');
+
+// De onde vem a fotografia: camara ou galeria
+const albumPick = document.getElementById('albumPick');
+const albumPickCamera = document.getElementById('albumPickCamera');
+const albumPickGallery = document.getElementById('albumPickGallery');
+const albumPickCancel = document.getElementById('albumPickCancel');
 
 // Pagina do monumento: limite do album e etiquetas disponiveis
 const MONUMENT_PHOTO_LIMIT = 10;
@@ -307,12 +298,8 @@ const MEMORY_TAGS = [
     { id: 'memorable', icon: 'fas fa-heart', key: 'tagMemorable' },
     { id: 'comeBack', icon: 'fas fa-undo', key: 'tagComeBack' }
 ];
-let noteEditing = false;
 
 // XP
-const monumentPageXpChip = document.getElementById('monumentPageXpChip');
-const monumentPagePhotoXp = document.getElementById('monumentPagePhotoXp');
-const monumentPageExperienceXp = document.getElementById('monumentPageExperienceXp');
 const zonesSubtitle = document.getElementById('zonesSubtitle');
 
 // Uma experiencia so vale XP se tiver mesmo conteudo (ponto 13)
@@ -716,7 +703,7 @@ function monumentKey(kind, monumentId) {
 // uma conta adopta esse perfil, adopta tambem o que ele escreveu
 // e fotografou, em vez de o deixar orfao.
 function adoptLegacyMonumentKeys() {
-    const kinds = ['note', 'tags', 'photos'];
+    const kinds = ['note', 'tags', 'photos', 'cover'];
 
     state.monuments.forEach(function (monument) {
         kinds.forEach(function (kind) {
@@ -912,6 +899,15 @@ function applyRemoteEntries(entries) {
             localStorage.setItem(
                 monumentKey('tags', entry.monumentId),
                 JSON.stringify(entry.tags)
+            );
+        }
+        // A capa escolhida noutro aparelho. Se a fotografia nao
+        // existir aqui, a escolha fica orfa e o album deixa-a cair
+        // sozinho para a primeira — nunca fica sem imagem.
+        if (entry.coverPhotoId) {
+            localStorage.setItem(
+                monumentKey('cover', entry.monumentId),
+                entry.coverPhotoId
             );
         }
     });
@@ -1403,31 +1399,10 @@ function renderZonesView() {
 }
 
 // Ponto 38 — quantas recompensas de fotografia ainda restam
-function renderPhotoXpHint(monumentId) {
-    if (!monumentPagePhotoXp) return;
-
-    const used = XP.getPhotoRewardsUsed(monumentId);
-    const max = XP.getPhotoRewardLimit();
-    const done = used >= max;
-
-    monumentPagePhotoXp.textContent = done
-        ? t('xpPhotoRewardsUsed', { used: used, max: max })
-        : t('xpPhotoHint', { n: XP.getActionAmount(XP.ACTION.PHOTO_ADDED) });
-    monumentPagePhotoXp.classList.toggle('is-done', done);
-}
-
-// Ponto 39 — a experiencia so promete XP enquanto nao foi paga
-function renderExperienceXpHint(monumentId) {
-    if (!monumentPageExperienceXp) return;
-
-    const amount = XP.getActionAmount(XP.ACTION.EXPERIENCE_ADDED);
-    const earned = XP.hasMonumentReward(XP.ACTION.EXPERIENCE_ADDED, monumentId);
-
-    monumentPageExperienceXp.textContent = earned
-        ? t('xpExperienceDone', { n: amount })
-        : t('xpExperienceHint', { n: amount });
-    monumentPageExperienceXp.classList.toggle('is-done', earned);
-}
+// As pistas de XP deixaram de viver no album: o album e memoria,
+// nao painel de progressao (ponto 32). O que a accao rendeu
+// continua a ser dito — em `announceReward`, no momento em que
+// acontece, e nao numa etiqueta permanente a lembrar o saldo.
 
 // Passa os pontos ja existentes para XP sem perder nada (ponto 18)
 function migrateUserToXP() {
@@ -3168,7 +3143,7 @@ function openMonumentPhotos(monumentId) {
     const monument = state.monuments.find(m => m.id === monumentId);
     if (!monument) return;
 
-    // So os monumentos ja descobertos tem pagina
+    // So os monumentos ja descobertos tem album
     const isScanned = state.scannedMonuments.some(m => m.id === monumentId);
     if (!isScanned) {
         alert(t('mustDiscoverFirst'));
@@ -3176,93 +3151,163 @@ function openMonumentPhotos(monumentId) {
     }
 
     state.currentMonumentForPhotos = monument;
-    state.monumentTagsDraft = getMonumentTags(monumentId);
-    monumentNote.value = localStorage.getItem(monumentKey('note', monumentId)) || '';
 
-    renderMonumentPage();
-    monumentPhotosModal.classList.remove('hidden');
-    document.body.classList.add('hh-no-scroll');
-    monumentPhotosModal.querySelector('.hh-mp-sheet').scrollTop = 0;
+    // Uma escolha de capa que aponta para uma fotografia que ja nao
+    // existe seria arrastada para sempre. Limpa-se ao abrir, e a
+    // capa cai sozinha para a primeira fotografia.
+    if (Album.coverIsOrphan(monumentId)) clearMonumentCover(monumentId);
+
+    AlbumUI.open(monumentId);
 }
 
 function closeMonumentPhotos() {
-    monumentPhotosModal.classList.add('hidden');
-    document.body.classList.remove('hh-no-scroll');
+    AlbumUI.close();
     state.currentMonumentForPhotos = null;
-    state.monumentTagsDraft = [];
-    noteEditing = false;
 }
 
 function isMonumentPageOpen() {
-    return !monumentPhotosModal.classList.contains('hidden');
+    return AlbumUI.isOpen();
 }
 
-// Desenha todo o conteudo da pagina do monumento
+// Redesenha o album aberto. Depois de guardar uma fotografia, uma
+// memoria ou de trocar a capa, e ESTA a unica chamada precisa: a
+// pagina inteira deriva do retrato que o `album.js` devolve.
 function renderMonumentPage() {
-    const monument = state.currentMonumentForPhotos;
-    if (!monument) return;
-
-    const scanned = state.scannedMonuments.find(m => m.id === monument.id);
-
-    monumentPhotosImage.src = monument.image;
-    monumentPhotosImage.alt = monument.name;
-    monumentPhotosImage.onerror = function () {
-        this.src = 'imagens/placeholder.jpg';
-        this.onerror = null;
-    };
-
-    monumentPhotosName.textContent = monument.name;
-    monumentPageLocation.textContent = t('monumentCity');
-    monumentPagePoints.textContent = monument.points;
-
-    const visitDate = formatShortDate(scanned && scanned.discoveredAt);
-    monumentPageVisit.textContent = visitDate
-        ? t('visitedOn', { d: visitDate })
-        : t('visitDateUnknown');
-
-    // XP ja obtido por este monumento (ponto 37)
-    if (monumentPageXpChip) {
-        monumentPageXpChip.classList.toggle(
-            'is-earned',
-            XP.hasReward(XP.ACTION.MONUMENT_DISCOVERED, monument.id)
-        );
-    }
-    renderExperienceXpHint(monument.id);
-
-    setNoteEditing(noteEditing);
-    renderMemoryTags();
-    updateUserPhotosGrid();
+    if (AlbumUI.isOpen()) AlbumUI.render();
 }
 
-// --- Minha experiencia ---
-function renderMonumentNote() {
-    const note = (monumentNote.value || '').trim();
-    monumentNoteText.textContent = note || t('noNoteYet');
-    monumentNoteText.classList.toggle('is-empty', !note);
+// O nome antigo continua a existir porque ha chamadas espalhadas
+// (a fila de pendentes, por exemplo) que so querem dizer
+// "o album mudou".
+function updateUserPhotosGrid() {
+    renderMonumentPage();
 }
 
-function setNoteEditing(editing) {
-    noteEditing = editing;
-    monumentNote.classList.toggle('hidden', !editing);
-    monumentNoteText.classList.toggle('hidden', editing);
-    editNoteBtn.classList.toggle('is-editing', editing);
-    editNoteBtnLabel.textContent = editing ? t('done') : t('edit');
+// ============================================================
+// Arranque do album
+//
+// Tudo o que o album le vem de sistemas que ja existiam: as
+// fotografias do `monument_photos_<id>`, a experiencia do
+// `monument_note_<id>`, as etiquetas do `monument_tags_<id>`, os
+// limites do `xp.js`, a historia do `i18n.js` e a zona do
+// `state.zones`. O album nao guarda progresso nenhum por sua conta.
+// ============================================================
+function initAlbum() {
+    Album.configure({
+        getMonument: (id) => state.monuments.find(m => m.id === id) || null,
+        getPhotos: (id) => getMonumentPhotos(id),
+        getNote: (id) => savedNoteFor(id),
+        getTags: (id) => getMonumentTags(id),
+        getCoverId: (id) => getMonumentCover(id),
+        getDiscoveredAt: (id) => {
+            const scanned = state.scannedMonuments.find(m => m.id === id);
+            return scanned ? scanned.discoveredAt : null;
+        },
+        getZoneId: (id) => monumentZoneId(id),
+        getStory: (id) => monumentStory(id),
 
-    const icon = editNoteBtn.querySelector('i');
-    if (icon) icon.className = editing ? 'fas fa-check' : 'fas fa-pen';
+        getPhotoLimit: () => MONUMENT_PHOTO_LIMIT,
+        getPhotoRewardLimit: () => XP.getPhotoRewardLimit(),
+        getPhotoRewardsUsed: (id) => XP.getPhotoRewardsUsed(id),
+        hasExperienceReward: (id) => XP.hasMonumentReward(XP.ACTION.EXPERIENCE_ADDED, id),
+        getMinExperienceLength: () => MIN_EXPERIENCE_LENGTH
+    });
 
-    if (editing) {
-        monumentNote.focus();
-    } else {
-        renderMonumentNote();
-    }
+    AlbumUI.init({
+        getAlbum: (id) => Album.getAlbum(id),
+        getTagCatalog: () => MEMORY_TAGS,
+        getSignedUrls: (paths) => HeritageCloud.signImageUrls(paths),
+        getUserName: () => (state.user && state.user.name) || '',
+        getZoneName: (id) => zoneName(id),
+        getCityName: () => t('album.city'),
+        getCountryName: () => t('album.country'),
+        formatShortDate: (value) => formatShortDate(value),
+        formatLongDate: (value) => formatFullDate(value),
+
+        // Voltar ao contexto de onde se veio: o album e uma folha
+        // POR CIMA do ecra anterior, e fecha-la e voltar la (ponto 47).
+        onClose: () => closeMonumentPhotos(),
+        onAddPhoto: () => openPhotoSourcePicker(),
+        onDeletePhoto: (photoId) => deletePhoto(photoId),
+        onSetCover: (photoId) => setMonumentCover(AlbumUI.getMonumentId(), photoId),
+        onSaveMemory: (note, tags) => saveExperience(note, tags),
+        onOpenMap: (id) => {
+            closeMonumentPhotos();
+            state.currentMonumentForMap = state.monuments.find(m => m.id === id) || null;
+            showMapView();
+        },
+        onRetrySync: () => flushPendingPhotos()
+    });
 }
 
-function toggleNoteEditing() {
-    setNoteEditing(!noteEditing);
+// ============================================================
+// De onde vem a fotografia (ponto 15)
+//
+// O fluxo e o MESMO de sempre — camara ou galeria. O que mudou e
+// que passa a haver um so botao no album, e a escolha faz-se aqui.
+// ============================================================
+function openPhotoSourcePicker() {
+    if (!albumPick) { uploadPhoto(); return; }
+    albumPick.classList.remove('hidden');
+    albumPick.setAttribute('aria-hidden', 'false');
 }
 
-// --- Memorias rapidas ---
+function closePhotoSourcePicker() {
+    if (!albumPick) return;
+    albumPick.classList.add('hidden');
+    albumPick.setAttribute('aria-hidden', 'true');
+}
+
+// ============================================================
+// A CAPA DO ALBUM (pontos 8, 9 e 40 do enunciado)
+//
+// NAO HAVIA conceito equivalente no projecto: as fotografias eram
+// uma lista sem nenhuma em destaque. Esta e a solucao minima.
+//
+// ONDE VIVE: ao lado da experiencia e das etiquetas, porque e a
+// mesma natureza de dado — uma escolha da PESSOA sobre um
+// monumento. Localmente numa chave `monument_cover_<id>__<dono>`,
+// como as outras; na nuvem, numa coluna de `monument_entries`,
+// que ja e a linha "esta pessoa, este monumento".
+//
+// Assim nao nasce tabela nenhuma, e a capa sobe pela fila de
+// sincronizacao que ja existe — ou seja, funciona offline sem uma
+// linha de codigo nova.
+// ============================================================
+function getMonumentCover(monumentId) {
+    return localStorage.getItem(monumentKey('cover', monumentId)) || null;
+}
+
+function clearMonumentCover(monumentId) {
+    localStorage.removeItem(monumentKey('cover', monumentId));
+    queueMonumentEntry(monumentId);
+}
+
+function setMonumentCover(monumentId, photoId) {
+    // So uma fotografia deste album pode ser capa. Um id vindo de
+    // fora nao passa daqui (ponto 55).
+    if (!Album.canBeCover(monumentId, photoId)) return false;
+
+    localStorage.setItem(monumentKey('cover', monumentId), photoId);
+    queueMonumentEntry(monumentId);
+
+    renderMonumentPage();
+    AlbumUI.toast(t('album.coverChanged'));
+    return true;
+}
+
+// A entrada deste monumento, tal como esta agora em casa. Uma so
+// funcao para nao haver duas versoes do que se envia.
+function queueMonumentEntry(monumentId) {
+    HeritageCloud.queueEntry(
+        monumentId,
+        savedNoteFor(monumentId),
+        getMonumentTags(monumentId),
+        getMonumentCover(monumentId)
+    );
+}
+
+// --- Etiquetas de memoria ---
 function getMonumentTags(monumentId) {
     try {
         const saved = JSON.parse(localStorage.getItem(monumentKey('tags', monumentId)));
@@ -3270,31 +3315,6 @@ function getMonumentTags(monumentId) {
     } catch (e) {
         return [];
     }
-}
-
-function renderMemoryTags() {
-    monumentPageTags.innerHTML = '';
-
-    MEMORY_TAGS.forEach(tag => {
-        const isOn = state.monumentTagsDraft.indexOf(tag.id) !== -1;
-        const tagButton = document.createElement('button');
-        tagButton.type = 'button';
-        tagButton.className = `hh-mp-tag ${isOn ? 'is-on' : ''}`;
-        tagButton.setAttribute('aria-pressed', isOn ? 'true' : 'false');
-        tagButton.innerHTML = `<i class="${tag.icon}"></i><span>${t(tag.key)}</span>`;
-        tagButton.addEventListener('click', () => toggleMemoryTag(tag.id));
-        monumentPageTags.appendChild(tagButton);
-    });
-}
-
-function toggleMemoryTag(tagId) {
-    const index = state.monumentTagsDraft.indexOf(tagId);
-    if (index === -1) {
-        state.monumentTagsDraft.push(tagId);
-    } else {
-        state.monumentTagsDraft.splice(index, 1);
-    }
-    renderMemoryTags();
 }
 
 // --- Album de fotos ---
@@ -3384,86 +3404,17 @@ function saveMonumentPhotos(monumentId, photos) {
     localStorage.setItem(monumentKey('photos', monumentId), JSON.stringify(photos));
 }
 
-function updateUserPhotosGrid() {
-    if (!state.currentMonumentForPhotos) return;
-
-    const monumentId = state.currentMonumentForPhotos.id;
-    const savedPhotos = getMonumentPhotos(monumentId);
-    const isFull = savedPhotos.length >= MONUMENT_PHOTO_LIMIT;
-
-    monumentPagePhotoCount.textContent = savedPhotos.length === 1
-        ? t('photosCountOne')
-        : t('photosCountMany', { n: savedPhotos.length });
-    monumentPageAlbumCount.textContent = t('albumCount', {
-        n: savedPhotos.length,
-        max: MONUMENT_PHOTO_LIMIT
-    });
-
-    userPhotosGrid.innerHTML = '';
-
-    renderPhotoXpHint(monumentId);
-
-    savedPhotos.forEach((photo, index) => {
-        const photoElement = document.createElement('div');
-        photoElement.className = 'hh-mp-photo';
-        // A grelha aparece de imediato; as que vivem no Storage
-        // recebem o link assinado logo a seguir (hydratePhotoUrls).
-        photoElement.innerHTML = `
-            <img src="${photo.pending ? photo.data : PHOTO_PLACEHOLDER}"
-                 alt="${t('photoAlt')} ${index + 1}"
-                 data-path="${photo.path || ''}">
-            <button type="button" class="hh-mp-photo-del" title="${t('close')}">
-                <i class="fas fa-times"></i>
-            </button>
-        `;
-        photoElement.querySelector('.hh-mp-photo-del')
-            .addEventListener('click', () => deletePhoto(index));
-        userPhotosGrid.appendChild(photoElement);
-    });
-
-    const addButton = document.createElement('button');
-    addButton.type = 'button';
-    addButton.className = `hh-mp-add ${isFull ? 'is-full' : ''}`;
-    addButton.innerHTML = `<i class="fas fa-camera"></i><span>${t('addPhoto')}</span>`;
-    addButton.addEventListener('click', () => {
-        if (isFull) {
-            alert(t('photoLimitReached', { max: MONUMENT_PHOTO_LIMIT }));
-            return;
-        }
-        uploadPhoto();
-    });
-    userPhotosGrid.appendChild(addButton);
-
-    hydratePhotoUrls(monumentId);
-}
-
-// Pede os links assinados das fotografias visiveis e pinta-as.
-async function hydratePhotoUrls(monumentId) {
-    const paths = getMonumentPhotos(monumentId)
-        .filter(function (photo) { return !!photo.path; })
-        .map(function (photo) { return photo.path; });
-
-    if (!paths.length) return;
-
-    const urls = await HeritageCloud.signImageUrls(paths);
-
-    // A pagina pode ter mudado enquanto esperavamos: so pintamos se
-    // ainda for este o monumento aberto.
-    if (!state.currentMonumentForPhotos) return;
-    if (state.currentMonumentForPhotos.id !== monumentId) return;
-
-    userPhotosGrid.querySelectorAll('img[data-path]').forEach(function (img) {
-        const url = urls[img.dataset.path];
-        if (url) img.src = url;
-    });
-}
-
 // --- Guardar experiencia (nota + etiquetas) ---
-function saveExperience() {
-    if (!state.currentMonumentForPhotos) return;
+//
+// A nota e as etiquetas chegam do editor. O que vem a seguir e o
+// MESMO de sempre: a regra dos 10 caracteres, o XP uma unica vez,
+// a sequencia, a missao da semana e o funil.
+function saveExperience(rawNote, rawTags) {
+    const monumentId = AlbumUI.getMonumentId();
+    if (monumentId === null || monumentId === undefined) return;
 
-    const monumentId = state.currentMonumentForPhotos.id;
-    const note = monumentNote.value.trim();
+    const note = (rawNote || '').trim();
+    const tags = Array.isArray(rawTags) ? rawTags : [];
 
     if (note) {
         localStorage.setItem(monumentKey('note', monumentId), note);
@@ -3471,17 +3422,15 @@ function saveExperience() {
         localStorage.removeItem(monumentKey('note', monumentId));
     }
 
-    if (state.monumentTagsDraft.length) {
-        localStorage.setItem(monumentKey('tags', monumentId), JSON.stringify(state.monumentTagsDraft));
+    if (tags.length) {
+        localStorage.setItem(monumentKey('tags', monumentId), JSON.stringify(tags));
     } else {
         localStorage.removeItem(monumentKey('tags', monumentId));
     }
 
-    // A experiencia e as etiquetas seguem para a nuvem; as
-    // fotografias deste monumento ficam aqui, neste browser.
-    HeritageCloud.queueEntry(monumentId, note, state.monumentTagsDraft);
-
-    setNoteEditing(false);
+    // A experiencia, as etiquetas e a capa seguem para a nuvem; os
+    // FICHEIROS das fotografias seguem pelo seu proprio caminho.
+    queueMonumentEntry(monumentId);
 
     // XP: so a primeira experiencia com conteudo real rende, e editar
     // ou voltar a guardar nao rende outra vez (pontos 12 e 13).
@@ -3493,15 +3442,13 @@ function saveExperience() {
             entityId: 'experience_' + monumentId
         }]);
     }
-    renderExperienceXpHint(monumentId);
-
     // So conta como exploracao se houver mesmo uma memoria registada
     let streakResult = null;
-    if (note || state.monumentTagsDraft.length) {
+    if (note || tags.length) {
         streakResult = registerExploration(
             ExplorationStreak.ACTIVITY.EXPERIENCE_SAVED,
             monumentId,
-            { hasNote: !!note, tags: state.monumentTagsDraft.length }
+            { hasNote: !!note, tags: tags.length }
         );
     }
 
@@ -3514,6 +3461,11 @@ function saveExperience() {
     }
 
     announceReward(xpBatch, streakResult, t('experienceSaved'));
+
+    // A pagina reflecte a memoria acabada de escrever: o selo pode
+    // ter passado a MEMORIA GUARDADA, e as etiquetas ja fazem parte
+    // da propria memoria.
+    renderMonumentPage();
     renderEngagement();
 }
 
@@ -3584,10 +3536,14 @@ function handlePhotoUpload(event) {
 // mesmo guardada — na nuvem, ou em casa a espera de subir. Nunca se
 // anuncia o que nao ficou gravado (ponto 4 da seccao 13).
 async function savePhoto(source) {
-    if (!state.currentMonumentForPhotos) return;
+    const monumentId = AlbumUI.isOpen()
+        ? AlbumUI.getMonumentId()
+        : (state.currentMonumentForPhotos && state.currentMonumentForPhotos.id);
 
-    const monumentId = state.currentMonumentForPhotos.id;
+    if (monumentId === null || monumentId === undefined) return;
+
     const savedPhotos = getMonumentPhotos(monumentId);
+    const wasFirst = savedPhotos.length === 0;
 
     if (savedPhotos.length >= MONUMENT_PHOTO_LIMIT) {
         alert(t('photoLimitReached', { max: MONUMENT_PHOTO_LIMIT }));
@@ -3625,7 +3581,9 @@ async function savePhoto(source) {
     savedPhotos.push(photo);
     saveMonumentPhotos(monumentId, savedPhotos);
 
-    updateUserPhotosGrid();
+    // A entrada da fotografia anima UMA vez (ponto 38)
+    AlbumUI.markNewPhoto();
+    renderMonumentPage();
 
     // XP: so as primeiras fotografias de cada monumento rendem, e os
     // lugares gastos nunca sao devolvidos ao apagar (pontos 10 e 11).
@@ -3634,9 +3592,6 @@ async function savePhoto(source) {
         monumentId: monumentId,
         entityId: photo.id
     }]);
-
-    // A pista tem de reflectir o lugar que esta atribuicao acabou de gastar
-    renderPhotoXpHint(monumentId);
 
     // Varias fotos no mesmo dia continuam a valer um unico dia
     const streakResult = registerExploration(
@@ -3652,6 +3607,10 @@ async function savePhoto(source) {
     registerMissionAction(WeeklyMissions.GOAL.ADD_PHOTO, monumentId, { ref: photo.id });
 
     announceReward(xpBatch, streakResult, photoSavedMessage(photo, compressed));
+
+    // A primeira fotografia de um album merece a frase certa
+    // (ponto 38). Pequeno: a celebracao grande e da descoberta.
+    AlbumUI.toast(wasFirst ? t('album.firstMemoryKept') : t('album.photoAdded'));
 
     // O cartao do loop reflecte a memoria acabada de guardar
     renderEngagement();
@@ -3765,11 +3724,15 @@ async function preparePendingPhoto(photo) {
     }
 }
 
-async function deletePhoto(index) {
-    if (!state.currentMonumentForPhotos) return;
+// Por ID, e nao por indice: a composicao do album poe a capa em
+// primeiro lugar, por isso a posicao no ecra ja nao e a posicao na
+// lista — e apagar pela posicao apagava a fotografia errada.
+async function deletePhoto(photoId) {
+    const monumentId = AlbumUI.getMonumentId();
+    if (monumentId === null || monumentId === undefined) return;
 
-    const monumentId = state.currentMonumentForPhotos.id;
     const savedPhotos = getMonumentPhotos(monumentId);
+    const index = savedPhotos.findIndex(function (entry) { return entry.id === photoId; });
     const photo = savedPhotos[index];
 
     if (!photo) return;
@@ -3791,7 +3754,14 @@ async function deletePhoto(index) {
     // apagar e voltar a adicionar nao rende XP outra vez.
     savedPhotos.splice(index, 1);
     saveMonumentPhotos(monumentId, savedPhotos);
-    updateUserPhotosGrid();
+
+    // Apagar a capa nao pode deixar o album sem imagem: a escolha
+    // fica orfa, limpa-se, e a capa cai para a primeira fotografia
+    // — ou para a imagem oficial, se ja nao houver nenhuma.
+    if (Album.coverIsOrphan(monumentId)) clearMonumentCover(monumentId);
+
+    renderMonumentPage();
+    renderEngagement();
 }
 
 // Mostra/oculta a senha nos campos do ecra de autenticacao
@@ -3836,21 +3806,32 @@ closeMonumentModal.addEventListener('click', closeMonumentDetails);
 locateUserBtn.addEventListener('click', locateUser);
 if (mapFullscreenBtn) mapFullscreenBtn.addEventListener('click', toggleMapFullscreen);
 
-// Monument page listeners
-closeMonumentPhotosModal.addEventListener('click', closeMonumentPhotos);
-takePhotoBtn.addEventListener('click', takePhoto);
-uploadPhotoBtn.addEventListener('click', uploadPhoto);
-photoUploadInput.addEventListener('change', handlePhotoUpload);
-editNoteBtn.addEventListener('click', toggleNoteEditing);
-saveNoteBtn.addEventListener('click', saveExperience);
+// De onde vem a fotografia: camara ou galeria, como sempre
+if (albumPick) {
+    albumPick.addEventListener('click', (e) => {
+        if (e.target === albumPick) closePhotoSourcePicker();
+    });
+}
+if (albumPickCamera) {
+    albumPickCamera.addEventListener('click', () => {
+        closePhotoSourcePicker();
+        takePhoto();
+    });
+}
+if (albumPickGallery) {
+    albumPickGallery.addEventListener('click', () => {
+        closePhotoSourcePicker();
+        uploadPhoto();
+    });
+}
+if (albumPickCancel) {
+    albumPickCancel.addEventListener('click', closePhotoSourcePicker);
+}
 
-// Fechar a pagina do monumento tocando fora da folha ou com Esc
-monumentPhotosModal.addEventListener('click', (e) => {
-    if (e.target === monumentPhotosModal) closeMonumentPhotos();
-});
-document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && isMonumentPageOpen()) closeMonumentPhotos();
-});
+// O album: o ficheiro e a camara continuam a ser operados aqui; o
+// resto da pagina responde ao proprio album-ui.js, que trata do
+// Esc, dos menus e do visualizador por camadas.
+photoUploadInput.addEventListener('change', handlePhotoUpload);
 
 // Camera Modal listeners
 closeCameraModal.addEventListener('click', closeCameraCapture);
@@ -3892,6 +3873,7 @@ async function initApp() {
     initJourney();
     // Depois da jornada: o loop le o percurso, o XP e as zonas
     initEngagement();
+    initAlbum();
     initDiscoveryCelebration();
     initRanking();
 

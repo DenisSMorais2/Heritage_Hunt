@@ -2466,77 +2466,12 @@ body.hh-no-scroll {
 .hh-mp-overlay.hidden {
     display: none;
 }
-.hh-mp-sheet {
-    width: 100%;
-    max-width: 28rem;
-    max-height: 100%;
-    min-height: 0;
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    -webkit-overflow-scrolling: touch;
-    border-radius: 22px;
-    background: linear-gradient(180deg, #0C1C33 0%, #102544 45%, #0A1729 100%);
-    border: 1px solid rgba(233, 240, 249, 0.14);
-    box-shadow: 0 26px 60px rgba(3, 10, 20, 0.7);
-    animation: mpSlideUp 0.38s cubic-bezier(0.22, 1, 0.36, 1);
-}
 @keyframes mpSlideUp {
     from { opacity: 0; transform: translateY(34px) scale(0.98); }
     to { opacity: 1; transform: translateY(0) scale(1); }
 }
-.hh-mp-sheet::-webkit-scrollbar {
-    width: 0;
-}
 
 /* --- Imagem de topo --- */
-.hh-mp-hero {
-    position: relative;
-    /* Proporcao em vez de altura fixa: a imagem acompanha a largura
-       da folha sem deformar nem comer o ecra em telefones baixos. */
-    height: auto;
-    aspect-ratio: 16 / 11;
-    max-height: 240px;
-    min-height: 150px;
-    flex-shrink: 0;
-}
-.hh-mp-hero-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-}
-.hh-mp-hero-shade {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    background: linear-gradient(180deg, rgba(8, 18, 34, 0.55) 0%, rgba(8, 18, 34, 0) 30%, rgba(14, 32, 58, 0.25) 58%, rgba(14, 32, 58, 0.9) 86%, #0E203A 100%);
-}
-.hh-mp-crest {
-    position: absolute;
-    top: 14px;
-    left: 14px;
-    display: flex;
-    align-items: center;
-    gap: 9px;
-    padding: 8px 14px 8px 11px;
-    border-radius: 12px;
-    background: rgba(9, 20, 36, 0.78);
-    border: 1px solid rgba(214, 178, 116, 0.6);
-    backdrop-filter: blur(6px);
-    box-shadow: 0 6px 16px rgba(3, 10, 20, 0.45);
-}
-.hh-mp-crest i {
-    font-size: 17px;
-    color: var(--hh-gold);
-}
-.hh-mp-crest-text {
-    font-size: 9.5px;
-    font-weight: 700;
-    line-height: 1.32;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: #F2F6FC;
-}
 .hh-mp-close {
     position: absolute;
     top: 14px;
@@ -2563,94 +2498,8 @@ body.hh-no-scroll {
 }
 
 /* --- Cabecalho do monumento --- */
-.hh-mp-body {
-    position: relative;
-    margin-top: -34px;
-    padding: 0 var(--hh-gutter) 18px;
-}
-.hh-mp-headline {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    flex-wrap: wrap;
-}
-.hh-mp-title {
-    font-family: "Playfair Display", Georgia, "Times New Roman", serif;
-    font-size: clamp(22px, 7vw, 30px);
-    font-weight: 700;
-    line-height: 1.12;
-    letter-spacing: 0.2px;
-    color: #F5F8FD;
-    overflow-wrap: anywhere;
-    text-shadow: 0 2px 12px rgba(4, 10, 20, 0.8);
-    min-width: 0;
-    flex: 1 1 auto;
-}
-.hh-mp-status {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    flex-shrink: 0;
-    padding: 8px 15px;
-    border-radius: 999px;
-    font-size: 13.5px;
-    font-weight: 600;
-    color: #4ADE9B;
-    background: rgba(74, 222, 155, 0.12);
-    border: 1px solid rgba(74, 222, 155, 0.5);
-}
-.hh-mp-status i {
-    font-size: 15px;
-}
-.hh-mp-place {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-top: 8px;
-    font-size: 14px;
-    color: #C3D2E6;
-}
-.hh-mp-place i {
-    font-size: 14px;
-    color: var(--hh-gold-soft);
-}
-.hh-mp-sub {
-    margin-top: 8px;
-    font-size: 13.5px;
-    color: var(--hh-muted);
-}
 
 /* --- Chips de resumo --- */
-.hh-mp-chips {
-    display: flex;
-    gap: 9px;
-    margin-top: 14px;
-    overflow-x: auto;
-    padding-bottom: 2px;
-    scrollbar-width: none;
-}
-.hh-mp-chips::-webkit-scrollbar {
-    height: 0;
-}
-.hh-mp-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    flex-shrink: 0;
-    padding: 11px 14px;
-    border-radius: 12px;
-    font-size: 13.5px;
-    color: #DCE6F2;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(233, 240, 249, 0.14);
-    white-space: nowrap;
-}
-.hh-mp-chip b {
-    font-size: 15px;
-    font-weight: 700;
-    color: #F2F6FC;
-}
 .hh-chip-gold {
     font-size: 15px;
     color: var(--hh-gold);
@@ -2680,27 +2529,6 @@ body.hh-no-scroll {
     border-radius: 0 3px 3px 0;
     background: linear-gradient(180deg, var(--hh-gold), rgba(214, 178, 116, 0));
 }
-.hh-mp-card-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    /* Quando o titulo e o botao deixam de caber lado a lado, o botao
-       desce em vez de se sobrepor ao texto. */
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-bottom: 12px;
-}
-.hh-mp-card-title {
-    display: flex;
-    align-items: center;
-    gap: 11px;
-    flex: 1 1 auto;
-    min-width: 0;
-    font-family: "Playfair Display", Georgia, serif;
-    font-size: clamp(16px, 4.8vw, 19px);
-    font-weight: 700;
-    color: #F2F6FC;
-}
 .hh-mp-card-icon {
     width: 32px;
     height: 32px;
@@ -2714,291 +2542,21 @@ body.hh-no-scroll {
     background: rgba(214, 178, 116, 0.14);
     border: 1px solid rgba(214, 178, 116, 0.32);
 }
-.hh-mp-card-sub {
-    margin: -6px 0 12px;
-    font-size: 12.5px;
-    line-height: 1.45;
-    color: var(--hh-muted);
-}
-.hh-mp-count {
-    flex-shrink: 0;
-    font-size: 12.5px;
-    color: var(--hh-muted);
-    white-space: nowrap;
-}
-.hh-mp-ghost-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    flex-shrink: 0;
-    padding: 9px 15px;
-    border-radius: 999px;
-    font-size: 13.5px;
-    font-weight: 600;
-    color: #7FB2FF;
-    background: rgba(59, 130, 246, 0.1);
-    border: 1px solid rgba(96, 165, 250, 0.45);
-    transition: all 0.25s ease;
-}
-.hh-mp-ghost-btn:hover {
-    background: rgba(59, 130, 246, 0.25);
-    border-color: rgba(96, 165, 250, 0.8);
-    color: #DCE9FF;
-}
-.hh-mp-ghost-btn.is-editing {
-    color: #4ADE9B;
-    background: rgba(74, 222, 155, 0.12);
-    border-color: rgba(74, 222, 155, 0.5);
-}
 
 /* --- Minha experiencia --- */
-.hh-mp-note {
-    padding: 13px 14px;
-    border-radius: 11px;
-    background: rgba(10, 23, 41, 0.55);
-    border: 1px solid rgba(233, 240, 249, 0.1);
-}
-.hh-mp-note-text {
-    font-size: 14.5px;
-    line-height: 1.6;
-    color: #DCE6F2;
-    white-space: pre-wrap;
-    word-break: break-word;
-}
-.hh-mp-note-text.is-empty {
-    font-style: italic;
-    color: var(--hh-muted);
-}
-.hh-mp-note-input {
-    width: 100%;
-    min-height: 96px;
-    resize: vertical;
-    background: transparent;
-    border: 0;
-    outline: none;
-    font-size: 14.5px;
-    line-height: 1.6;
-    color: #F2F6FC;
-    font-family: inherit;
-}
-.hh-mp-note-input::placeholder {
-    color: #6F849D;
-}
 
 /* --- Album de fotos --- */
-.hh-mp-grid {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: clamp(6px, 2.2vw, 9px);
-}
-.hh-mp-photo {
-    position: relative;
-    border-radius: 10px;
-    overflow: hidden;
-    aspect-ratio: 3 / 4;
-    border: 1px solid rgba(233, 240, 249, 0.14);
-}
-.hh-mp-photo img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-    transition: transform 0.3s ease;
-}
-.hh-mp-photo:hover img {
-    transform: scale(1.06);
-}
-.hh-mp-photo-del {
-    position: absolute;
-    top: 4px;
-    right: 4px;
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 10px;
-    color: #FFFFFF;
-    background: rgba(220, 38, 38, 0.9);
-    border: 1px solid rgba(255, 255, 255, 0.35);
-    opacity: 0;
-    transition: opacity 0.25s ease;
-}
-.hh-mp-photo:hover .hh-mp-photo-del,
-.hh-mp-photo:focus-within .hh-mp-photo-del {
-    opacity: 1;
-}
-.hh-mp-add {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    aspect-ratio: 3 / 4;
-    padding: 4px;
-    border-radius: 10px;
-    text-align: center;
-    font-size: 11.5px;
-    line-height: 1.25;
-    font-weight: 600;
-    color: #7FB2FF;
-    background: rgba(59, 130, 246, 0.08);
-    border: 1.5px dashed rgba(96, 165, 250, 0.6);
-    transition: all 0.25s ease;
-}
-.hh-mp-add i {
-    font-size: 17px;
-}
-.hh-mp-add:hover {
-    background: rgba(59, 130, 246, 0.2);
-    border-color: rgba(96, 165, 250, 0.95);
-}
-.hh-mp-add.is-full {
-    color: var(--hh-muted);
-    background: rgba(255, 255, 255, 0.04);
-    border-color: rgba(233, 240, 249, 0.22);
-    cursor: not-allowed;
-}
-.hh-mp-actions {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
-    margin-top: 11px;
-}
-.hh-mp-action {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 9px;
-    padding: 13px 10px;
-    border-radius: 11px;
-    font-size: 14px;
-    font-weight: 600;
-    transition: all 0.25s ease;
-}
-.hh-mp-action i {
-    font-size: 15px;
-}
-.hh-mp-action.is-blue {
-    color: #7FB2FF;
-    background: rgba(59, 130, 246, 0.12);
-    border: 1px solid rgba(96, 165, 250, 0.45);
-}
-.hh-mp-action.is-blue:hover {
-    background: rgba(59, 130, 246, 0.28);
-    border-color: rgba(96, 165, 250, 0.85);
-    color: #E4EEFF;
-}
-.hh-mp-action.is-green {
-    color: #4ADE9B;
-    background: rgba(74, 222, 155, 0.1);
-    border: 1px solid rgba(74, 222, 155, 0.45);
-}
-.hh-mp-action.is-green:hover {
-    background: rgba(74, 222, 155, 0.24);
-    border-color: rgba(74, 222, 155, 0.85);
-    color: #DFFBEE;
-}
 
 /* --- Memorias rapidas --- */
-.hh-mp-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 9px;
-}
-.hh-mp-tag {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 15px;
-    border-radius: 999px;
-    font-size: 13px;
-    font-weight: 500;
-    color: #DCE6F2;
-    background: transparent;
-    border: 1px solid rgba(214, 178, 116, 0.45);
-    transition: all 0.25s ease;
-}
-.hh-mp-tag i {
-    font-size: 13px;
-    color: var(--hh-gold-soft);
-}
-.hh-mp-tag:hover {
-    border-color: var(--hh-gold);
-    background: rgba(214, 178, 116, 0.1);
-}
-.hh-mp-tag.is-on {
-    color: #12294A;
-    font-weight: 600;
-    background: linear-gradient(135deg, var(--hh-gold-soft), var(--hh-gold));
-    border-color: var(--hh-gold-soft);
-    box-shadow: 0 4px 12px rgba(214, 178, 116, 0.28);
-}
-.hh-mp-tag.is-on i {
-    color: #12294A;
-}
 
 /* --- Guardar --- */
-.hh-mp-save {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 11px;
-    width: 100%;
-    margin-top: 18px;
-    padding: 15px 16px;
-    border-radius: 14px;
-    font-size: 16px;
-    font-weight: 700;
-    color: #FFFFFF;
-    background: linear-gradient(135deg, #3B82F6, #2563EB);
-    box-shadow: 0 10px 26px rgba(37, 99, 235, 0.42);
-    transition: all 0.25s ease;
-}
-.hh-mp-save i {
-    font-size: 17px;
-}
-.hh-mp-save:hover {
-    background: linear-gradient(135deg, #4C8DF7, #1D4ED8);
-    box-shadow: 0 14px 32px rgba(37, 99, 235, 0.55);
-    transform: translateY(-1px);
-}
-.hh-mp-save:active {
-    transform: translateY(0);
-}
 
 @media (max-width: 380px) {
-    .hh-mp-title {
-        font-size: 26px;
-    }
-    .hh-mp-grid {
-        grid-template-columns: repeat(3, 1fr);
-    }
-    .hh-mp-chip {
-        padding: 10px 12px;
-        font-size: 12.5px;
-    }
 }
 
 /* --- Variante do tema claro --- */
 html:not(.dark) .hh-mp-overlay {
     background: rgba(24, 40, 66, 0.45);
-}
-html:not(.dark) .hh-mp-sheet {
-    background: linear-gradient(180deg, #FBF8F2 0%, #F4F1E9 55%, #EFEBE1 100%);
-    border-color: #E0D9C9;
-    box-shadow: 0 24px 54px rgba(24, 40, 66, 0.28);
-}
-html:not(.dark) .hh-mp-hero-shade {
-    background: linear-gradient(180deg, rgba(24, 40, 66, 0.4) 0%, rgba(24, 40, 66, 0) 30%, rgba(249, 246, 239, 0.4) 58%, rgba(249, 246, 239, 0.95) 86%, #F9F6EF 100%);
-}
-html:not(.dark) .hh-mp-crest {
-    background: rgba(255, 255, 255, 0.92);
-    border-color: rgba(168, 129, 63, 0.7);
-}
-html:not(.dark) .hh-mp-crest-text {
-    color: #12294A;
 }
 html:not(.dark) .hh-mp-close {
     background: rgba(255, 255, 255, 0.94);
@@ -3010,26 +2568,6 @@ html:not(.dark) .hh-mp-close:hover {
     border-color: #A8813F;
     color: #FFFFFF;
 }
-html:not(.dark) .hh-mp-title {
-    color: #12294A;
-    text-shadow: none;
-}
-html:not(.dark) .hh-mp-status {
-    color: #0F9D6B;
-    background: #E7F8F0;
-    border-color: rgba(15, 157, 107, 0.45);
-}
-html:not(.dark) .hh-mp-place {
-    color: #22344E;
-}
-html:not(.dark) .hh-mp-chip {
-    color: #22344E;
-    background: #FFFFFF;
-    border-color: #E4DED1;
-}
-html:not(.dark) .hh-mp-chip b {
-    color: #12294A;
-}
 html:not(.dark) .hh-chip-blue {
     color: #2563EB;
 }
@@ -3038,101 +2576,9 @@ html:not(.dark) .hh-mp-card {
     border-color: #E8E2D5;
     box-shadow: 0 6px 16px rgba(24, 40, 66, 0.06);
 }
-html:not(.dark) .hh-mp-card-title {
-    color: #12294A;
-}
 html:not(.dark) .hh-mp-card-icon {
     background: rgba(168, 129, 63, 0.12);
     border-color: rgba(168, 129, 63, 0.35);
-}
-html:not(.dark) .hh-mp-note {
-    background: #FAF8F2;
-    border-color: #E8E2D5;
-}
-html:not(.dark) .hh-mp-note-text {
-    color: #33445C;
-}
-html:not(.dark) .hh-mp-note-input {
-    color: #12294A;
-}
-html:not(.dark) .hh-mp-note-input::placeholder {
-    color: #94A3B8;
-}
-html:not(.dark) .hh-mp-ghost-btn {
-    color: #2563EB;
-    background: rgba(37, 99, 235, 0.07);
-    border-color: rgba(37, 99, 235, 0.4);
-}
-html:not(.dark) .hh-mp-ghost-btn:hover {
-    background: rgba(37, 99, 235, 0.15);
-    border-color: rgba(37, 99, 235, 0.7);
-    color: #1D4ED8;
-}
-html:not(.dark) .hh-mp-ghost-btn.is-editing {
-    color: #0F9D6B;
-    background: #E7F8F0;
-    border-color: rgba(15, 157, 107, 0.5);
-}
-html:not(.dark) .hh-mp-photo {
-    border-color: rgba(18, 41, 74, 0.12);
-}
-html:not(.dark) .hh-mp-add {
-    color: #2563EB;
-    background: rgba(37, 99, 235, 0.05);
-    border-color: rgba(37, 99, 235, 0.5);
-}
-html:not(.dark) .hh-mp-add:hover {
-    background: rgba(37, 99, 235, 0.13);
-    border-color: rgba(37, 99, 235, 0.85);
-}
-html:not(.dark) .hh-mp-add.is-full {
-    color: #7B8798;
-    background: #F2F0EA;
-    border-color: rgba(18, 41, 74, 0.2);
-}
-html:not(.dark) .hh-mp-action.is-blue {
-    color: #2563EB;
-    background: #EFF5FF;
-    border-color: #CBDFFB;
-}
-html:not(.dark) .hh-mp-action.is-blue:hover {
-    background: #DDEAFE;
-    border-color: rgba(37, 99, 235, 0.6);
-}
-html:not(.dark) .hh-mp-action.is-green {
-    color: #0F9D6B;
-    background: #ECFAF3;
-    border-color: #BCE9D3;
-}
-html:not(.dark) .hh-mp-action.is-green:hover {
-    background: #D7F3E7;
-    border-color: rgba(15, 157, 107, 0.6);
-}
-html:not(.dark) .hh-mp-tag {
-    color: #33445C;
-    border-color: rgba(168, 129, 63, 0.5);
-    background: #FFFFFF;
-}
-html:not(.dark) .hh-mp-tag i {
-    color: #A8813F;
-}
-html:not(.dark) .hh-mp-tag:hover {
-    background: rgba(168, 129, 63, 0.1);
-    border-color: #A8813F;
-}
-html:not(.dark) .hh-mp-tag.is-on {
-    color: #FFFFFF;
-    background: linear-gradient(135deg, #C29A55, #A8813F);
-    border-color: #A8813F;
-    box-shadow: 0 4px 12px rgba(168, 129, 63, 0.3);
-}
-html:not(.dark) .hh-mp-tag.is-on i {
-    color: #FFFFFF;
-}
-html:not(.dark) .hh-mp-count,
-html:not(.dark) .hh-mp-card-sub,
-html:not(.dark) .hh-mp-sub {
-    color: #5D6E86;
 }
 
 /* ==========================================================
@@ -4563,17 +4009,6 @@ html:not(.dark) .hh-streak-celebration-flame {
 .hh-xp-hint:empty {
     display: none;
 }
-.hh-mp-chip.is-earned {
-    border-color: rgba(214, 178, 116, 0.42);
-    background: rgba(214, 178, 116, 0.12);
-}
-.hh-mp-chip.is-earned::after {
-    content: "\f00c";
-    font-family: "Font Awesome 6 Free";
-    font-weight: 900;
-    font-size: 11px;
-    color: #4ADE9B;
-}
 
 /* --- Ecras muito estreitos (320px) --- */
 @media (max-width: 360px) {
@@ -4678,13 +4113,6 @@ html:not(.dark) .hh-zone-fill {
 }
 html:not(.dark) .hh-xp-hint.is-done {
     color: #5D6E86;
-}
-html:not(.dark) .hh-mp-chip.is-earned {
-    background: rgba(168, 129, 63, 0.12);
-    border-color: rgba(168, 129, 63, 0.42);
-}
-html:not(.dark) .hh-mp-chip.is-earned::after {
-    color: #0F9D6B;
 }
 html:not(.dark) .hh-xp-toast {
     background: #FFFFFF;
@@ -10329,5 +9757,1353 @@ body.cam-fullscreen-open {
     }
     .hh-cam-tip-btn i {
         transition: none;
+    }
+}
+
+/* ==========================================================
+   O ÁLBUM DO MONUMENTO
+
+   Uma página editorial, não um formulário. Lê-se de cima a
+   baixo: capa, o que vi, o que senti, o que descobri, onde foi.
+
+   E MUDA com o que a pessoa lá põe — `data-stage` no elemento da
+   página leva o estado do álbum, e é ele que aquece a capa
+   quando deixa de ser a imagem oficial.
+   ========================================================== */
+
+.hh-al-overlay {
+    position: fixed;
+    inset: 0;
+    /* Acima da navegação global e do mapa em ecrã inteiro: o
+       álbum é uma folha POR CIMA do ecrã de onde se veio. */
+    z-index: 70;
+    background: #060F1C;
+}
+.hh-al-overlay.hidden {
+    display: none;
+}
+
+.hh-al-page {
+    position: relative;
+    width: 100%;
+    max-width: 480px;
+    height: 100%;
+    margin: 0 auto;
+    overflow: hidden;
+    background: linear-gradient(180deg, #0A1729 0%, #0C1C33 40%, #08131F 100%);
+    color: var(--hh-cream);
+}
+
+.hh-al-scroll {
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    /* Espaço para a acção final não ficar colada à barra do sistema */
+    padding-bottom: calc(24px + var(--hh-safe-bottom));
+}
+
+/* --- Barra flutuante do topo (pontos 46, 47 e 48) --- */
+.hh-al-topbar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 12;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: calc(12px + var(--hh-safe-top)) var(--hh-gutter) 12px;
+    /* A faixa não rouba gestos à capa que está por baixo */
+    pointer-events: none;
+    background: linear-gradient(180deg, rgba(6, 15, 28, 0.72), rgba(6, 15, 28, 0));
+}
+.hh-al-topbar > * {
+    pointer-events: auto;
+}
+.hh-al-round {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Alvo confortável em qualquer ecrã (ponto 57) */
+    width: 44px;
+    height: 44px;
+    font-size: 17px;
+    border-radius: 50%;
+    color: var(--hh-cream);
+    background: rgba(8, 16, 28, 0.66);
+    border: 1px solid rgba(233, 240, 249, 0.18);
+    backdrop-filter: blur(8px);
+    transition: background 0.2s ease, color 0.2s ease;
+}
+.hh-al-round:hover {
+    background: rgba(8, 16, 28, 0.9);
+}
+.hh-al-round:focus-visible {
+    outline: 2px solid var(--hh-gold-soft);
+    outline-offset: 2px;
+}
+/* O nome só aparece depois de a capa sair: no topo dela já está
+   escrito em grande, e repeti-lo era escrevê-lo duas vezes. */
+.hh-al-topname {
+    flex: 1 1 auto;
+    min-width: 0;
+    text-align: center;
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 15px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--hh-cream);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+}
+.hh-al-scrolled .hh-al-topname {
+    opacity: 1;
+}
+
+/* --- Menus --- */
+.hh-al-menu {
+    position: absolute;
+    top: calc(64px + var(--hh-safe-top));
+    right: var(--hh-gutter);
+    z-index: 20;
+    min-width: 212px;
+    padding: 6px;
+    border-radius: 14px;
+    background: rgba(12, 24, 42, 0.97);
+    border: 1px solid rgba(233, 240, 249, 0.14);
+    box-shadow: 0 18px 40px rgba(2, 8, 16, 0.6);
+    backdrop-filter: blur(10px);
+}
+.hh-al-menu.is-photo {
+    top: auto;
+    /* Perto da fotografia, não no topo da página */
+    position: fixed;
+    left: 50%;
+    bottom: calc(24px + var(--hh-safe-bottom));
+    right: auto;
+    transform: translateX(-50%);
+    width: min(320px, calc(100% - 2 * var(--hh-gutter)));
+}
+.hh-al-menu.hidden {
+    display: none;
+}
+.hh-al-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    width: 100%;
+    min-height: 46px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    font-size: 14.5px;
+    text-align: left;
+    color: var(--hh-cream);
+    background: transparent;
+    transition: background 0.18s ease;
+}
+.hh-al-menu-item i {
+    width: 18px;
+    font-size: 15px;
+    color: var(--hh-gold-soft);
+}
+.hh-al-menu-item:hover {
+    background: rgba(233, 240, 249, 0.07);
+}
+.hh-al-menu-item:focus-visible {
+    outline: 2px solid var(--hh-gold-soft);
+    outline-offset: -2px;
+}
+.hh-al-menu-item.is-danger {
+    color: #F6B4B4;
+}
+.hh-al-menu-item.is-danger i {
+    color: #F08A8A;
+}
+.hh-al-menu-note {
+    padding: 8px 12px 4px;
+    font-size: 12.5px;
+    color: var(--hh-muted);
+}
+
+/* ==========================================================
+   A CAPA (pontos 5, 45)
+
+   Grande, mas nunca o ecrã inteiro: tem de ver-se que há
+   página por baixo.
+   ========================================================== */
+.hh-al-hero {
+    position: relative;
+    height: clamp(300px, 52dvh, 460px);
+    overflow: hidden;
+}
+.hh-al-hero-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+.hh-al-hero-shade {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        180deg,
+        rgba(6, 15, 28, 0.55) 0%,
+        rgba(6, 15, 28, 0.05) 32%,
+        rgba(6, 15, 28, 0.72) 74%,
+        #0A1729 100%
+    );
+}
+.hh-al-hero-text {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 0 var(--hh-gutter) 20px;
+    text-align: center;
+}
+.hh-al-kicker {
+    font-size: 11px;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: rgba(233, 240, 249, 0.82);
+}
+.hh-al-name {
+    margin-top: 6px;
+    font-family: "Playfair Display", Georgia, serif;
+    /* O nome é o título da página: grande, mas sempre inteiro */
+    font-size: clamp(26px, 8vw, 36px);
+    font-weight: 700;
+    line-height: 1.12;
+    letter-spacing: 0.01em;
+    color: #FFFFFF;
+    text-shadow: 0 2px 16px rgba(0, 0, 0, 0.55);
+}
+.hh-al-zone {
+    margin-top: 5px;
+    font-family: "Cormorant Garamond", Georgia, serif;
+    font-size: clamp(15px, 4.4vw, 18px);
+    color: rgba(233, 240, 249, 0.88);
+}
+
+/* --- O selo (pontos 6, 7, 39) --- */
+.hh-al-stamp {
+    display: inline-flex;
+    align-items: center;
+    gap: 11px;
+    margin-top: 14px;
+    padding: 9px 16px;
+    border-radius: 12px;
+    text-align: left;
+    background: rgba(10, 20, 36, 0.76);
+    border: 1px solid rgba(233, 240, 249, 0.2);
+    backdrop-filter: blur(8px);
+    transition: background 0.35s ease, border-color 0.35s ease;
+}
+.hh-al-stamp i {
+    font-size: 19px;
+    color: var(--hh-muted);
+    transition: color 0.35s ease;
+}
+.hh-al-stamp-text {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+.hh-al-stamp-text b {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--hh-cream);
+}
+.hh-al-stamp-text small {
+    font-size: 11.5px;
+    color: rgba(233, 240, 249, 0.72);
+}
+/* A recompensa visual: o selo aquece quando há memória guardada */
+.hh-al-stamp.is-saved {
+    background:
+        radial-gradient(120% 140% at 0% 0%, rgba(214, 178, 116, 0.28), transparent 62%),
+        rgba(10, 20, 36, 0.84);
+    border-color: rgba(214, 178, 116, 0.62);
+}
+.hh-al-stamp.is-saved i {
+    color: var(--hh-gold-soft);
+}
+.hh-al-stamp.is-saved .hh-al-stamp-text b {
+    color: var(--hh-gold-soft);
+}
+
+/* ==========================================================
+   NAVEGAÇÃO INTERNA (pontos 10 e 11)
+
+   Âncoras da mesma página. Cola ao topo quando a capa sai, e
+   ocupa pouco: não compete com a navegação global.
+   ========================================================== */
+.hh-al-nav {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    gap: 2px;
+    padding: 6px var(--hh-gutter) 0;
+    /* A barra flutuante do topo vive por cima; esta folga evita
+       que o primeiro separador fique debaixo dela. */
+    padding-top: calc(6px + var(--hh-safe-top));
+    background: linear-gradient(180deg, #0A1729 72%, rgba(10, 23, 41, 0.92));
+    border-bottom: 1px solid var(--hh-line);
+    backdrop-filter: blur(10px);
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+.hh-al-nav::-webkit-scrollbar {
+    display: none;
+}
+.hh-al-tab {
+    flex: 1 1 0;
+    min-width: 76px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    padding: 8px 4px 9px;
+    font-size: 11px;
+    line-height: 1.2;
+    text-align: center;
+    color: var(--hh-muted);
+    background: transparent;
+    border-bottom: 2px solid transparent;
+    transition: color 0.2s ease, border-color 0.2s ease;
+}
+.hh-al-tab i {
+    font-size: 16px;
+}
+.hh-al-tab.is-on {
+    color: var(--hh-gold-soft);
+    border-bottom-color: var(--hh-gold-soft);
+}
+.hh-al-tab:focus-visible {
+    outline: 2px solid var(--hh-gold-soft);
+    outline-offset: -2px;
+}
+
+/* ==========================================================
+   SECÇÕES
+   ========================================================== */
+.hh-al-body {
+    padding: 0 var(--hh-gutter);
+}
+.hh-al-sec {
+    /* Bastante ar entre secções: é o que faz a página parecer
+       uma revista e não um painel. */
+    padding: 26px 0 4px;
+    scroll-margin-top: 72px;
+}
+.hh-al-sec[hidden] {
+    display: none;
+}
+.hh-al-sec-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+.hh-al-sec-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: clamp(17px, 5vw, 20px);
+    font-weight: 700;
+    color: var(--hh-cream);
+}
+.hh-al-sec-title i {
+    font-size: 15px;
+    color: var(--hh-gold-soft);
+}
+.hh-al-sec-count {
+    flex: 0 0 auto;
+    font-size: 12.5px;
+    color: var(--hh-muted);
+    font-variant-numeric: tabular-nums;
+}
+
+/* ==========================================================
+   A MINHA VISITA — composição editorial (ponto 13)
+
+   Nada de grelha uniforme: a capa grande, as restantes em
+   cartões menores, e o "adicionar" como parte da composição.
+   ========================================================== */
+/* O bloco que segura a composicao: a capa em cima, a fila em
+   baixo. Sem grelha propria — quem a define e a fila. */
+.hh-al-visit {
+    display: block;
+}
+.hh-al-photo {
+    position: relative;
+    margin: 0;
+    border-radius: 14px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--hh-line);
+}
+.hh-al-photo.is-lead {
+    /* A proporção evita o salto de layout enquanto a imagem
+       não chega (ponto 58). */
+    aspect-ratio: 4 / 3;
+    margin-bottom: 10px;
+}
+.hh-al-photo-open {
+    display: block;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    background: transparent;
+    cursor: zoom-in;
+}
+.hh-al-photo-open img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+.hh-al-photo-open:focus-visible {
+    outline: 2px solid var(--hh-gold-soft);
+    outline-offset: -3px;
+}
+.hh-al-photo-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 11px;
+    border-radius: 999px;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--hh-cream);
+    background: rgba(8, 16, 28, 0.78);
+    border: 1px solid rgba(233, 240, 249, 0.16);
+    backdrop-filter: blur(6px);
+    pointer-events: none;
+}
+.hh-al-photo-badge i {
+    font-size: 12px;
+    color: var(--hh-gold-soft);
+}
+.hh-al-photo-menu {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 14px;
+    color: var(--hh-cream);
+    background: rgba(8, 16, 28, 0.7);
+    border: 1px solid rgba(233, 240, 249, 0.16);
+    backdrop-filter: blur(6px);
+}
+.hh-al-photo-menu:focus-visible {
+    outline: 2px solid var(--hh-gold-soft);
+    outline-offset: 2px;
+}
+/* À espera de rede (ponto 50): discreto, e a fotografia conta na
+   mesma — porque FOI guardada. */
+.hh-al-photo-sync {
+    position: absolute;
+    left: 8px;
+    bottom: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    color: #F0DCAE;
+    background: rgba(8, 16, 28, 0.82);
+    border: 1px solid rgba(214, 178, 116, 0.42);
+    pointer-events: none;
+}
+.hh-al-photo.is-pending .hh-al-photo-open img {
+    opacity: 0.88;
+}
+
+/* A fila das restantes + o cartão de adicionar */
+.hh-al-strip {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+    gap: 10px;
+}
+.hh-al-strip .hh-al-photo {
+    aspect-ratio: 1 / 1;
+}
+.hh-al-strip .hh-al-photo-badge span,
+.hh-al-strip .hh-al-photo-sync span {
+    display: none;
+}
+.hh-al-strip .hh-al-photo-badge,
+.hh-al-strip .hh-al-photo-sync {
+    padding: 6px;
+    border-radius: 50%;
+}
+
+.hh-al-add {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    aspect-ratio: 1 / 1;
+    padding: 8px;
+    border-radius: 14px;
+    font-size: 11.5px;
+    line-height: 1.25;
+    text-align: center;
+    color: var(--hh-muted);
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px dashed rgba(233, 240, 249, 0.24);
+    transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+.hh-al-add:hover:not(.is-full) {
+    color: var(--hh-gold-soft);
+    border-color: rgba(214, 178, 116, 0.6);
+    background: rgba(214, 178, 116, 0.06);
+}
+.hh-al-add:focus-visible {
+    outline: 2px solid var(--hh-gold-soft);
+    outline-offset: 2px;
+}
+.hh-al-add-ring {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    font-size: 14px;
+    border: 1px solid currentColor;
+}
+.hh-al-add.is-full {
+    color: rgba(157, 176, 200, 0.7);
+    border-style: solid;
+}
+.hh-al-add.is-full i {
+    font-size: 18px;
+    color: var(--hh-gold-soft);
+}
+
+/* --- Estado vazio: um convite, não um buraco (ponto 36) --- */
+.hh-al-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 30px 18px 26px;
+    text-align: center;
+    border-radius: 16px;
+    background:
+        radial-gradient(120% 120% at 50% 0%, rgba(214, 178, 116, 0.08), transparent 62%),
+        rgba(255, 255, 255, 0.025);
+    border: 1px solid var(--hh-line);
+}
+.hh-al-empty-crest {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    font-size: 20px;
+    color: var(--hh-gold-soft);
+    background: rgba(214, 178, 116, 0.1);
+    border: 1px solid rgba(214, 178, 116, 0.32);
+}
+.hh-al-empty-line {
+    font-family: "Cormorant Garamond", Georgia, serif;
+    font-size: clamp(19px, 5.6vw, 23px);
+    color: var(--hh-gold-soft);
+}
+.hh-al-empty-note {
+    font-size: 13.5px;
+    line-height: 1.45;
+    color: var(--hh-muted);
+    max-width: 30ch;
+}
+
+/* ==========================================================
+   A MINHA MEMÓRIA (pontos 19, 20, 23)
+
+   Página de diário, em papel quente. É o único sítio da app
+   com superfície clara — e é isso que a faz parecer escrita à
+   mão no meio de um álbum escuro.
+   ========================================================== */
+.hh-al-diary {
+    padding: 18px 18px 16px;
+    border-radius: 4px 16px 4px 16px;
+    color: #2E2517;
+    background: linear-gradient(170deg, #F6ECD8 0%, #EFE1C6 60%, #E7D6B6 100%);
+    border: 1px solid rgba(120, 96, 56, 0.28);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.55),
+        0 12px 26px rgba(2, 8, 16, 0.4);
+}
+.hh-al-diary-date {
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    color: #8A7448;
+}
+.hh-al-diary-text {
+    margin-top: 10px;
+    font-family: "Cormorant Garamond", Georgia, serif;
+    font-size: clamp(16.5px, 4.8vw, 19px);
+    line-height: 1.62;
+    color: #2E2517;
+    /* A memória é texto escrito por uma pessoa: as quebras dela
+       são parte do que escreveu. */
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+.hh-al-diary-sign {
+    margin-top: 12px;
+    font-family: "Cormorant Garamond", Georgia, serif;
+    font-size: 14.5px;
+    font-style: italic;
+    text-align: right;
+    color: #6F5B33;
+}
+
+/* As etiquetas fazem parte da memória, não de uma caixa à parte */
+.hh-al-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-top: 14px;
+}
+.hh-al-diary .hh-al-chip {
+    color: #4A3D22;
+    background: rgba(120, 96, 56, 0.12);
+    border-color: rgba(120, 96, 56, 0.3);
+}
+.hh-al-chip {
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 12.5px;
+    color: var(--hh-cream);
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--hh-line);
+}
+
+/* --- Sem memória escrita: uma pergunta, não um textarea --- */
+.hh-al-invite {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    padding: 26px 18px;
+    text-align: center;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.025);
+    border: 1px solid var(--hh-line);
+}
+.hh-al-invite-q {
+    font-family: "Cormorant Garamond", Georgia, serif;
+    font-size: clamp(18px, 5.4vw, 22px);
+    line-height: 1.4;
+    color: var(--hh-cream);
+    max-width: 26ch;
+}
+
+/* ==========================================================
+   A HISTÓRIA DO LUGAR (pontos 25 a 30)
+   ========================================================== */
+.hh-al-plate {
+    margin: 0 0 14px;
+    border-radius: 6px;
+    overflow: hidden;
+    /* Papel: uma moldura quente, sem filtro que torne a imagem
+       ilegível (ponto 28). */
+    padding: 8px;
+    background: linear-gradient(170deg, #E8DCC2, #D8C7A4);
+    border: 1px solid rgba(120, 96, 56, 0.35);
+    box-shadow: 0 12px 26px rgba(2, 8, 16, 0.45);
+}
+.hh-al-plate img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    border-radius: 3px;
+}
+.hh-al-know {
+    padding: 17px 17px 16px;
+    border-radius: 16px;
+    background:
+        radial-gradient(120% 130% at 0% 0%, rgba(214, 178, 116, 0.1), transparent 60%),
+        rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--hh-line);
+}
+.hh-al-know-title {
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--hh-gold-soft);
+}
+.hh-al-know-text {
+    margin-top: 8px;
+    font-size: 14.5px;
+    line-height: 1.6;
+    color: rgba(233, 240, 249, 0.9);
+}
+.hh-al-curio {
+    margin-top: 12px;
+    padding: 15px 16px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.025);
+    border: 1px solid var(--hh-line);
+}
+.hh-al-curio-label {
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--hh-gold-soft);
+}
+.hh-al-curio-text {
+    margin-top: 7px;
+    font-size: 14px;
+    line-height: 1.55;
+    color: rgba(233, 240, 249, 0.86);
+}
+
+/* ==========================================================
+   A VISITA EM NÚMEROS (ponto 31)
+
+   Três indicadores. Nem um a mais — isto não é um painel.
+   ========================================================== */
+.hh-al-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    padding: 16px 12px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--hh-line);
+}
+.hh-al-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    text-align: center;
+}
+.hh-al-stat i {
+    font-size: 16px;
+    color: var(--hh-gold-soft);
+}
+.hh-al-stat b {
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: clamp(22px, 7vw, 28px);
+    font-weight: 700;
+    line-height: 1;
+    color: var(--hh-cream);
+    font-variant-numeric: tabular-nums;
+}
+.hh-al-stat span {
+    font-size: 11.5px;
+    line-height: 1.3;
+    color: var(--hh-muted);
+}
+
+/* ==========================================================
+   A MINHA JORNADA (pontos 33 e 34)
+
+   Cartão com o lugar e um caminho para o mapa. Sem segunda
+   instância de Leaflet: o mapa desta app é um só.
+   ========================================================== */
+.hh-al-place {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    padding: 15px 15px;
+    border-radius: 16px;
+    background:
+        linear-gradient(135deg, rgba(23, 50, 90, 0.5), rgba(14, 32, 57, 0.75));
+    border: 1px solid var(--hh-line);
+}
+.hh-al-place-pin {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    font-size: 18px;
+    color: var(--hh-gold-soft);
+    background: rgba(214, 178, 116, 0.12);
+    border: 1px solid rgba(214, 178, 116, 0.34);
+}
+.hh-al-place-text {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.hh-al-place-text b {
+    font-size: 15px;
+    color: var(--hh-cream);
+}
+.hh-al-place-text span {
+    font-size: 13px;
+    color: var(--hh-muted);
+}
+.hh-al-place-btn {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 44px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--hh-gold-soft);
+    background: rgba(214, 178, 116, 0.1);
+    border: 1px solid rgba(214, 178, 116, 0.42);
+    transition: background 0.2s ease;
+}
+.hh-al-place-btn:hover {
+    background: rgba(214, 178, 116, 0.2);
+}
+.hh-al-place-btn:focus-visible {
+    outline: 2px solid var(--hh-gold-soft);
+    outline-offset: 2px;
+}
+
+/* ==========================================================
+   ACÇÕES
+   ========================================================== */
+.hh-al-foot {
+    padding: 26px 0 8px;
+}
+.hh-al-foot[hidden] {
+    display: none;
+}
+.hh-al-cta {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 11px;
+    width: 100%;
+    min-height: 52px;
+    padding: 14px 18px;
+    border-radius: 14px;
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: clamp(16px, 4.6vw, 18px);
+    font-weight: 700;
+    color: #17325A;
+    background: linear-gradient(135deg, #E7CE9A 0%, #D6B274 55%, #C9A263 100%);
+    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.35);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.hh-al-cta:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 14px 26px rgba(0, 0, 0, 0.45);
+}
+.hh-al-cta:focus-visible {
+    outline: 2px solid var(--hh-gold-soft);
+    outline-offset: 3px;
+}
+.hh-al-cta.is-ghost {
+    width: auto;
+    min-height: 46px;
+    padding: 12px 20px;
+    font-family: inherit;
+    font-size: 14.5px;
+    color: var(--hh-gold-soft);
+    background: rgba(214, 178, 116, 0.1);
+    border: 1px solid rgba(214, 178, 116, 0.45);
+    box-shadow: none;
+}
+.hh-al-cta.is-compact {
+    width: auto;
+    min-height: 46px;
+    padding: 12px 20px;
+    font-size: 15px;
+}
+.hh-al-ghost {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 9px 14px;
+    border-radius: 11px;
+    font-size: 13.5px;
+    color: var(--hh-cream);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--hh-line);
+    transition: background 0.2s ease;
+}
+.hh-al-ghost:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+.hh-al-ghost:focus-visible {
+    outline: 2px solid var(--hh-gold-soft);
+    outline-offset: 2px;
+}
+.hh-al-ghost[hidden] {
+    display: none;
+}
+.hh-al-ghost.is-wide {
+    width: 100%;
+    justify-content: center;
+}
+
+/* --- Aviso discreto (ponto 17) --- */
+.hh-al-toast {
+    position: absolute;
+    left: 50%;
+    bottom: calc(22px + var(--hh-safe-bottom));
+    z-index: 30;
+    transform: translate(-50%, 8px);
+    max-width: calc(100% - 2 * var(--hh-gutter));
+    padding: 11px 17px;
+    border-radius: 999px;
+    font-size: 13.5px;
+    text-align: center;
+    color: var(--hh-cream);
+    background: rgba(10, 22, 40, 0.96);
+    border: 1px solid rgba(214, 178, 116, 0.42);
+    box-shadow: 0 14px 30px rgba(2, 8, 16, 0.6);
+    opacity: 0;
+    transition: opacity 0.22s ease, transform 0.22s ease;
+    pointer-events: none;
+}
+.hh-al-toast.hidden {
+    display: none;
+}
+.hh-al-toast.is-on {
+    opacity: 1;
+    transform: translate(-50%, 0);
+}
+
+/* ==========================================================
+   VISUALIZADOR (ponto 18)
+   ========================================================== */
+.hh-al-viewer {
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(4, 9, 17, 0.97);
+}
+.hh-al-viewer.hidden {
+    display: none;
+}
+.hh-al-viewer-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: calc(12px + var(--hh-safe-top)) var(--hh-gutter) 12px;
+}
+.hh-al-viewer-count {
+    font-size: 14px;
+    font-variant-numeric: tabular-nums;
+    color: var(--hh-cream);
+}
+.hh-al-viewer-img {
+    max-width: 100%;
+    max-height: 74vh;
+    object-fit: contain;
+}
+.hh-al-viewer-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 17px;
+    color: var(--hh-cream);
+    background: rgba(12, 24, 42, 0.7);
+    border: 1px solid rgba(233, 240, 249, 0.16);
+}
+.hh-al-viewer-nav.is-prev { left: 10px; }
+.hh-al-viewer-nav.is-next { right: 10px; }
+.hh-al-viewer-nav[hidden] { display: none; }
+.hh-al-viewer-nav:focus-visible {
+    outline: 2px solid var(--hh-gold-soft);
+    outline-offset: 2px;
+}
+.hh-al-viewer-foot {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 14px var(--hh-gutter) calc(18px + var(--hh-safe-bottom));
+    text-align: center;
+}
+.hh-al-viewer-date {
+    font-size: 13.5px;
+    color: rgba(233, 240, 249, 0.86);
+}
+.hh-al-viewer-date[hidden] { display: none; }
+.hh-al-viewer-pending {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    margin-top: 8px;
+    padding: 5px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    color: #F0DCAE;
+    background: rgba(214, 178, 116, 0.12);
+    border: 1px solid rgba(214, 178, 116, 0.38);
+}
+.hh-al-viewer-pending[hidden] { display: none; }
+
+/* ==========================================================
+   EDITOR DA MEMÓRIA e SELECTOR DA FOTOGRAFIA
+   ========================================================== */
+.hh-al-editor {
+    position: fixed;
+    inset: 0;
+    z-index: 95;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    background: rgba(4, 9, 17, 0.7);
+    backdrop-filter: blur(3px);
+}
+.hh-al-editor.hidden {
+    display: none;
+}
+.hh-al-editor-panel {
+    width: 100%;
+    max-width: 480px;
+    max-height: 90dvh;
+    overflow-y: auto;
+    padding: 10px var(--hh-gutter) calc(18px + var(--hh-safe-bottom));
+    border-radius: 20px 20px 0 0;
+    background: linear-gradient(180deg, #13294A, #0C1C33);
+    border-top: 1px solid rgba(214, 178, 116, 0.32);
+    box-shadow: 0 -16px 40px rgba(2, 8, 16, 0.6);
+    animation: hhAlSheetIn 0.24s ease;
+}
+@keyframes hhAlSheetIn {
+    from { transform: translateY(14px); opacity: 0.7; }
+    to   { transform: translateY(0);    opacity: 1; }
+}
+.hh-al-editor-grip {
+    display: block;
+    width: 42px;
+    height: 4px;
+    margin: 0 auto 14px;
+    border-radius: 999px;
+    background: rgba(233, 240, 249, 0.28);
+}
+.hh-al-editor-title {
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 19px;
+    font-weight: 700;
+    color: var(--hh-cream);
+}
+.hh-al-editor-input {
+    width: 100%;
+    margin-top: 12px;
+    padding: 13px 14px;
+    border-radius: 12px;
+    font-family: "Cormorant Garamond", Georgia, serif;
+    font-size: 17px;
+    line-height: 1.55;
+    color: var(--hh-cream);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--hh-line);
+    resize: vertical;
+}
+.hh-al-editor-input:focus {
+    outline: none;
+    border-color: rgba(214, 178, 116, 0.6);
+}
+.hh-al-editor-q {
+    margin-top: 16px;
+    font-size: 13.5px;
+    color: var(--hh-muted);
+}
+.hh-al-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+}
+.hh-al-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 44px;
+    padding: 9px 14px;
+    border-radius: 999px;
+    font-size: 13.5px;
+    color: var(--hh-cream);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--hh-line);
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+.hh-al-tag i {
+    font-size: 13px;
+    color: var(--hh-muted);
+}
+.hh-al-tag.is-on {
+    color: var(--hh-gold-soft);
+    background: rgba(214, 178, 116, 0.14);
+    border-color: rgba(214, 178, 116, 0.55);
+}
+.hh-al-tag.is-on i {
+    color: var(--hh-gold-soft);
+}
+.hh-al-tag:focus-visible {
+    outline: 2px solid var(--hh-gold-soft);
+    outline-offset: 2px;
+}
+.hh-al-editor-foot {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+.hh-al-editor-panel.is-short .hh-al-pick {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 16px 0 12px;
+}
+.hh-al-pick-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    min-height: 96px;
+    padding: 14px 10px;
+    border-radius: 14px;
+    font-size: 13.5px;
+    color: var(--hh-cream);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--hh-line);
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+.hh-al-pick-btn i {
+    font-size: 22px;
+    color: var(--hh-gold-soft);
+}
+.hh-al-pick-btn:hover {
+    background: rgba(214, 178, 116, 0.1);
+    border-color: rgba(214, 178, 116, 0.45);
+}
+.hh-al-pick-btn:focus-visible {
+    outline: 2px solid var(--hh-gold-soft);
+    outline-offset: 2px;
+}
+
+/* ==========================================================
+   A entrada da primeira fotografia (ponto 38)
+
+   Fade e um toque de escala. Sem confetti: a celebração
+   grande pertence à descoberta.
+   ========================================================== */
+.hh-al-photo.is-new {
+    animation: hhAlPhotoIn 0.5s ease;
+}
+@keyframes hhAlPhotoIn {
+    from { opacity: 0; transform: scale(0.97); }
+    to   { opacity: 1; transform: scale(1); }
+}
+
+/* ==========================================================
+   Tema claro
+   ========================================================== */
+html:not(.dark) .hh-al-overlay {
+    background: #F3F6FB;
+}
+html:not(.dark) .hh-al-page {
+    background: linear-gradient(180deg, #FFFFFF 0%, #F4F7FC 40%, #EEF3FA 100%);
+    color: #12294A;
+}
+html:not(.dark) .hh-al-round,
+html:not(.dark) .hh-al-photo-menu {
+    color: #12294A;
+    background: rgba(255, 255, 255, 0.92);
+    border-color: rgba(18, 41, 74, 0.16);
+}
+html:not(.dark) .hh-al-topname,
+html:not(.dark) .hh-al-sec-title,
+html:not(.dark) .hh-al-stat b,
+html:not(.dark) .hh-al-chip,
+html:not(.dark) .hh-al-place-text b,
+html:not(.dark) .hh-al-editor-title,
+html:not(.dark) .hh-al-tag,
+html:not(.dark) .hh-al-pick-btn,
+html:not(.dark) .hh-al-ghost,
+html:not(.dark) .hh-al-menu-item {
+    color: #12294A;
+}
+html:not(.dark) .hh-al-nav {
+    background: linear-gradient(180deg, #FFFFFF 72%, rgba(255, 255, 255, 0.92));
+    border-bottom-color: rgba(18, 41, 74, 0.12);
+}
+html:not(.dark) .hh-al-sec-title i,
+html:not(.dark) .hh-al-tab.is-on,
+html:not(.dark) .hh-al-stat i,
+html:not(.dark) .hh-al-know-title,
+html:not(.dark) .hh-al-curio-label,
+html:not(.dark) .hh-al-place-pin,
+html:not(.dark) .hh-al-place-btn,
+html:not(.dark) .hh-al-empty-line,
+html:not(.dark) .hh-al-empty-crest,
+html:not(.dark) .hh-al-photo-badge i,
+html:not(.dark) .hh-al-tag.is-on,
+html:not(.dark) .hh-al-tag.is-on i,
+html:not(.dark) .hh-al-pick-btn i,
+html:not(.dark) .hh-al-menu-item i {
+    color: #7A5C25;
+}
+html:not(.dark) .hh-al-tab.is-on {
+    border-bottom-color: #A8813F;
+}
+html:not(.dark) .hh-al-know,
+html:not(.dark) .hh-al-curio,
+html:not(.dark) .hh-al-stats,
+html:not(.dark) .hh-al-invite,
+html:not(.dark) .hh-al-empty,
+html:not(.dark) .hh-al-photo,
+html:not(.dark) .hh-al-place,
+html:not(.dark) .hh-al-chip,
+html:not(.dark) .hh-al-tag,
+html:not(.dark) .hh-al-ghost,
+html:not(.dark) .hh-al-pick-btn {
+    background: rgba(255, 255, 255, 0.86);
+    border-color: rgba(18, 41, 74, 0.12);
+}
+html:not(.dark) .hh-al-know-text,
+html:not(.dark) .hh-al-curio-text {
+    color: #3C5070;
+}
+html:not(.dark) .hh-al-sec-count,
+html:not(.dark) .hh-al-empty-note,
+html:not(.dark) .hh-al-place-text span,
+html:not(.dark) .hh-al-stat span,
+html:not(.dark) .hh-al-editor-q,
+html:not(.dark) .hh-al-menu-note {
+    color: #5D6E86;
+}
+html:not(.dark) .hh-al-menu,
+html:not(.dark) .hh-al-editor-panel {
+    background: #FFFFFF;
+    border-color: rgba(18, 41, 74, 0.14);
+}
+html:not(.dark) .hh-al-editor-input {
+    color: #12294A;
+    background: rgba(18, 41, 74, 0.04);
+    border-color: rgba(18, 41, 74, 0.16);
+}
+html:not(.dark) .hh-al-add {
+    color: #5D6E86;
+    border-color: rgba(18, 41, 74, 0.2);
+}
+html:not(.dark) .hh-al-toast {
+    color: #12294A;
+    background: #FFFFFF;
+    border-color: rgba(168, 129, 63, 0.42);
+}
+/* A capa e o diário mantêm o seu próprio tom nos dois temas: a
+   fotografia é a protagonista, e o papel da memória é papel. */
+
+/* ==========================================================
+   Ecrãs estreitos (320 / 360)
+   ========================================================== */
+@media (max-width: 380px) {
+    .hh-al-hero {
+        height: clamp(268px, 48dvh, 380px);
+    }
+    .hh-al-strip {
+        grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+        gap: 8px;
+    }
+    .hh-al-tab {
+        min-width: 66px;
+        font-size: 10.5px;
+    }
+    .hh-al-stat span {
+        font-size: 10.5px;
+    }
+    .hh-al-stamp {
+        padding: 8px 13px;
+        gap: 9px;
+    }
+}
+
+@media (max-width: 330px) {
+    .hh-al-strip {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    /* A 320 px o botão do lugar vai para baixo do texto: lado a
+       lado ficavam os dois espremidos. */
+    .hh-al-place {
+        flex-wrap: wrap;
+    }
+    .hh-al-place-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* Em paisagem a capa encolhe: com pouca altura, uma capa de 52dvh
+   não deixava perceber que há página por baixo. */
+@media (orientation: landscape) and (max-height: 560px) {
+    .hh-al-hero {
+        height: clamp(220px, 70dvh, 320px);
+    }
+}
+
+/* ==========================================================
+   Movimento reduzido (pontos 49 e 57)
+   ========================================================== */
+@media (prefers-reduced-motion: reduce) {
+    .hh-al-photo.is-new,
+    .hh-al-editor-panel {
+        animation: none;
+    }
+    .hh-al-stamp,
+    .hh-al-stamp i,
+    .hh-al-topname,
+    .hh-al-toast,
+    .hh-al-cta {
+        transition: none;
+    }
+    .hh-al-cta:hover {
+        transform: none;
     }
 }

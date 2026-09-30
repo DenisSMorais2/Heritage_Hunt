@@ -463,7 +463,7 @@ const HeritageCloud = (function () {
         try {
             result = await client
                 .from('monument_entries')
-                .select('monument_id, note, tags')
+                .select('monument_id, note, tags, cover_photo_id')
                 .eq('user_id', sessionUserId);
         } catch (error) {
             return [];
@@ -475,17 +475,21 @@ const HeritageCloud = (function () {
             return {
                 monumentId: row.monument_id,
                 note: row.note || '',
-                tags: Array.isArray(row.tags) ? row.tags : []
+                tags: Array.isArray(row.tags) ? row.tags : [],
+                // A capa do album: uma escolha da pessoa sobre um
+                // monumento, como a nota e as etiquetas.
+                coverPhotoId: row.cover_photo_id || null
             };
         });
     }
 
-    function queueEntry(monumentId, note, tags) {
+    function queueEntry(monumentId, note, tags, coverPhotoId) {
         if (!available || !sessionUserId || !monumentId) return;
 
         pendingEntries[monumentId] = {
             note: note || '',
-            tags: Array.isArray(tags) ? tags : []
+            tags: Array.isArray(tags) ? tags : [],
+            coverPhotoId: coverPhotoId || null
         };
 
         if (entriesTimer) clearTimeout(entriesTimer);
@@ -507,7 +511,8 @@ const HeritageCloud = (function () {
                 user_id: sessionUserId,
                 monument_id: monumentId,
                 note: entry.note,
-                tags: entry.tags
+                tags: entry.tags,
+                cover_photo_id: entry.coverPhotoId
             };
         });
 
