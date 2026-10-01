@@ -1,0 +1,40 @@
+{
+  "name": "Heritage Hunt CV",
+  "short_name": "Heritage Hunt",
+  "description": "Descubra os tesouros de Mindelo — scanner de monumentos, missões e álbum de descobertas.",
+  "lang": "pt",
+  "dir": "ltr",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0A2A53",
+  "theme_color": "#0A2A53",
+  "categories": ["travel", "education", "entertainment"],
+  "icons": [
+    {
+      "src": "imagens/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "imagens/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "imagens/icons/icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "imagens/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
