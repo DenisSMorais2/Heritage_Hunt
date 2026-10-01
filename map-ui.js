@@ -915,6 +915,12 @@ const MapUI = (function () {
 
         if (elements.sheetClose) {
             elements.sheetClose.addEventListener('click', closeSheet);
+
+            // Arrastar a pega para baixo fecha, como nas outras
+            // folhas. Aqui o toque FORA continua a nao fechar, de
+            // proposito: o fundo e o mapa, e ele tem de continuar a
+            // responder ao dedo (ponto 13).
+            if (typeof Sheets !== 'undefined') Sheets.enableDrag(elements.sheet, closeSheet);
         }
 
         if (elements.sheet) {

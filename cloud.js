@@ -41,6 +41,16 @@ const HeritageCloud = (function () {
     // hora e sao renovados cinco minutos antes de expirar, para que
     // um album aberto ha muito tempo nunca mostre imagens partidas.
     const PHOTO_BUCKET = 'monument-photos';
+
+    // Separado do album de proposito: o album e privado ao dono, e
+    // uma fotografia numa conversa publica e para os outros verem.
+    // Misturar os dois obrigaria a abrir o bucket do album.
+    const CHAT_BUCKET = 'chat-photos';
+
+    // Separado do chat pela mesma razao: ciclos de vida
+    // diferentes. Uma publicacao e para ficar; uma fotografia de
+    // conversa envelhece com a conversa.
+    const POST_BUCKET = 'post-photos';
     const SIGNED_URL_TTL = 3600;
     const SIGNED_URL_MARGIN = 300;
 
@@ -878,6 +888,422 @@ const HeritageCloud = (function () {
         return !!pendingProfile || Object.keys(pendingEntries).length > 0;
     }
 
+    // --- Conversas -----------------------------------------------
+    //
+    // Tudo passa por funcoes do servidor, nunca por SELECT directo.
+    // A razao esta na migration 003: `profiles` so se le a si
+    // proprio, e um chat precisa do nome de quem escreveu. As
+    // funcoes devolvem uma projeccao publica — nome, avatar, XP e
+    // se descobriu este monumento — e mais nada.
+    //
+    // Como no resto deste ficheiro, daqui nunca sai texto visivel:
+    // sai uma chave de i18n.
+
+    async function callRpc(name, args) {
+        if (!available || !sessionUserId) return { ok: false, code: 'cloudUnavailable' };
+
+        let result;
+        try {
+            result = await client.rpc(name, args || {});
+        } catch (error) {
+            result = { error: error };
+        }
+
+        if (result.error) {
+            setStatus(navigator.onLine ? 'error' : 'offline');
+            return { ok: false, code: errorCode(result.error) };
+        }
+
+        const data = result.data;
+        if (!data || data.ok !== true) {
+            // O servidor recusou por uma razao que ele proprio
+            // nomeia (ritmo, tamanho, mensagem invalida). A razao
+            // sobe para o ecra poder explicar porque.
+            return { ok: false, code: 'cloudUnknownError', reason: (data && data.reason) || null };
+        }
+
+        setStatus('synced');
+        return Object.assign({ ok: true }, data);
+    }
+
+    async function listConversations() {
+        return callRpc('list_conversations', {});
+    }
+
+    async function getMessages(conversationId, options) {
+        const opts = options || {};
+        return callRpc('get_messages', {
+            p_conversation_id: conversationId,
+            p_before: opts.before || null,
+            p_after: opts.after || null,
+            p_limit: opts.limit || 40
+        });
+    }
+
+    async function sendMessage(conversationId, draft) {
+        const d = draft || {};
+        return callRpc('send_message', {
+            p_conversation_id: conversationId,
+            p_body: d.body || '',
+            p_kind: d.kind || 'text',
+            p_media_path: d.mediaPath || null,
+            p_reply_to: d.replyTo || null,
+            p_reference_kind: d.referenceKind || null,
+            p_reference_id: d.referenceId || null
+        });
+    }
+
+    async function markConversationRead(conversationId) {
+        return callRpc('mark_conversation_read', { p_conversation_id: conversationId });
+    }
+
+    async function editMessage(messageId, body) {
+        return callRpc('edit_message', { p_message_id: messageId, p_body: body });
+    }
+
+    async function deleteMessage(messageId) {
+        return callRpc('delete_message', { p_message_id: messageId });
+    }
+
+    async function setMessageHelpful(messageId, on) {
+        return callRpc('set_message_helpful', { p_message_id: messageId, p_on: on !== false });
+    }
+
+    async function reportMessage(messageId, reason) {
+        return callRpc('report_message', { p_message_id: messageId, p_reason: reason });
+    }
+
+    // --- Tempo real ----------------------------------------------
+    //
+    // O evento do Realtime e um AVISO, nao a mensagem.
+    //
+    // A linha que chega e a linha crua de `messages`: tem `user_id`
+    // e nao tem autor, porque o Realtime nao passa pelas nossas
+    // funcoes. Por isso o ouvinte nao desenha nada — diz a quem
+    // chamou que ha novidades, e o ecra vai busca-las com
+    // `getMessages({ after })`, ja montadas.
+    //
+    // Essa ida extra tambem resolve a reconexao: se a ligacao caiu e
+    // voltou, o `after` traz tudo o que se perdeu, nao so o ultimo.
+
+    function subscribeToConversation(conversationId, onChange) {
+        if (!available || !sessionUserId || !conversationId) return null;
+
+        let channel;
+        try {
+            channel = client
+                .channel('conversa:' + conversationId)
+                .on('postgres_changes', {
+                    event: '*',
+                    schema: 'public',
+                    table: 'messages',
+                    filter: 'conversation_id=eq.' + conversationId
+                }, function (payload) {
+                    try {
+                        onChange(payload && payload.eventType);
+                    } catch (e) { /* um ouvinte partido nao derruba o canal */ }
+                })
+                .subscribe();
+        } catch (error) {
+            console.warn('[cloud] tempo real indisponivel nesta conversa', error);
+            return null;
+        }
+
+        return channel;
+    }
+
+    function unsubscribe(channel) {
+        if (!channel || !client) return;
+        try { client.removeChannel(channel); } catch (e) { /* ja estava fechado */ }
+    }
+
+    // --- Fotografias de chat -------------------------------------
+    //
+    // Mesmo bucket privado em espirito que o album: o acesso e
+    // sempre por link assinado e temporario. O caminho comeca pelo
+    // `user_id` porque e sobre ele que a politica de escrita decide.
+
+    function chatPhotoPath(conversationId, extension) {
+        const stamp = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+        return sessionUserId + '/' + conversationId + '/' + stamp + '.' + extension;
+    }
+
+    async function uploadChatImage(path, blob, contentType) {
+        if (!available || !sessionUserId) return { ok: false, code: 'cloudUnavailable' };
+
+        let result;
+        try {
+            result = await client.storage
+                .from(CHAT_BUCKET)
+                .upload(path, blob, { contentType: contentType, upsert: false });
+        } catch (error) {
+            result = { error: error };
+        }
+
+        if (result.error) {
+            setStatus(navigator.onLine ? 'error' : 'offline');
+            return { ok: false, code: errorCode(result.error) };
+        }
+
+        setStatus('synced');
+        return { ok: true, path: path };
+    }
+
+    const chatUrlCache = {};   // path -> { url, expiresAt }
+
+    async function signChatUrls(paths) {
+        const resolved = {};
+        if (!available || !sessionUserId || !paths || !paths.length) return resolved;
+
+        const missing = [];
+        paths.forEach(function (path) {
+            const entry = chatUrlCache[path];
+            if (entry && entry.expiresAt - Date.now() >= SIGNED_URL_MARGIN * 1000) resolved[path] = entry.url;
+            else if (missing.indexOf(path) === -1) missing.push(path);
+        });
+
+        if (!missing.length) return resolved;
+
+        let result;
+        try {
+            result = await client.storage.from(CHAT_BUCKET).createSignedUrls(missing, SIGNED_URL_TTL);
+        } catch (error) {
+            result = { error: error };
+        }
+
+        if (result.error || !Array.isArray(result.data)) return resolved;
+
+        const expiresAt = Date.now() + SIGNED_URL_TTL * 1000;
+        result.data.forEach(function (entry) {
+            if (!entry || entry.error || !entry.signedUrl) return;
+            chatUrlCache[entry.path] = { url: entry.signedUrl, expiresAt: expiresAt };
+            resolved[entry.path] = entry.signedUrl;
+        });
+
+        return resolved;
+    }
+
+    // --- Descobertas ---------------------------------------------
+    //
+    // Mesmo principio das conversas: tudo por funcoes do servidor,
+    // porque `profiles` continua fechado e um feed precisa do nome
+    // de quem publicou. `callRpc` ja trata do erro e do estado.
+
+    async function listPosts(options) {
+        const o = options || {};
+        return callRpc('list_posts', {
+            p_kind: o.kind || null,
+            p_query: o.query || null,
+            p_monument_id: o.monumentId || null,
+            p_before: o.before || null,
+            p_limit: o.limit || 20
+        });
+    }
+
+    async function listHighlights(limit) {
+        return callRpc('list_highlights', { p_limit: limit || 5 });
+    }
+
+    async function getPost(postId) {
+        return callRpc('get_post', { p_post_id: postId });
+    }
+
+    async function createPost(draft) {
+        const d = draft || {};
+        return callRpc('create_post', {
+            p_kind: d.kind,
+            p_title: d.title,
+            p_body: d.body || '',
+            p_monument_id: d.monumentId || null,
+            p_zone_id: d.zoneId || null,
+            p_photos: d.photos || []
+        });
+    }
+
+    async function setPostReaction(postId, kind, on) {
+        return callRpc('set_post_reaction', {
+            p_post_id: postId, p_kind: kind, p_on: on !== false
+        });
+    }
+
+    async function setPostSaved(postId, on) {
+        return callRpc('set_post_saved', { p_post_id: postId, p_on: on !== false });
+    }
+
+    async function deletePost(postId) {
+        return callRpc('delete_post', { p_post_id: postId });
+    }
+
+    async function reportPost(postId, reason) {
+        return callRpc('report_post', { p_post_id: postId, p_reason: reason });
+    }
+
+    async function listComments(postId, options) {
+        const o = options || {};
+        return callRpc('list_comments', {
+            p_post_id: postId,
+            p_before: o.before || null,
+            p_limit: o.limit || 30
+        });
+    }
+
+    async function addComment(postId, body, replyTo) {
+        return callRpc('add_comment', {
+            p_post_id: postId, p_body: body, p_reply_to: replyTo || null
+        });
+    }
+
+    async function deleteComment(commentId) {
+        return callRpc('delete_comment', { p_comment_id: commentId });
+    }
+
+    async function setCommentHelpful(commentId, on) {
+        return callRpc('set_comment_helpful', { p_comment_id: commentId, p_on: on !== false });
+    }
+
+    // --- Fotografias de publicacoes ------------------------------
+
+    function postPhotoPath(extension) {
+        const stamp = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+        return sessionUserId + '/' + stamp + '.' + extension;
+    }
+
+    async function uploadPostImage(path, blob, contentType) {
+        if (!available || !sessionUserId) return { ok: false, code: 'cloudUnavailable' };
+
+        let result;
+        try {
+            result = await client.storage
+                .from(POST_BUCKET)
+                .upload(path, blob, { contentType: contentType, upsert: false });
+        } catch (error) {
+            result = { error: error };
+        }
+
+        if (result.error) {
+            setStatus(navigator.onLine ? 'error' : 'offline');
+            return { ok: false, code: errorCode(result.error) };
+        }
+
+        setStatus('synced');
+        return { ok: true, path: path };
+    }
+
+    const postUrlCache = {};   // path -> { url, expiresAt }
+
+    async function signPostUrls(paths) {
+        const resolved = {};
+        if (!available || !sessionUserId || !paths || !paths.length) return resolved;
+
+        const missing = [];
+        paths.forEach(function (path) {
+            const entry = postUrlCache[path];
+            if (entry && entry.expiresAt - Date.now() >= SIGNED_URL_MARGIN * 1000) resolved[path] = entry.url;
+            else if (missing.indexOf(path) === -1) missing.push(path);
+        });
+
+        if (!missing.length) return resolved;
+
+        let result;
+        try {
+            result = await client.storage.from(POST_BUCKET).createSignedUrls(missing, SIGNED_URL_TTL);
+        } catch (error) {
+            result = { error: error };
+        }
+
+        if (result.error || !Array.isArray(result.data)) return resolved;
+
+        const expiresAt = Date.now() + SIGNED_URL_TTL * 1000;
+        result.data.forEach(function (entry) {
+            if (!entry || entry.error || !entry.signedUrl) return;
+            postUrlCache[entry.path] = { url: entry.signedUrl, expiresAt: expiresAt };
+            resolved[entry.path] = entry.signedUrl;
+        });
+
+        return resolved;
+    }
+
+    // --- Pistas --------------------------------------------------
+    //
+    // A regra do ponto 19 — so escreve quem descobriu — vive no
+    // RLS da migration 005, nao aqui. Esta camada so transporta a
+    // razao que o servidor devolve, para o ecra poder explicar
+    // porque e que o botao esta fechado.
+
+    async function listClues(monumentId) {
+        return callRpc('list_clues', { p_monument_id: String(monumentId) });
+    }
+
+    async function listClueMonuments() {
+        return callRpc('list_clue_monuments', {});
+    }
+
+    async function addClue(monumentId, body) {
+        return callRpc('add_clue', { p_monument_id: String(monumentId), p_body: body });
+    }
+
+    async function editClue(clueId, body) {
+        return callRpc('edit_clue', { p_clue_id: clueId, p_body: body });
+    }
+
+    async function deleteClue(clueId) {
+        return callRpc('delete_clue', { p_clue_id: clueId });
+    }
+
+    async function setClueHelpful(clueId, on) {
+        return callRpc('set_clue_helpful', { p_clue_id: clueId, p_on: on !== false });
+    }
+
+    async function reportClue(clueId, reason) {
+        return callRpc('report_clue', { p_clue_id: clueId, p_reason: reason });
+    }
+
+    // --- Seguir exploradores -------------------------------------
+    //
+    // Repara no que NAO esta aqui: nao ha `isFollowing(userId)`.
+    //
+    // Essa funcao seria a porta de entrada para o N+1 que os
+    // pontos 37 e 38 proibem — vinte cartoes no feed, vinte
+    // perguntas. O estado de seguir ja vem dentro de cada autor,
+    // porque a migration 006 o po-los em `public_author`, por onde
+    // passam todas as projeccoes do projecto.
+    //
+    // Daqui so saem ACCOES (seguir, deixar de seguir) e LISTAS.
+
+    async function followExplorer(userId) {
+        return callRpc('follow_explorer', { p_user_id: userId });
+    }
+
+    async function unfollowExplorer(userId) {
+        return callRpc('unfollow_explorer', { p_user_id: userId });
+    }
+
+    async function getExplorer(userId) {
+        return callRpc('get_explorer', { p_user_id: userId });
+    }
+
+    async function listFollowers(userId, options) {
+        const opts = options || {};
+        return callRpc('list_followers', {
+            p_user_id: userId,
+            p_before: opts.before || null,
+            p_limit: opts.limit || null
+        });
+    }
+
+    async function listFollowing(userId, options) {
+        const opts = options || {};
+        return callRpc('list_following', {
+            p_user_id: userId,
+            p_before: opts.before || null,
+            p_limit: opts.limit || null
+        });
+    }
+
+    async function listSuggestedExplorers(limit) {
+        return callRpc('list_suggested_explorers', { p_limit: limit || null });
+    }
+
     return {
         init: init,
         isAvailable: isAvailable,
@@ -908,6 +1334,51 @@ const HeritageCloud = (function () {
         recordXpEvent: recordXpEvent,
         syncXpLedger: syncXpLedger,
         getWeeklyRanking: getWeeklyRanking,
+
+        listConversations: listConversations,
+        getMessages: getMessages,
+        sendMessage: sendMessage,
+        markConversationRead: markConversationRead,
+        editMessage: editMessage,
+        deleteMessage: deleteMessage,
+        setMessageHelpful: setMessageHelpful,
+        reportMessage: reportMessage,
+        subscribeToConversation: subscribeToConversation,
+        unsubscribe: unsubscribe,
+        chatPhotoPath: chatPhotoPath,
+        uploadChatImage: uploadChatImage,
+        signChatUrls: signChatUrls,
+
+        listPosts: listPosts,
+        listHighlights: listHighlights,
+        getPost: getPost,
+        createPost: createPost,
+        setPostReaction: setPostReaction,
+        setPostSaved: setPostSaved,
+        deletePost: deletePost,
+        reportPost: reportPost,
+        listComments: listComments,
+        addComment: addComment,
+        deleteComment: deleteComment,
+        setCommentHelpful: setCommentHelpful,
+        followExplorer: followExplorer,
+        unfollowExplorer: unfollowExplorer,
+        getExplorer: getExplorer,
+        listFollowers: listFollowers,
+        listFollowing: listFollowing,
+        listSuggestedExplorers: listSuggestedExplorers,
+
+        listClues: listClues,
+        listClueMonuments: listClueMonuments,
+        addClue: addClue,
+        editClue: editClue,
+        deleteClue: deleteClue,
+        setClueHelpful: setClueHelpful,
+        reportClue: reportClue,
+
+        postPhotoPath: postPhotoPath,
+        uploadPostImage: uploadPostImage,
+        signPostUrls: signPostUrls,
 
         flush: flush,
         flushNow: flushNow,

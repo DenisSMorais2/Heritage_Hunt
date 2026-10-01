@@ -981,27 +981,420 @@
             </main>
 
             <!-- Navigation -->
+                <!-- Comunidade: a casa do social.
+                     As Conversas sao a unica aba viva nesta versao;
+                     Descobertas e Pistas tem lugar reservado para
+                     nao mudarem de sitio quando chegarem. -->
+                <div id="communityView" class="hidden">
+                    <header class="hh-cm-head">
+                        <div class="hh-cm-head-row">
+                            <div>
+                                <h1 class="hh-cm-title" data-i18n="communityTitle">Comunidade</h1>
+                                <p class="hh-cm-lead" data-i18n="communityLead">Exploradores ajudam exploradores a descobrir Cabo Verde.</p>
+                            </div>
+                        </div>
+
+                        <div class="hh-cm-tabs" role="tablist" aria-label="Comunidade">
+                            <button type="button" class="hh-cm-tab" role="tab" data-cm-tab="discoveries"
+                                    aria-selected="false" data-i18n="communityTabDiscoveries">Descobertas</button>
+                            <button type="button" class="hh-cm-tab" role="tab" data-cm-tab="clues"
+                                    aria-selected="false" data-i18n="communityTabClues">Pistas</button>
+                            <button type="button" class="hh-cm-tab is-active" role="tab" data-cm-tab="conversations"
+                                    aria-selected="true" data-i18n="communityTabConversations">Conversas</button>
+                        </div>
+                    </header>
+
+                    <section class="hh-cm-panel hidden" data-cm-panel="discoveries">
+                        <div class="hh-cv-search">
+                            <i class="fas fa-search" aria-hidden="true"></i>
+                            <label class="sr-only" for="feedSearch" data-i18n="feedSearch">Pesquisar publicações, lugares, pessoas...</label>
+                            <input id="feedSearch" type="search" autocomplete="off"
+                                   data-i18n-placeholder="feedSearch" placeholder="Pesquisar publicações, lugares, pessoas...">
+                        </div>
+
+                        <!-- Filtros por tipo. Desenhados por posts-ui.js a
+                             partir de Posts.filterChips(), para a lista
+                             viver num sitio so. -->
+                        <div id="feedChips" class="hh-fd-chips" role="tablist" aria-label="Filtros"></div>
+
+                        <section id="feedHighlights" class="hh-fd-high hidden">
+                            <h3 class="hh-cv-section" data-i18n="feedHighlights">Destaques da comunidade</h3>
+                            <div id="feedHighlightsRail" class="hh-fd-rail"></div>
+                        </section>
+
+                        <h3 class="hh-cv-section" data-i18n="feedRecent">Publicações recentes</h3>
+                        <div id="feedList" class="hh-fd-list" aria-live="polite"></div>
+
+                        <div id="feedMore" class="hh-fd-more hidden">
+                            <button id="feedMoreBtn" type="button" data-i18n="feedLoadMore">Ver mais</button>
+                        </div>
+                    </section>
+
+                    <section class="hh-cm-panel hidden" data-cm-panel="clues">
+                        <div class="hh-cl-intro">
+                            <span class="hh-cl-intro-icon" aria-hidden="true"><i class="fas fa-lightbulb"></i></span>
+                            <div>
+                                <p class="hh-cl-intro-title" data-i18n="cluesTitle">Pistas da Comunidade</p>
+                                <p class="hh-cl-intro-text" data-i18n="cluesLead">Exploradores deixam dicas para te ajudar a encontrar o QR code sem revelar exactamente onde está.</p>
+                            </div>
+                        </div>
+                        <p id="cluesIndexLead" class="hh-cl-index-lead"></p>
+                        <div id="cluesIndex" class="hh-cl-index" aria-live="polite"></div>
+                    </section>
+
+                    <!-- So aparece na aba Descobertas: nas Conversas
+                         escreve-se na propria conversa, e nas Pistas
+                         ainda nao ha o que criar. -->
+                    <button id="feedNewBtn" type="button" class="hh-fd-fab hidden"
+                            data-i18n-title="feedNew" title="Nova publicação">
+                        <i class="fas fa-plus" aria-hidden="true"></i>
+                    </button>
+
+                    <section class="hh-cm-panel" data-cm-panel="conversations">
+                        <div class="hh-cv-search">
+                            <i class="fas fa-search" aria-hidden="true"></i>
+                            <label class="sr-only" for="conversationSearch" data-i18n="chatSearch">Pesquisar conversas</label>
+                            <input id="conversationSearch" type="search" autocomplete="off"
+                                   data-i18n-placeholder="chatSearch" placeholder="Pesquisar conversas">
+                        </div>
+                        <div id="conversationsList" class="hh-cv-list" aria-live="polite"></div>
+                    </section>
+                </div>
+
             <nav class="hh-nav fixed bottom-0 w-full max-w-md" data-active="scanner">
                 <div class="hh-nav-group flex justify-around p-2">
                     <span class="glass-glider" aria-hidden="true"></span>
                     <button id="navScanner" class="p-4 text-blue-600 flex flex-col items-center transition-all">
                         <i class="fas fa-qrcode text-xl"></i>
-                        <span class="text-xs mt-1 font-medium" data-i18n="navScanner">Scanner</span>
-                    </button>
-                    <button id="navProfile" class="p-4 text-gray-400 flex flex-col items-center transition-all">
-                        <i class="fas fa-user text-xl"></i>
-                        <span class="text-xs mt-1 font-medium" data-i18n="navProfile">Perfil</span>
+                        <span class="text-xs mt-1 font-medium" data-i18n="navExplore">Explorar</span>
                     </button>
                     <button id="navMap" class="p-4 text-gray-400 flex flex-col items-center transition-all">
                         <i class="fas fa-map-marked-alt text-xl"></i>
                         <span class="text-xs mt-1 font-medium" data-i18n="navMap">Mapa</span>
                     </button>
+                    <button id="navCommunity" class="p-4 text-gray-400 flex flex-col items-center transition-all">
+                        <i class="fas fa-users text-xl"></i>
+                        <span class="text-xs mt-1 font-medium" data-i18n="navCommunity">Comunidade</span>
+                        <span id="navCommunityDot" class="hh-nav-dot hidden" aria-hidden="true"></span>
+                    </button>
                     <button id="navRanking" class="p-4 text-gray-400 flex flex-col items-center transition-all">
                         <i class="fas fa-trophy text-xl"></i>
                         <span class="text-xs mt-1 font-medium" data-i18n="navRanking">Ranking</span>
                     </button>
+                    <button id="navProfile" class="p-4 text-gray-400 flex flex-col items-center transition-all">
+                        <i class="fas fa-user text-xl"></i>
+                        <span class="text-xs mt-1 font-medium" data-i18n="navProfile">Perfil</span>
+                    </button>
                 </div>
             </nav>
+        </div>
+
+        <!-- Ecra de uma conversa.
+             `100dvh` e nao `100vh`: no telemovel a barra do browser
+             recolhe e `vh` nao acompanha — o input ficaria por baixo
+             do teclado (ponto 58). -->
+        <div id="chatScreen" class="hh-chat hidden" role="dialog" aria-modal="true" aria-labelledby="chatTitle">
+            <header class="hh-chat-head">
+                <img id="chatHeroImg" class="hh-chat-hero" src="" alt="" aria-hidden="true">
+                <div class="hh-chat-hero-shade" aria-hidden="true"></div>
+                <div class="hh-chat-head-row">
+                    <button id="chatBackBtn" type="button" class="hh-chat-icon-btn" aria-label="Voltar">
+                        <i class="fas fa-arrow-left" aria-hidden="true"></i>
+                    </button>
+                    <div class="hh-chat-head-text">
+                        <h2 id="chatTitle" class="hh-chat-title"></h2>
+                        <p id="chatSubtitle" class="hh-chat-sub"></p>
+                    </div>
+                    <button id="chatAboutBtn" type="button" class="hh-chat-icon-btn" aria-label="Sobre">
+                        <i class="fas fa-ellipsis-h" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Ajuda sem revelar (ponto 17): so em conversas de
+                 monumento e so na primeira visita a cada um. -->
+            <div id="chatQrNotice" class="hh-chat-notice hidden" role="note">
+                <i class="fas fa-shield-alt" aria-hidden="true"></i>
+                <div>
+                    <p class="hh-chat-notice-title" data-i18n="chatHelpWithoutRevealing">Ajuda sem revelar.</p>
+                    <p class="hh-chat-notice-sub" data-i18n="chatQrWarning">Evita indicar a localização exacta do QR code.</p>
+                </div>
+                <button id="chatQrNoticeOk" type="button" class="hh-chat-notice-ok" data-i18n="chatUnderstood">Entendi</button>
+            </div>
+
+            <div id="chatScroll" class="hh-chat-scroll">
+                <div id="chatEarlier" class="hh-chat-earlier hidden">
+                    <button id="chatEarlierBtn" type="button" data-i18n="chatLoadEarlier">Carregar anteriores</button>
+                </div>
+                <div id="chatMessages" class="hh-chat-msgs" aria-live="polite"></div>
+                <div id="chatEmpty" class="hh-chat-empty hidden"></div>
+            </div>
+
+            <!-- "1 nova mensagem" para quem esta a ler para tras -->
+            <button id="chatJumpBtn" type="button" class="hh-chat-jump hidden"></button>
+
+            <div id="chatReplyBar" class="hh-chat-replybar hidden">
+                <div class="hh-chat-replybar-body">
+                    <span id="chatReplyAuthor" class="hh-chat-replybar-author"></span>
+                    <span id="chatReplyText" class="hh-chat-replybar-text"></span>
+                </div>
+                <button id="chatReplyCancel" type="button" class="hh-chat-icon-btn" aria-label="Cancelar">
+                    <i class="fas fa-times" aria-hidden="true"></i>
+                </button>
+            </div>
+
+            <div id="chatPendingPhoto" class="hh-chat-pendphoto hidden">
+                <img id="chatPendingPhotoImg" src="" alt="">
+                <button id="chatPendingPhotoCancel" type="button" class="hh-chat-icon-btn" aria-label="Cancelar">
+                    <i class="fas fa-times" aria-hidden="true"></i>
+                </button>
+            </div>
+
+            <form id="chatForm" class="hh-chat-composer">
+                <button id="chatAttachBtn" type="button" class="hh-chat-attach" data-i18n-title="chatAttach" title="Adicionar">
+                    <i class="fas fa-plus" aria-hidden="true"></i>
+                </button>
+                <label class="sr-only" for="chatInput" data-i18n="chatWriteMessage">Escrever mensagem...</label>
+                <textarea id="chatInput" rows="1" maxlength="1000" enterkeyhint="send"
+                          data-i18n-placeholder="chatWriteMessage" placeholder="Escrever mensagem..."></textarea>
+                <span id="chatCounter" class="hh-chat-counter hidden" aria-live="polite"></span>
+                <button id="chatSendBtn" type="submit" class="hh-chat-send" data-i18n-title="chatSend" title="Enviar" disabled>
+                    <i class="fas fa-paper-plane" aria-hidden="true"></i>
+                </button>
+            </form>
+
+            <p id="chatOfflineNote" class="hh-chat-offline hidden" data-i18n="chatRequiresConnection">Precisas de ligação para enviar mensagens.</p>
+
+            <input id="chatPhotoInput" type="file" accept="image/*" class="hidden">
+            <input id="chatCameraInput" type="file" accept="image/*" capture="environment" class="hidden">
+        </div>
+
+        <!-- Uma publicacao, com os comentarios -->
+        <div id="postScreen" class="hh-post hidden" role="dialog" aria-modal="true" aria-labelledby="postTitle">
+            <header class="hh-post-head">
+                <button id="postBackBtn" type="button" class="hh-chat-icon-btn" aria-label="Voltar">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i>
+                </button>
+                <button id="postMenuBtn" type="button" class="hh-chat-icon-btn" aria-label="Opções">
+                    <i class="fas fa-ellipsis-h" aria-hidden="true"></i>
+                </button>
+            </header>
+
+            <div id="postScroll" class="hh-post-scroll">
+                <div id="postHero" class="hh-post-hero hidden"></div>
+
+                <div class="hh-post-body">
+                    <div class="hh-post-tagline">
+                        <span id="postKind" class="hh-fd-badge"></span>
+                        <span id="postPlace" class="hh-post-place"></span>
+                    </div>
+
+                    <h1 id="postTitle" class="hh-post-title"></h1>
+                    <p id="postText" class="hh-post-text"></p>
+
+                    <div id="postAuthor" class="hh-post-author"></div>
+                    <div id="postActions" class="hh-post-actions"></div>
+
+                    <h2 id="postCommentsTitle" class="hh-post-comments-title"></h2>
+                    <div id="postCommentsList" class="hh-post-comments"></div>
+                    <div id="postCommentsMore" class="hh-fd-more hidden">
+                        <button id="postCommentsMoreBtn" type="button" data-i18n="postLoadMoreComments">Ver comentários anteriores</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="postReplyBar" class="hh-chat-replybar hidden">
+                <div class="hh-chat-replybar-body">
+                    <span id="postReplyAuthor" class="hh-chat-replybar-author"></span>
+                </div>
+                <button id="postReplyCancel" type="button" class="hh-chat-icon-btn" aria-label="Cancelar">
+                    <i class="fas fa-times" aria-hidden="true"></i>
+                </button>
+            </div>
+
+            <form id="postCommentForm" class="hh-chat-composer">
+                <label class="sr-only" for="postCommentInput" data-i18n="postWriteComment">Escrever um comentário...</label>
+                <textarea id="postCommentInput" rows="1" maxlength="1000"
+                          data-i18n-placeholder="postWriteComment" placeholder="Escrever um comentário..."></textarea>
+                <button id="postCommentSend" type="submit" class="hh-chat-send"
+                        data-i18n-title="postCommentSend" title="Enviar comentário" disabled>
+                    <i class="fas fa-paper-plane" aria-hidden="true"></i>
+                </button>
+            </form>
+        </div>
+
+        <!-- As pistas de um monumento -->
+        <div id="cluesScreen" class="hh-post hidden" role="dialog" aria-modal="true" aria-labelledby="cluesMonument">
+            <header class="hh-post-head">
+                <button id="cluesBackBtn" type="button" class="hh-chat-icon-btn" aria-label="Voltar">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i>
+                </button>
+            </header>
+
+            <div class="hh-post-scroll">
+                <div id="cluesHero" class="hh-post-hero hidden"></div>
+
+                <div class="hh-post-body">
+                    <h1 id="cluesMonument" class="hh-post-title"></h1>
+                    <p id="cluesMonumentPlace" class="hh-post-place"></p>
+
+                    <div class="hh-cl-intro hh-cl-intro--tight">
+                        <span class="hh-cl-intro-icon" aria-hidden="true"><i class="fas fa-lightbulb"></i></span>
+                        <div>
+                            <p class="hh-cl-intro-title" data-i18n="cluesTitle">Pistas da Comunidade</p>
+                            <p class="hh-cl-intro-text" data-i18n="cluesLead">Exploradores deixam dicas para te ajudar a encontrar o QR code sem revelar exactamente onde está.</p>
+                        </div>
+                    </div>
+
+                    <div class="hh-cl-head">
+                        <h2 id="cluesCount" class="hh-post-comments-title"></h2>
+                        <button id="cluesLeaveBtn" type="button" class="hh-cl-leave hidden" data-i18n="cluesLeave">Deixar uma pista</button>
+                    </div>
+
+                    <div id="cluesList" class="hh-cl-list" aria-live="polite"></div>
+
+                    <!-- Ponto 19: quem ainda nao descobriu ve esta
+                         linha em vez do botao. -->
+                    <div id="cluesLocked" class="hh-cl-locked hidden">
+                        <i class="fas fa-lock" aria-hidden="true"></i>
+                        <span data-i18n="cluesLocked">Descobre este monumento para poderes deixar pistas a outros exploradores.</span>
+                    </div>
+
+                    <!-- Ponto 16: quando as pistas nao chegam, a
+                         conversa daquele monumento fica a um toque. -->
+                    <div class="hh-cl-ask">
+                        <p class="hh-cl-ask-lead" data-i18n="cluesNeedMoreHelp">Precisas de mais ajuda?</p>
+                        <button id="cluesAskBtn" type="button" class="hh-cl-ask-btn">
+                            <i class="fas fa-comments" aria-hidden="true"></i>
+                            <span data-i18n="cluesAskCommunity">Perguntar à comunidade</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Escrever a minha pista -->
+            <div id="cluesComposer" class="hh-cl-composer hidden">
+                <label class="sr-only" for="cluesInput" data-i18n="cluesLeave">Deixar uma pista</label>
+                <textarea id="cluesInput" rows="2" maxlength="400"
+                          data-i18n-placeholder="cluesPlaceholder" placeholder="Aponta uma direcção sem dizer o sítio exacto..."></textarea>
+                <p id="cluesRevealWarning" class="hh-cl-reveal hidden" role="status" data-i18n="cluesRevealWarning">Isto parece revelar demasiado. Tenta apontar uma direcção em vez do sítio exacto.</p>
+                <div class="hh-cl-composer-foot">
+                    <span id="cluesCounter" class="hh-cl-counter hidden" aria-live="polite"></span>
+                    <button id="cluesCancelBtn" type="button" class="hh-cl-cancel" data-i18n="chatCancel">Cancelar</button>
+                    <button id="cluesPublishBtn" type="button" class="hh-cl-publish" data-i18n="cluesPublish" disabled>Publicar pista</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Criar publicacao -->
+        <div id="composeScreen" class="hh-compose hidden" role="dialog" aria-modal="true" aria-labelledby="composeHeading">
+            <header class="hh-compose-head">
+                <button id="composeBackBtn" type="button" class="hh-chat-icon-btn" aria-label="Voltar">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i>
+                </button>
+                <h2 id="composeHeading" class="hh-compose-heading" data-i18n="composeTitle">Nova publicação</h2>
+                <span class="hh-compose-spacer" aria-hidden="true"></span>
+            </header>
+
+            <div class="hh-compose-scroll">
+                <p class="hh-compose-lead" data-i18n="composeLead">O que queres partilhar com a comunidade?</p>
+
+                <!-- A grelha dos seis tipos, desenhada a partir de
+                     Posts.CONFIG.KINDS -->
+                <div id="composeKinds" class="hh-compose-kinds" role="radiogroup" aria-labelledby="composeHeading"></div>
+
+                <label class="hh-compose-label" for="composeTitleInput" data-i18n="composeFieldTitle">Título da tua publicação</label>
+                <input id="composeTitleInput" class="hh-compose-input" type="text" maxlength="120"
+                       data-i18n-placeholder="composeTitlePlaceholder" placeholder="Escreve um título curto e apelativo...">
+                <span id="composeTitleCount" class="hh-compose-count hidden"></span>
+
+                <label class="hh-compose-label" for="composeBodyInput" data-i18n="composeFieldBody">Descrição</label>
+                <textarea id="composeBodyInput" class="hh-compose-textarea" rows="5" maxlength="2000"
+                          data-i18n-placeholder="composeBodyPlaceholder" placeholder="Partilha a tua dica, experiência ou curiosidade..."></textarea>
+                <span id="composeBodyCount" class="hh-compose-count hidden"></span>
+
+                <button id="composePhotosBtn" type="button" class="hh-compose-photos">
+                    <i class="far fa-images" aria-hidden="true"></i>
+                    <span>
+                        <b data-i18n="composePhotos">Adicionar fotografias</b>
+                        <small data-i18n="composeOptional">(opcional)</small>
+                    </span>
+                </button>
+                <div id="composePhotoStrip" class="hh-compose-strip hidden"></div>
+
+                <label class="hh-compose-label" for="composePlace" data-i18n="composeLocation">Localização</label>
+                <button id="composePlace" type="button" class="hh-compose-input hh-compose-place">
+                    <i class="fas fa-location-dot" aria-hidden="true"></i>
+                    <span id="composePlaceText" data-i18n="composeLocationPlaceholder">Associar a um monumento, zona ou lugar...</span>
+                </button>
+
+                <!-- Ponto 17 do lado de quem escreve: so aparece
+                     quando a publicacao fica amarrada a um monumento. -->
+                <div id="composeQrWarning" class="hh-chat-notice hidden" role="note">
+                    <i class="fas fa-shield-alt" aria-hidden="true"></i>
+                    <div>
+                        <p class="hh-chat-notice-sub" data-i18n="composeQrWarning">Lembra-te: não reveles exactamente onde está o QR code. Dá pistas que ajudem sem estragar a descoberta!</p>
+                    </div>
+                </div>
+
+                <button id="composePublish" type="button" class="hh-compose-publish" disabled>
+                    <i class="fas fa-paper-plane" aria-hidden="true"></i>
+                    <span data-i18n="composePublish">Publicar</span>
+                </button>
+            </div>
+
+            <input id="composePhotoInput" type="file" accept="image/*" multiple class="hidden">
+        </div>
+
+        <!-- Folha partilhada pelas Descobertas (menu, denuncia, lugar) -->
+        <div id="postSheet" class="hh-sheet hidden" role="dialog" aria-modal="true">
+            <div class="hh-sheet__panel">
+                <span class="hh-sheet__grip" aria-hidden="true"></span>
+                <div id="postSheetBody" class="hh-sheet__body"></div>
+            </div>
+        </div>
+
+        <!-- Menu de uma mensagem (premir e manter) -->
+        <div id="chatMsgSheet" class="hh-sheet hidden" role="dialog" aria-modal="true">
+            <div class="hh-sheet__panel">
+                <span class="hh-sheet__grip" aria-hidden="true"></span>
+                <div id="chatMsgSheetBody" class="hh-sheet__body"></div>
+            </div>
+        </div>
+
+        <!-- Perfil rapido de um explorador (ponto 38), agora com
+             numeros publicos e o botao de seguir -->
+        <div id="chatProfileSheet" class="hh-sheet hidden" role="dialog" aria-modal="true">
+            <div class="hh-sheet__panel">
+                <span class="hh-sheet__grip" aria-hidden="true"></span>
+                <div id="chatProfileBody" class="hh-sheet__body"></div>
+            </div>
+        </div>
+
+        <!-- Quem me segue / quem eu sigo.
+             Um ecra, dois modos: o titulo diz qual. Duas telas
+             iguais com ids diferentes seriam duas telas para
+             manter. -->
+        <div id="explorersScreen" class="hh-post hidden" role="dialog" aria-modal="true" aria-labelledby="explorersTitle">
+            <header class="hh-post-head">
+                <button id="explorersBackBtn" type="button" class="hh-chat-icon-btn"
+                        data-i18n-aria-label="rankingBack" aria-label="Voltar">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i>
+                </button>
+            </header>
+
+            <div class="hh-post-scroll">
+                <div class="hh-post-body">
+                    <h1 id="explorersTitle" class="hh-post-title"></h1>
+                    <p id="explorersSubtitle" class="hh-post-place"></p>
+
+                    <div id="explorersList" class="hh-ex-list" aria-live="polite"></div>
+
+                    <div id="explorersMore" class="hh-fd-more hidden">
+                        <button id="explorersMoreBtn" type="button" data-i18n="feedLoadMore">Ver mais</button>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Badge Modal -->
@@ -1603,6 +1996,16 @@
 <script src="map-ui.js"></script>
 <script src="ranking.js"></script>
 <script src="ranking-ui.js"></script>
+    <script src="sheets.js"></script>
+    <script src="follows.js"></script>
+    <script src="follows-ui.js"></script>
+    <script src="clues.js"></script>
+    <script src="clues-ui.js"></script>
+    <script src="posts.js"></script>
+    <script src="posts-ui.js"></script>
+    <script src="conversations.js"></script>
+    <script src="conversations-ui.js"></script>
+    <script src="community-ui.js"></script>
 <script src="script.js"></script>
 </body>
 </html>

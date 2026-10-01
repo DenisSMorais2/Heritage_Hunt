@@ -36,6 +36,12 @@ const AlbumUI = (function () {
         onSaveMemory: null,
         onToggleTag: null,
         onOpenMap: null,
+        // Ponto 15: do monumento para a conversa daquele monumento.
+        // E a porta que fecha o ciclo duvida -> conversa -> dica ->
+        // descoberta sem passar pela lista de conversas.
+        onOpenConversation: null,
+        // As pistas daquele monumento, a partir do monumento.
+        onOpenClues: null,
         onRetrySync: null
     };
 
@@ -587,6 +593,14 @@ const AlbumUI = (function () {
             items.push({ action: 'map', icon: 'fas fa-map-location-dot', label: t('album.viewOnMap') });
         }
 
+        if (handlers.onOpenClues) {
+            items.push({ action: 'clues', icon: 'fas fa-lightbulb', label: t('cluesTitle') });
+        }
+
+        if (handlers.onOpenConversation) {
+            items.push({ action: 'talk', icon: 'fas fa-comments', label: t('chatConversation') });
+        }
+
         elements.menu.innerHTML = items.map(function (item) {
             return '<button type="button" role="menuitem" class="hh-al-menu-item"' +
                 ' data-album-action="' + item.action + '">' +
@@ -929,6 +943,8 @@ const AlbumUI = (function () {
         if (action === 'add' && handlers.onAddPhoto) handlers.onAddPhoto();
         else if (action === 'write') openEditor();
         else if (action === 'map' && handlers.onOpenMap) handlers.onOpenMap(currentId);
+        else if (action === 'clues' && handlers.onOpenClues) handlers.onOpenClues(currentId);
+        else if (action === 'talk' && handlers.onOpenConversation) handlers.onOpenConversation(currentId);
         else if (action === 'retry' && handlers.onRetrySync) handlers.onRetrySync();
     }
 

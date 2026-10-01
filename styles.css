@@ -8972,6 +8972,36 @@ html:not(.dark) .hh-mi-sheet {
 .hh-sheet.hidden {
     display: none;
 }
+
+/* AS FOLHAS DE TOPO ANCORAM-SE A JANELA, NAO AO DOCUMENTO.
+ 
+   `.hh-sheet` e `absolute` por causa do #mapSheet, que vive
+   DENTRO do cartao do mapa e tem de o cobrir so a ele.
+ 
+   As outras tres sao filhas de `.container`, que cresce com a
+   pagina. Com `absolute`, `align-items: flex-end` encostava o
+   painel ao fundo desse contentor — 1887 px numa janela de 935 —
+   e a folha abria fora do ecra. So nao se via porque ate agora
+   estas folhas so se abriam por cima de ecras que ocupam a
+   janela toda.
+ 
+   `fixed` prende-as a janela em qualquer contexto. O `pointer-
+   events: none` do fundo mantem-se, por isso o que esta por tras
+   continua manipulavel. */
+#postSheet,
+#chatMsgSheet,
+#chatProfileSheet {
+    position: fixed;
+
+    /* A app e uma coluna de 28rem centrada (`.container` com
+       `max-w-md mx-auto`). Ao sair do contentor para a janela, a
+       folha herdava a largura do ECRA e atravessava-o todo num
+       monitor. `margin-inline: auto` com `inset: 0` devolve-lhe
+       a coluna, sem precisar de transform — que colidiria com o
+       deslize do painel. */
+    max-width: 28rem;
+    margin-inline: auto;
+}
 .hh-sheet__panel {
     pointer-events: auto;
     position: relative;
@@ -9003,6 +9033,45 @@ html:not(.dark) .hh-mi-sheet {
     margin: 0 auto 12px;
     border-radius: 999px;
     background: rgba(195, 210, 230, 0.34);
+
+    /* A PEGA E UMA PROMESSA, e tem de se poder agarrar.
+       Desenhada tem 38x4 px — impossivel de acertar com um
+       polegar. O `::after` estende o ALVO para 118x28 sem mexer
+       no desenho, e `touch-action: none` impede o browser de
+       interpretar o gesto como scroll antes de nos o vermos. */
+    position: relative;
+    touch-action: none;
+    cursor: grab;
+}
+.hh-sheet__grip::after {
+    content: "";
+    position: absolute;
+    inset: -12px -40px;
+}
+.hh-sheet.is-dragging .hh-sheet__grip {
+    cursor: grabbing;
+    background: rgba(195, 210, 230, 0.6);
+}
+
+/* Enquanto o dedo manda, nada de transicoes: o painel tem de
+   seguir o toque ao pixel. O `sheets.js` tambem desliga a
+   transicao em linha — isto cobre o que vier por cima. */
+.hh-sheet.is-dragging .hh-sheet__panel {
+    transition: none;
+}
+
+/* O toque fora fecha as folhas de topo.
+   O #mapSheet fica de fora DE PROPOSITO: ali o fundo e o mapa, e
+   ele continua a ter de responder ao dedo (ponto 13). */
+#postSheet,
+#chatMsgSheet,
+#chatProfileSheet {
+    pointer-events: auto;
+}
+#postSheet.hidden,
+#chatMsgSheet.hidden,
+#chatProfileSheet.hidden {
+    pointer-events: none;
 }
 .hh-sheet__close {
     position: absolute;
@@ -11106,4 +11175,2638 @@ html:not(.dark) .hh-al-toast {
     .hh-al-cta:hover {
         transform: none;
     }
+}
+
+/* ==========================================================
+   Heritage — Comunidade e Conversas
+
+   O chat tem de PARECER o Heritage Hunt, nao uma app de
+   mensagens (ponto 41). Por isso:
+
+     - nenhuma bolha azul e nenhuma bolha verde;
+     - o que distingue a minha mensagem e um contorno dourado
+       sobre navy, a mesma linguagem dos cartoes do resto da app;
+     - tipografia editorial nos titulos, como no album e no
+       ranking;
+     - sem "a escrever...", sem checks azuis, sem avatares a
+       repetirem-se em cada linha.
+
+   O ecra de conversa usa `100dvh` e nao `100vh`: no telemovel a
+   barra do browser recolhe e `vh` nao acompanha — o campo de
+   escrita acabaria por baixo do teclado (ponto 58).
+   ========================================================== */
+
+/* --- Ponto de novidades na barra de baixo ------------------
+   Sem numero de proposito: na navegacao interessa que HA
+   novidades; o numero exacto esta no cartao de cada conversa. */
+.hh-nav-dot {
+    position: absolute;
+    top: 10px;
+    right: 50%;
+    transform: translateX(16px);
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #D6B274;
+    box-shadow: 0 0 0 2px #0A1729;
+}
+
+/* ==========================================================
+   Comunidade — cabecalho e abas
+   ========================================================== */
+
+.hh-cm-head {
+    padding: calc(16px + var(--hh-safe-top)) var(--hh-gutter) 0;
+}
+.hh-cm-head-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+.hh-cm-title {
+    margin: 0;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-weight: 700;
+    font-size: clamp(26px, 7.5vw, 32px);
+    line-height: 1.1;
+    color: #E9F0F9;
+}
+.hh-cm-lead {
+    margin: 6px 0 0;
+    max-width: 30ch;
+    font-size: 13px;
+    line-height: 1.5;
+    color: #9DB0C8;
+}
+.hh-cm-icon-btn {
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 14px;
+    border: 1px solid rgba(214, 178, 116, 0.34);
+    background: rgba(214, 178, 116, 0.1);
+    color: #E7CE9A;
+    font-size: 16px;
+    transition: background .18s ease, border-color .18s ease;
+}
+.hh-cm-icon-btn:hover,
+.hh-cm-icon-btn:focus-visible {
+    background: rgba(214, 178, 116, 0.2);
+    border-color: rgba(214, 178, 116, 0.6);
+}
+
+.hh-cm-tabs {
+    display: flex;
+    gap: 6px;
+    margin-top: 18px;
+    padding-bottom: 2px;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+.hh-cm-tabs::-webkit-scrollbar { display: none; }
+
+.hh-cm-tab {
+    flex: 0 0 auto;
+    /* 44px de alvo tactil, mesmo com o texto pequeno (ponto 57) */
+    min-height: 44px;
+    padding: 10px 16px;
+    border-radius: 999px;
+    border: 1px solid var(--hh-line);
+    background: rgba(233, 240, 249, 0.04);
+    color: #9DB0C8;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    transition: color .18s ease, background .18s ease, border-color .18s ease;
+}
+.hh-cm-tab.is-active {
+    color: #0A1729;
+    background: linear-gradient(180deg, #F2E1A6, #D6B274);
+    border-color: transparent;
+}
+
+.hh-cm-panel {
+    padding: 18px var(--hh-gutter) calc(var(--hh-nav-h) + var(--hh-safe-bottom));
+}
+
+/* --- Abas ainda por construir ------------------------------
+   Lugar reservado, nao um beco: diz o que vem e quando. */
+.hh-cm-soon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 44px 24px;
+    text-align: center;
+    border-radius: 20px;
+    border: 1px dashed rgba(214, 178, 116, 0.3);
+    background: rgba(233, 240, 249, 0.03);
+}
+.hh-cm-soon > i {
+    font-size: 26px;
+    color: rgba(214, 178, 116, 0.6);
+}
+.hh-cm-soon-tag {
+    margin: 0;
+    font-size: 10px;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: #D6B274;
+}
+.hh-cm-soon-text {
+    margin: 0;
+    max-width: 28ch;
+    font-size: 13px;
+    line-height: 1.55;
+    color: #9DB0C8;
+}
+
+/* ==========================================================
+   Lista de conversas
+   ========================================================== */
+
+.hh-cv-search {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: 48px;
+    padding: 0 14px;
+    border-radius: 16px;
+    border: 1px solid var(--hh-line);
+    background: rgba(233, 240, 249, 0.045);
+}
+.hh-cv-search > i {
+    color: #9DB0C8;
+    font-size: 13px;
+}
+.hh-cv-search input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    background: transparent;
+    color: #E9F0F9;
+    font-size: 14px;
+}
+.hh-cv-search input:focus { outline: none; }
+.hh-cv-search input::placeholder { color: #6F819A; }
+.hh-cv-search:focus-within {
+    border-color: rgba(214, 178, 116, 0.5);
+}
+
+.hh-cv-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 18px;
+}
+.hh-cv-section {
+    margin: 14px 0 2px;
+    font-size: 10px;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: #D6B274;
+}
+.hh-cv-section:first-child { margin-top: 0; }
+
+.hh-cv-empty {
+    margin: 28px 0;
+    text-align: center;
+    font-size: 13px;
+    line-height: 1.6;
+    color: #9DB0C8;
+}
+
+.hh-cv-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    min-height: 68px;
+    padding: 12px 14px;
+    text-align: left;
+    border-radius: 18px;
+    border: 1px solid var(--hh-line);
+    background: rgba(233, 240, 249, 0.04);
+    transition: background .18s ease, border-color .18s ease, transform .12s ease;
+}
+.hh-cv-card:hover,
+.hh-cv-card:focus-visible {
+    background: rgba(233, 240, 249, 0.07);
+    border-color: rgba(214, 178, 116, 0.34);
+}
+.hh-cv-card:active { transform: scale(.995); }
+
+.hh-cv-card-icon {
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 14px;
+    font-size: 16px;
+    color: #E7CE9A;
+    background: rgba(214, 178, 116, 0.12);
+    border: 1px solid rgba(214, 178, 116, 0.28);
+}
+/* Cada tipo de conversa com o seu tom, para a lista se ler de
+   relance sem ter de decifrar o icone. */
+.hh-cv-card-icon--general {
+    color: #7FB2FF;
+    background: rgba(127, 178, 255, 0.12);
+    border-color: rgba(127, 178, 255, 0.3);
+}
+.hh-cv-card-icon--zone {
+    color: #C2A2F0;
+    background: rgba(194, 162, 240, 0.12);
+    border-color: rgba(194, 162, 240, 0.3);
+}
+
+.hh-cv-card-body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+.hh-cv-card-top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+}
+.hh-cv-card-name {
+    min-width: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #E9F0F9;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.hh-cv-card-when {
+    flex-shrink: 0;
+    font-size: 11px;
+    color: #6F819A;
+}
+.hh-cv-card-preview {
+    font-size: 12.5px;
+    line-height: 1.4;
+    color: #9DB0C8;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.hh-cv-card-badge {
+    flex-shrink: 0;
+    min-width: 22px;
+    height: 22px;
+    padding: 0 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background: linear-gradient(180deg, #F2E1A6, #D6B274);
+    color: #0A1729;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+/* ==========================================================
+   Ecra de uma conversa
+   ========================================================== */
+
+.hh-chat {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    display: flex;
+    flex-direction: column;
+    /* dvh: a barra do browser recolhe e o teclado nao tapa o
+       campo de escrita (ponto 58). */
+    height: 100dvh;
+    background: linear-gradient(180deg, #0C1C33 0%, #0A1729 100%);
+    color: #E9F0F9;
+}
+.hh-chat.hidden { display: none !important; }
+
+/* Com a conversa aberta o resto da pagina nao faz scroll por
+   baixo — e um ecra, nao uma camada. */
+body.hh-chat-open { overflow: hidden; }
+
+.hh-chat-head {
+    position: relative;
+    flex-shrink: 0;
+    overflow: hidden;
+    padding: calc(10px + var(--hh-safe-top)) var(--hh-gutter) 12px;
+    border-bottom: 1px solid var(--hh-line);
+    background: #0C1C33;
+}
+/* Ponto 42: a fotografia e um fundo discreto, nunca um heroi
+   que come metade do ecra. */
+.hh-chat-hero {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: .3;
+}
+.hh-chat-hero-shade {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(10, 23, 41, .55), rgba(10, 23, 41, .92));
+}
+.hh-chat-head-row {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.hh-chat-head-text {
+    flex: 1;
+    min-width: 0;
+}
+.hh-chat-title {
+    margin: 0;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-weight: 700;
+    font-size: 18px;
+    line-height: 1.2;
+    color: #F2E8D5;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.hh-chat-sub {
+    margin: 2px 0 0;
+    font-size: 11.5px;
+    color: #9DB0C8;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.hh-chat-icon-btn {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    border: 1px solid var(--hh-line);
+    background: rgba(233, 240, 249, 0.06);
+    color: #E9F0F9;
+    font-size: 15px;
+}
+.hh-chat-icon-btn:hover,
+.hh-chat-icon-btn:focus-visible {
+    background: rgba(233, 240, 249, 0.12);
+}
+
+/* --- Ajuda sem revelar (ponto 17) -------------------------- */
+.hh-chat-notice {
+    flex-shrink: 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin: 10px var(--hh-gutter) 0;
+    padding: 12px 13px;
+    border-radius: 14px;
+    border: 1px solid rgba(214, 178, 116, 0.36);
+    background: rgba(214, 178, 116, 0.1);
+}
+.hh-chat-notice.hidden { display: none; }
+.hh-chat-notice > i {
+    flex-shrink: 0;
+    margin-top: 1px;
+    color: #E7CE9A;
+    font-size: 14px;
+}
+.hh-chat-notice > div { flex: 1; min-width: 0; }
+.hh-chat-notice-title {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 700;
+    color: #F2E8D5;
+}
+.hh-chat-notice-sub {
+    margin: 3px 0 0;
+    font-size: 12px;
+    line-height: 1.45;
+    color: #C8D6E8;
+}
+.hh-chat-notice-ok {
+    flex-shrink: 0;
+    align-self: center;
+    min-height: 32px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: rgba(214, 178, 116, 0.22);
+    color: #F2E8D5;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* --- Area das mensagens ------------------------------------ */
+.hh-chat-scroll {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    padding: 14px var(--hh-gutter);
+}
+.hh-chat-msgs {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.hh-chat-earlier {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 14px;
+}
+.hh-chat-earlier.hidden { display: none; }
+.hh-chat-earlier button {
+    min-height: 36px;
+    padding: 8px 16px;
+    border-radius: 999px;
+    border: 1px solid var(--hh-line);
+    background: rgba(233, 240, 249, 0.05);
+    color: #9DB0C8;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* --- Um bloco de mensagens da mesma pessoa ------------------ */
+.hh-chat-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-width: 86%;
+}
+.hh-chat-group.is-mine {
+    align-self: flex-end;
+    align-items: flex-end;
+}
+
+.hh-chat-author {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 3px;
+    background: none;
+    text-align: left;
+}
+.hh-chat-avatar {
+    flex-shrink: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border-radius: 50%;
+    background: rgba(214, 178, 116, 0.2);
+    border: 1px solid rgba(214, 178, 116, 0.34);
+    color: #E7CE9A;
+    font-size: 12px;
+    font-weight: 700;
+}
+.hh-chat-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.hh-chat-author-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.25;
+}
+.hh-chat-author-name {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #E9F0F9;
+}
+.hh-chat-author-meta {
+    font-size: 10.5px;
+    color: #6F819A;
+}
+/* Ponto 20: discreto. Quem descobriu provavelmente sabe do que
+   fala — nao e um distintivo de estatuto. */
+.hh-chat-seal { color: #8FD6A0; }
+
+/* --- Uma mensagem ------------------------------------------ */
+.hh-chat-msg {
+    position: relative;
+    padding: 9px 12px;
+    border-radius: 16px;
+    border: 1px solid var(--hh-line);
+    background: rgba(233, 240, 249, 0.05);
+    border-top-left-radius: 6px;
+}
+/* Ponto 11: a minha mensagem distingue-se por um contorno
+   dourado sobre navy — nunca pelo azul de outra app. */
+.hh-chat-msg.is-mine {
+    border-color: rgba(214, 178, 116, 0.42);
+    background: rgba(214, 178, 116, 0.12);
+    border-top-left-radius: 16px;
+    border-top-right-radius: 6px;
+}
+.hh-chat-msg.is-deleted {
+    border-style: dashed;
+    background: transparent;
+}
+.hh-chat-msg.is-deleted .hh-chat-text {
+    font-style: italic;
+    color: #6F819A;
+}
+
+.hh-chat-text {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #E9F0F9;
+    /* Uma palavra sem espacos (um link colado) nao pode esticar a
+       conversa para fora do ecra. */
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+}
+
+.hh-chat-quote {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    margin-bottom: 6px;
+    padding: 6px 9px;
+    border-left: 2px solid rgba(214, 178, 116, 0.6);
+    border-radius: 7px;
+    background: rgba(10, 23, 41, 0.4);
+}
+.hh-chat-quote-author {
+    font-size: 11px;
+    font-weight: 700;
+    color: #D6B274;
+}
+.hh-chat-quote-text {
+    font-size: 12px;
+    line-height: 1.4;
+    color: #9DB0C8;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.hh-chat-photo {
+    margin: 0 0 6px;
+    border-radius: 12px;
+    overflow: hidden;
+}
+.hh-chat-photo img {
+    display: block;
+    width: 100%;
+    max-width: 240px;
+    height: auto;
+}
+
+/* --- Referencia a um lugar (pontos 14 e 54) -----------------
+   A saida da conversa para o mundo real. */
+.hh-chat-ref {
+    margin-bottom: 6px;
+    padding: 11px 12px;
+    border-radius: 14px;
+    border: 1px solid rgba(214, 178, 116, 0.34);
+    background: rgba(10, 23, 41, 0.5);
+}
+.hh-chat-ref-name {
+    margin: 0;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-weight: 700;
+    font-size: 14px;
+    color: #F2E8D5;
+}
+.hh-chat-ref-place {
+    margin: 2px 0 9px;
+    font-size: 11.5px;
+    color: #9DB0C8;
+}
+.hh-chat-ref-btn {
+    min-height: 34px;
+    padding: 7px 13px;
+    border-radius: 999px;
+    background: linear-gradient(180deg, #F2E1A6, #D6B274);
+    color: #0A1729;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+/* --- Rodape de uma mensagem -------------------------------- */
+.hh-chat-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 5px;
+}
+.hh-chat-time {
+    font-size: 10.5px;
+    color: #6F819A;
+}
+.hh-chat-edited {
+    font-size: 10.5px;
+    font-style: italic;
+    color: #6F819A;
+}
+.hh-chat-state { font-size: 10.5px; }
+.hh-chat-state.is-sending { color: #9DB0C8; }
+.hh-chat-state.is-failed { color: #E9A2A2; }
+.hh-chat-retry {
+    min-height: 28px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(233, 162, 162, 0.5);
+    color: #E9A2A2;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+/* Ponto 37: uma reaccao so. "Ajudou-me" nao e um gosto. */
+.hh-chat-helpful {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    min-height: 30px;
+    padding: 5px 11px;
+    border-radius: 999px;
+    border: 1px solid var(--hh-line);
+    background: rgba(233, 240, 249, 0.04);
+    color: #9DB0C8;
+    font-size: 11.5px;
+    font-weight: 600;
+}
+.hh-chat-helpful.is-on {
+    border-color: rgba(214, 178, 116, 0.55);
+    background: rgba(214, 178, 116, 0.18);
+    color: #F2E8D5;
+}
+.hh-chat-helpful-count {
+    font-size: 11px;
+    color: #D6B274;
+}
+
+/* --- Estado vazio (ponto 39) ------------------------------- */
+.hh-chat-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 48px 24px;
+    text-align: center;
+}
+.hh-chat-empty.hidden { display: none; }
+.hh-chat-empty-title {
+    margin: 0;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-weight: 700;
+    font-size: 19px;
+    color: #F2E8D5;
+}
+.hh-chat-empty-sub {
+    margin: 0;
+    max-width: 30ch;
+    font-size: 13px;
+    line-height: 1.55;
+    color: #9DB0C8;
+}
+.hh-chat-empty-btn {
+    margin-top: 8px;
+    min-height: 44px;
+    padding: 11px 20px;
+    border-radius: 999px;
+    background: linear-gradient(180deg, #F2E1A6, #D6B274);
+    color: #0A1729;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+/* --- "N novas mensagens" (ponto 29) ------------------------ */
+.hh-chat-jump {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 96px;
+    z-index: 2;
+    min-height: 36px;
+    padding: 8px 16px;
+    border-radius: 999px;
+    background: linear-gradient(180deg, #F2E1A6, #D6B274);
+    color: #0A1729;
+    font-size: 12px;
+    font-weight: 700;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, .45);
+}
+.hh-chat-jump.hidden { display: none; }
+
+/* --- A responder / fotografia escolhida -------------------- */
+.hh-chat-replybar,
+.hh-chat-pendphoto {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px var(--hh-gutter);
+    border-top: 1px solid var(--hh-line);
+    background: rgba(10, 23, 41, 0.7);
+}
+.hh-chat-replybar.hidden,
+.hh-chat-pendphoto.hidden { display: none; }
+.hh-chat-replybar-body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    border-left: 2px solid rgba(214, 178, 116, 0.6);
+    padding-left: 9px;
+}
+.hh-chat-replybar-author {
+    font-size: 11px;
+    font-weight: 700;
+    color: #D6B274;
+}
+.hh-chat-replybar-text {
+    font-size: 12px;
+    color: #9DB0C8;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.hh-chat-pendphoto img {
+    width: 52px;
+    height: 52px;
+    border-radius: 10px;
+    object-fit: cover;
+}
+
+/* --- Campo de escrita -------------------------------------- */
+.hh-chat-composer {
+    flex-shrink: 0;
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    padding: 10px var(--hh-gutter) calc(10px + var(--hh-safe-bottom));
+    border-top: 1px solid var(--hh-line);
+    background: #0C1C33;
+}
+.hh-chat-attach,
+.hh-chat-send {
+    flex-shrink: 0;
+    /* 44px: o minimo de alvo tactil do ponto 57 */
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 14px;
+    font-size: 15px;
+}
+.hh-chat-attach {
+    border: 1px solid var(--hh-line);
+    background: rgba(233, 240, 249, 0.06);
+    color: #E9F0F9;
+}
+.hh-chat-send {
+    background: linear-gradient(180deg, #F2E1A6, #D6B274);
+    color: #0A1729;
+    transition: opacity .18s ease;
+}
+.hh-chat-send:disabled {
+    opacity: .4;
+    cursor: not-allowed;
+}
+.hh-chat-composer textarea {
+    flex: 1;
+    min-width: 0;
+    min-height: 44px;
+    max-height: 132px;
+    padding: 12px 14px;
+    resize: none;
+    border-radius: 16px;
+    border: 1px solid var(--hh-line);
+    background: rgba(233, 240, 249, 0.05);
+    color: #E9F0F9;
+    /* 16px e o minimo que impede o iOS de ampliar a pagina ao
+       focar o campo — e ampliar partia o ecra inteiro. */
+    font-size: 16px;
+    line-height: 1.4;
+    font-family: inherit;
+}
+.hh-chat-composer textarea:focus {
+    outline: none;
+    border-color: rgba(214, 178, 116, 0.5);
+}
+.hh-chat-composer textarea::placeholder { color: #6F819A; }
+
+.hh-chat-counter {
+    position: absolute;
+    right: calc(var(--hh-gutter) + 56px);
+    bottom: calc(62px + var(--hh-safe-bottom));
+    font-size: 10.5px;
+    color: #9DB0C8;
+}
+.hh-chat-counter.hidden { display: none; }
+
+.hh-chat-offline {
+    flex-shrink: 0;
+    margin: 0;
+    padding: 8px var(--hh-gutter) calc(8px + var(--hh-safe-bottom));
+    text-align: center;
+    font-size: 12px;
+    color: #E9A2A2;
+    background: rgba(233, 162, 162, 0.08);
+    border-top: 1px solid rgba(233, 162, 162, 0.22);
+}
+.hh-chat-offline.hidden { display: none; }
+
+/* --- Folhas: menu de mensagem e perfil rapido -------------- */
+.hh-chat-sheet-lead {
+    margin: 0 0 10px;
+    font-size: 13px;
+    color: #9DB0C8;
+}
+.hh-chat-sheet-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    min-height: 48px;
+    padding: 12px 10px;
+    border-radius: 12px;
+    text-align: left;
+    color: #E9F0F9;
+    font-size: 14px;
+}
+.hh-chat-sheet-item:hover,
+.hh-chat-sheet-item:focus-visible {
+    background: rgba(233, 240, 249, 0.07);
+}
+.hh-chat-sheet-item > i {
+    width: 20px;
+    text-align: center;
+    color: #D6B274;
+}
+.hh-chat-sheet-item.is-danger { color: #E9A2A2; }
+.hh-chat-sheet-item.is-danger > i { color: #E9A2A2; }
+
+.hh-chat-prof-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 4px 0 8px;
+}
+.hh-chat-prof-head .hh-chat-avatar {
+    width: 52px;
+    height: 52px;
+    font-size: 19px;
+}
+.hh-chat-prof-name {
+    margin: 0;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-weight: 700;
+    font-size: 18px;
+    color: #F2E8D5;
+}
+.hh-chat-prof-level {
+    margin: 2px 0 0;
+    font-size: 12px;
+    color: #9DB0C8;
+}
+
+/* ==========================================================
+   Tema claro
+   ========================================================== */
+
+html:not(.dark) .hh-cm-title { color: #1C2B42; }
+html:not(.dark) .hh-cm-lead,
+html:not(.dark) .hh-cm-soon-text,
+html:not(.dark) .hh-cv-empty { color: #5A6B84; }
+html:not(.dark) .hh-cm-tab {
+    border-color: rgba(28, 43, 66, 0.14);
+    background: rgba(28, 43, 66, 0.04);
+    color: #5A6B84;
+}
+html:not(.dark) .hh-cm-tab.is-active {
+    color: #3A2C10;
+    background: linear-gradient(180deg, #F5E3B0, #D6B274);
+}
+html:not(.dark) .hh-cm-soon {
+    background: rgba(28, 43, 66, 0.03);
+    border-color: rgba(176, 142, 82, 0.4);
+}
+html:not(.dark) .hh-cm-icon-btn { color: #8A6A28; }
+
+html:not(.dark) .hh-cv-search,
+html:not(.dark) .hh-cv-card {
+    border-color: rgba(28, 43, 66, 0.12);
+    background: #FFFDF8;
+}
+html:not(.dark) .hh-cv-search input,
+html:not(.dark) .hh-cv-card-name { color: #1C2B42; }
+html:not(.dark) .hh-cv-card-preview { color: #5A6B84; }
+html:not(.dark) .hh-cv-card-when { color: #8494AB; }
+html:not(.dark) .hh-cv-card-badge { color: #3A2C10; }
+html:not(.dark) .hh-cv-section { color: #8A6A28; }
+
+html:not(.dark) .hh-chat {
+    background: linear-gradient(180deg, #FBF8F2 0%, #EFEBE1 100%);
+    color: #1C2B42;
+}
+html:not(.dark) .hh-chat-head,
+html:not(.dark) .hh-chat-composer { background: #FFFDF8; }
+html:not(.dark) .hh-chat-head { border-bottom-color: rgba(28, 43, 66, 0.1); }
+html:not(.dark) .hh-chat-hero-shade {
+    background: linear-gradient(180deg, rgba(255, 253, 248, .55), rgba(255, 253, 248, .92));
+}
+html:not(.dark) .hh-chat-title,
+html:not(.dark) .hh-chat-empty-title,
+html:not(.dark) .hh-chat-ref-name,
+html:not(.dark) .hh-chat-prof-name { color: #1C2B42; }
+html:not(.dark) .hh-chat-sub,
+html:not(.dark) .hh-chat-empty-sub,
+html:not(.dark) .hh-chat-ref-place,
+html:not(.dark) .hh-chat-prof-level { color: #5A6B84; }
+html:not(.dark) .hh-chat-icon-btn {
+    border-color: rgba(28, 43, 66, 0.12);
+    background: rgba(28, 43, 66, 0.04);
+    color: #1C2B42;
+}
+html:not(.dark) .hh-chat-msg {
+    border-color: rgba(28, 43, 66, 0.1);
+    background: #FFFDF8;
+}
+html:not(.dark) .hh-chat-msg.is-mine {
+    border-color: rgba(176, 142, 82, 0.45);
+    background: rgba(214, 178, 116, 0.16);
+}
+html:not(.dark) .hh-chat-text { color: #1C2B42; }
+html:not(.dark) .hh-chat-author-name { color: #1C2B42; }
+html:not(.dark) .hh-chat-author-meta,
+html:not(.dark) .hh-chat-time,
+html:not(.dark) .hh-chat-edited { color: #8494AB; }
+html:not(.dark) .hh-chat-quote,
+html:not(.dark) .hh-chat-ref { background: rgba(28, 43, 66, 0.04); }
+html:not(.dark) .hh-chat-quote-text { color: #5A6B84; }
+html:not(.dark) .hh-chat-composer textarea {
+    border-color: rgba(28, 43, 66, 0.12);
+    background: #FFFFFF;
+    color: #1C2B42;
+}
+html:not(.dark) .hh-chat-attach {
+    border-color: rgba(28, 43, 66, 0.12);
+    background: rgba(28, 43, 66, 0.04);
+    color: #1C2B42;
+}
+html:not(.dark) .hh-chat-send,
+html:not(.dark) .hh-chat-ref-btn,
+html:not(.dark) .hh-chat-empty-btn,
+html:not(.dark) .hh-chat-jump { color: #3A2C10; }
+html:not(.dark) .hh-chat-sheet-item { color: #1C2B42; }
+html:not(.dark) .hh-chat-notice {
+    background: rgba(214, 178, 116, 0.16);
+    border-color: rgba(176, 142, 82, 0.45);
+}
+html:not(.dark) .hh-chat-notice-title { color: #3A2C10; }
+html:not(.dark) .hh-chat-notice-sub { color: #5A4421; }
+html:not(.dark) .hh-chat-notice-ok { color: #3A2C10; }
+html:not(.dark) .hh-nav-dot { box-shadow: 0 0 0 2px #FBF8F2; }
+
+/* ==========================================================
+   Ecras estreitos
+
+   320px e o chao. Abaixo disto nenhuma destas medidas cabe, e
+   acima de 430 nada precisa de crescer — o contentor da app ja
+   para nos 30rem.
+   ========================================================== */
+
+@media (max-width: 360px) {
+    .hh-cm-tab { padding: 10px 13px; font-size: 12.5px; }
+    .hh-cv-card { padding: 11px 12px; gap: 10px; }
+    .hh-cv-card-icon { width: 40px; height: 40px; }
+    .hh-chat-group { max-width: 92%; }
+    .hh-chat-photo img { max-width: 200px; }
+}
+
+@media (max-width: 320px) {
+    .hh-cm-title { font-size: 24px; }
+    .hh-cm-lead { font-size: 12px; }
+    .hh-chat-title { font-size: 16px; }
+    .hh-chat-helpful span { display: none; }
+    .hh-chat-notice { flex-wrap: wrap; }
+    .hh-chat-notice-ok { width: 100%; }
+}
+
+/* Ecra baixo (telemovel deitado, ou teclado aberto num aparelho
+   pequeno): o aviso das pistas e a primeira coisa a sair. */
+@media (max-height: 520px) {
+    .hh-chat-notice { display: none; }
+    .hh-chat-head { padding-top: calc(6px + var(--hh-safe-top)); }
+}
+
+/* Quem prefere menos movimento nao leva nenhum. */
+@media (prefers-reduced-motion: reduce) {
+    .hh-cv-card,
+    .hh-cm-tab,
+    .hh-chat-send,
+    .hh-chat-helpful { transition: none; }
+}
+
+/* --- Indicador da barra de baixo ---------------------------
+   A ordem dos botoes mudou com a Comunidade:
+
+     antes   Scanner · Perfil · Mapa · Ranking
+     agora   Explorar · Mapa · Comunidade · Perfil
+
+   As regras antigas (scanner 0%, profile 100%, map 200%,
+   ranking 300%) ficaram a apontar para as posicoes erradas.
+   Estas vem depois no ficheiro e por isso ganham.
+
+   O Ranking nao tem posicao propria: vive dentro da Comunidade,
+   logo acende a Comunidade (ver updateNavButtons). */
+nav.hh-nav[data-active="scanner"] .glass-glider   { transform: translateX(0%); }
+nav.hh-nav[data-active="map"] .glass-glider       { transform: translateX(100%); }
+nav.hh-nav[data-active="community"] .glass-glider { transform: translateX(200%); }
+nav.hh-nav[data-active="profile"] .glass-glider   { transform: translateX(300%); }
+
+/* ============================================================
+   NAVEGACAO A CINCO ABAS
+
+     Explorar · Mapa · Comunidade · Ranking · Perfil
+
+   O Ranking voltou a ter botao proprio. Enquanto viveu dentro da
+   Comunidade, acendia a Comunidade; agora acende-se a si.
+
+   TRES SITIOS CONTAM ESTA ORDEM e tem de concordar: a ordem dos
+   <button> no HTML, a lista em `updateNavButtons` e as posicoes
+   aqui. Mudar um e esquecer os outros poe o indicador debaixo do
+   botao errado — e foi o que aconteceu antes: ficaram no ficheiro
+   tres geracoes de regras (a 3 abas, a 4, e estas), cada uma a
+   sobrepor-se a anterior pela ordem em que aparecem.
+
+   Estas vem por ultimo, logo ganham. As de cima ficam inertes.
+   ============================================================ */
+nav.hh-nav .glass-glider {
+    width: calc(100% / 5);
+}
+
+nav.hh-nav[data-active="scanner"] .glass-glider   { transform: translateX(0%); }
+nav.hh-nav[data-active="map"] .glass-glider       { transform: translateX(100%); }
+nav.hh-nav[data-active="community"] .glass-glider { transform: translateX(200%); }
+nav.hh-nav[data-active="ranking"] .glass-glider   { transform: translateX(300%); }
+nav.hh-nav[data-active="profile"] .glass-glider   { transform: translateX(400%); }
+
+/* Cinco rotulos onde cabiam quatro. A 380px cada botao fica com
+   ~56px: "Comunidade" nao cabe inteiro a 0.62rem, e uma palavra
+   partida ao meio e pior do que uma palavra mais pequena. */
+@media (max-width: 400px) {
+    nav.hh-nav .hh-nav-group > button span {
+        font-size: 0.58rem;
+        letter-spacing: 0;
+    }
+}
+@media (max-width: 340px) {
+    nav.hh-nav .hh-nav-group > button span {
+        font-size: 0.54rem;
+    }
+    nav.hh-nav button { padding: 6px 2px; }
+}
+
+/* O ecra de conversa acompanha a largura da app.
+   `inset: 0` sozinho esticava-o ate as bordas da janela no
+   computador, enquanto o resto da app para nos 30rem — o chat
+   ficava a ser a unica coisa larga do produto. */
+.hh-chat {
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 30rem;
+    box-shadow: 0 0 60px rgba(0, 0, 0, .5);
+}
+
+/* A caixa de escrita cresce com o texto ate 132px; a barra de
+   deslocamento so faz sentido depois disso, e mesmo ai nao
+   precisa de ocupar espaco dentro de um campo tao estreito. */
+.hh-chat-composer textarea {
+    overflow-y: auto;
+    scrollbar-width: none;
+}
+.hh-chat-composer textarea::-webkit-scrollbar { display: none; }
+
+/* ==========================================================
+   Heritage — Descobertas
+
+   Uma publicacao nao se parece com uma mensagem, e e de
+   proposito (ponto 33): tem titulo editorial, etiqueta de tipo,
+   autor em destaque e uma barra de accoes. Um balao de chat nao
+   tem nada disso.
+
+   O cartao segue a mesma gramatica dos outros cartoes da app —
+   navy, contorno fino, cantos generosos — para o feed parecer
+   parte do Heritage Hunt e nao uma rede social encaixada.
+   ========================================================== */
+
+/* --- Filtros por tipo -------------------------------------- */
+.hh-fd-chips {
+    display: flex;
+    gap: 7px;
+    margin-top: 14px;
+    padding-bottom: 2px;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+.hh-fd-chips::-webkit-scrollbar { display: none; }
+
+.hh-fd-chip {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 38px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--hh-line);
+    background: rgba(233, 240, 249, 0.04);
+    color: #9DB0C8;
+    font-size: 12.5px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+.hh-fd-chip.is-active {
+    color: #0A1729;
+    background: linear-gradient(180deg, #F2E1A6, #D6B274);
+    border-color: transparent;
+}
+.hh-fd-chip > i { font-size: 11px; }
+
+/* --- Etiqueta de tipo -------------------------------------- */
+.hh-fd-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 9px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: #E7CE9A;
+    background: rgba(214, 178, 116, 0.16);
+    border: 1px solid rgba(214, 178, 116, 0.32);
+}
+.hh-fd-badge > i { font-size: 10px; }
+.hh-fd-badge.is-large { padding: 5px 11px; font-size: 10.5px; }
+
+.hh-fd-badge--blue {
+    color: #7FB2FF;
+    background: rgba(127, 178, 255, 0.14);
+    border-color: rgba(127, 178, 255, 0.32);
+}
+.hh-fd-badge--violet {
+    color: #C2A2F0;
+    background: rgba(194, 162, 240, 0.14);
+    border-color: rgba(194, 162, 240, 0.32);
+}
+.hh-fd-badge--green {
+    color: #8FD6A0;
+    background: rgba(143, 214, 160, 0.14);
+    border-color: rgba(143, 214, 160, 0.32);
+}
+
+/* --- Destaques --------------------------------------------- */
+.hh-fd-high { margin-top: 18px; }
+.hh-fd-high.hidden { display: none; }
+
+.hh-fd-rail {
+    display: flex;
+    gap: 10px;
+    /* Rola na horizontal dentro do seu proprio contentor: o corpo
+       da pagina nunca rola para o lado. */
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    padding-bottom: 4px;
+}
+.hh-fd-rail::-webkit-scrollbar { display: none; }
+
+.hh-fd-hl {
+    position: relative;
+    flex: 0 0 82%;
+    max-width: 320px;
+    scroll-snap-align: start;
+    height: 190px;
+    overflow: hidden;
+    border-radius: 20px;
+    border: 1px solid var(--hh-line);
+    background: #0E2039;
+    text-align: left;
+}
+/* FILHO DIRECTO, de proposito. Escrito `.hh-fd-hl img`, esta regra
+   apanhava tambem o avatar do rodape: com a mesma especificidade que
+   `.hh-chat-avatar img` mas declarada depois, ganhava — e o avatar,
+   passado a `absolute; inset: 0`, esticava-se sobre o cartao inteiro.
+   O destaque ficava com a cara do autor em vez da capa. */
+.hh-fd-hl > img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+/* Sem capa nenhuma (nem da publicacao nem do monumento): um fundo
+   proprio, para o cartao nao parecer uma fotografia falhada. */
+.hh-fd-hl.is-coverless {
+    background:
+        radial-gradient(120% 90% at 12% 0%, rgba(236, 204, 136, .16) 0%, rgba(236, 204, 136, 0) 60%),
+        linear-gradient(155deg, #16304F 0%, #0E2039 58%, #0A1729 100%);
+}
+.hh-fd-hl.is-coverless .hh-fd-hl-shade {
+    background: linear-gradient(180deg, rgba(10, 23, 41, 0) 0%, rgba(10, 23, 41, .55) 72%, rgba(10, 23, 41, .8) 100%);
+}
+.hh-fd-hl-shade {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(10, 23, 41, .25) 0%, rgba(10, 23, 41, .88) 68%, rgba(10, 23, 41, .96) 100%);
+}
+.hh-fd-hl-body {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    height: 100%;
+    padding: 12px 13px;
+    justify-content: flex-end;
+}
+.hh-fd-hl-place {
+    font-size: 10.5px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: rgba(236, 204, 136, .9);
+}
+.hh-fd-hl-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-weight: 700;
+    font-size: 17px;
+    line-height: 1.22;
+    color: #F2E8D5;
+    /* Duas linhas e o tecto: um titulo que ocupe o cartao todo
+       tapa a fotografia que o justifica. */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.hh-fd-hl-foot {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-top: 3px;
+}
+.hh-fd-hl-foot .hh-chat-avatar { width: 24px; height: 24px; font-size: 10px; }
+.hh-fd-hl-name {
+    flex: 1;
+    min-width: 0;
+    font-size: 11.5px;
+    color: #C8D6E8;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.hh-fd-hl-score {
+    font-size: 11px;
+    font-weight: 700;
+    color: #D6B274;
+}
+
+/* --- Cartao de publicacao ---------------------------------- */
+.hh-fd-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.hh-fd-card {
+    border-radius: 20px;
+    border: 1px solid var(--hh-line);
+    background: rgba(233, 240, 249, 0.04);
+    overflow: hidden;
+}
+
+.hh-fd-card-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 13px 0;
+}
+.hh-fd-card-meta {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.hh-fd-card-line {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    min-width: 0;
+}
+.hh-fd-card-place {
+    min-width: 0;
+    font-size: 11.5px;
+    color: #9DB0C8;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.hh-fd-card-when {
+    font-size: 11px;
+    color: #6F819A;
+}
+.hh-fd-card-menu {
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    color: #6F819A;
+}
+.hh-fd-card-menu:hover { color: #E9F0F9; }
+
+.hh-fd-card-open {
+    display: block;
+    width: 100%;
+    padding: 10px 13px 12px;
+    text-align: left;
+    background: none;
+}
+.hh-fd-card-title {
+    margin: 0;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-weight: 700;
+    font-size: 16.5px;
+    line-height: 1.25;
+    color: #F2E8D5;
+}
+.hh-fd-card-text {
+    margin: 5px 0 0;
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: #C8D6E8;
+    overflow-wrap: anywhere;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* A grelha muda com o numero de fotografias: uma ocupa a
+   largura toda, duas ficam lado a lado, tres e quatro em
+   mosaico. */
+.hh-fd-card-photos {
+    display: grid;
+    gap: 3px;
+    margin-top: 10px;
+    border-radius: 14px;
+    overflow: hidden;
+}
+.hh-fd-card-photos img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+.hh-fd-card-photos.n1 { grid-template-columns: 1fr; }
+.hh-fd-card-photos.n1 img { max-height: 260px; }
+.hh-fd-card-photos.n2 { grid-template-columns: 1fr 1fr; height: 160px; }
+.hh-fd-card-photos.n3 { grid-template-columns: 2fr 1fr; grid-template-rows: 1fr 1fr; height: 200px; }
+.hh-fd-card-photos.n3 img:first-child { grid-row: span 2; }
+.hh-fd-card-photos.n4 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; height: 220px; }
+
+/* --- Barra de accoes --------------------------------------- */
+.hh-fd-bar {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 9px;
+    border-top: 1px solid var(--hh-line);
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+.hh-fd-bar::-webkit-scrollbar { display: none; }
+
+.hh-fd-act {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    /* 44px de alvo tactil mesmo com a etiqueta pequena */
+    min-height: 44px;
+    padding: 8px 11px;
+    border-radius: 12px;
+    color: #9DB0C8;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+.hh-fd-act:hover,
+.hh-fd-act:focus-visible { background: rgba(233, 240, 249, 0.06); }
+.hh-fd-act.is-on { color: #E7CE9A; }
+.hh-fd-act > i { font-size: 13px; }
+
+.hh-fd-more {
+    display: flex;
+    justify-content: center;
+    margin-top: 14px;
+}
+.hh-fd-more.hidden { display: none; }
+.hh-fd-more button {
+    min-height: 40px;
+    padding: 10px 20px;
+    border-radius: 999px;
+    border: 1px solid var(--hh-line);
+    background: rgba(233, 240, 249, 0.05);
+    color: #C8D6E8;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.hh-fd-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 44px 24px;
+    text-align: center;
+}
+.hh-fd-empty-title {
+    margin: 0;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-weight: 700;
+    font-size: 18px;
+    color: #F2E8D5;
+}
+.hh-fd-empty-sub {
+    margin: 0;
+    max-width: 30ch;
+    font-size: 13px;
+    line-height: 1.55;
+    color: #9DB0C8;
+}
+
+/* --- Botao de criar ----------------------------------------
+   Fica acima da barra de navegacao e da area segura, nunca por
+   cima dela. */
+.hh-fd-fab {
+    position: fixed;
+    right: max(var(--hh-gutter), calc(50% - 15rem + var(--hh-gutter)));
+    bottom: calc(var(--hh-nav-h) + 12px + var(--hh-safe-bottom));
+    z-index: 40;
+    width: 54px;
+    height: 54px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: linear-gradient(180deg, #F2E1A6, #D6B274);
+    color: #0A1729;
+    font-size: 19px;
+    box-shadow: 0 10px 26px rgba(0, 0, 0, .5);
+}
+.hh-fd-fab.hidden { display: none; }
+
+/* ==========================================================
+   Uma publicacao
+   ========================================================== */
+
+.hh-post {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 60;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 30rem;
+    height: 100dvh;
+    background: linear-gradient(180deg, #0C1C33 0%, #0A1729 100%);
+    color: #E9F0F9;
+    box-shadow: 0 0 60px rgba(0, 0, 0, .5);
+}
+.hh-post.hidden { display: none !important; }
+
+.hh-post-head {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: calc(10px + var(--hh-safe-top)) var(--hh-gutter) 10px;
+}
+
+.hh-post-scroll {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+}
+
+.hh-post-hero {
+    position: relative;
+    height: 240px;
+    overflow: hidden;
+}
+.hh-post-hero.hidden { display: none; }
+.hh-post-hero img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+/* Sem fotografia o cabecalho precisa de espaco proprio, senao os
+   botoes ficam por cima do titulo. */
+.hh-post:not(.has-hero) .hh-post-body { padding-top: calc(64px + var(--hh-safe-top)); }
+
+.hh-post-body {
+    padding: 16px var(--hh-gutter) 20px;
+}
+.hh-post-tagline {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    flex-wrap: wrap;
+}
+.hh-post-place {
+    font-size: 12px;
+    color: #9DB0C8;
+}
+.hh-post-title {
+    margin: 10px 0 0;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-weight: 700;
+    font-size: clamp(22px, 6.5vw, 27px);
+    line-height: 1.2;
+    color: #F2E8D5;
+}
+.hh-post-text {
+    margin: 10px 0 0;
+    font-size: 14.5px;
+    line-height: 1.65;
+    color: #C8D6E8;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+.hh-post-text.hidden { display: none; }
+
+.hh-post-author { margin-top: 18px; }
+.hh-post-author-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 12px;
+    border-radius: 16px;
+    border: 1px solid var(--hh-line);
+    background: rgba(233, 240, 249, 0.04);
+}
+.hh-post-author-row .hh-chat-avatar { width: 40px; height: 40px; font-size: 15px; }
+
+/* O nome ocupa o espaco que sobra e empurra o botao ate a margem,
+   em vez de o deixar colado ao texto. `min-width: 0` e o que
+   permite ao nome encolher: sem ele um nome longo empurrava o
+   botao para fora da linha. */
+.hh-post-author-row > div:not(.hh-chat-avatar) { flex: 1 1 auto; min-width: 0; }
+.hh-post-author-row .hh-follow { margin-left: auto; }
+
+/* Aqui o botao tem presenca: um pouco mais de preenchimento do
+   que no feed, onde a mesma cor a este peso competiria com doze
+   cartoes ao mesmo tempo. */
+.hh-post-author-row .hh-follow--quiet {
+    background: rgba(214, 178, 116, 0.17);
+    border-color: rgba(214, 178, 116, 0.62);
+}
+.hh-post-author-name {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 700;
+    color: #E9F0F9;
+}
+.hh-post-author-meta {
+    margin: 2px 0 0;
+    font-size: 11.5px;
+    color: #9DB0C8;
+}
+
+.hh-post-actions {
+    margin-top: 12px;
+    border-radius: 16px;
+    border: 1px solid var(--hh-line);
+}
+.hh-post-actions .hh-fd-bar { border-top: 0; }
+
+.hh-post-comments-title {
+    margin: 24px 0 10px;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-weight: 700;
+    font-size: 17px;
+    color: #F2E8D5;
+}
+.hh-post-comments {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.hh-post-comment {
+    display: flex;
+    gap: 10px;
+}
+.hh-post-comment .hh-chat-avatar { width: 32px; height: 32px; font-size: 12px; }
+.hh-post-comment-body { flex: 1; min-width: 0; }
+.hh-post-comment-head {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+.hh-post-comment-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: #E9F0F9;
+}
+.hh-post-comment-when {
+    font-size: 11px;
+    color: #6F819A;
+}
+.hh-post-comment-reply {
+    margin: 3px 0 0;
+    font-size: 11px;
+    font-style: italic;
+    color: #D6B274;
+}
+.hh-post-comment-text {
+    margin: 4px 0 0;
+    font-size: 13.5px;
+    line-height: 1.5;
+    color: #C8D6E8;
+    overflow-wrap: anywhere;
+}
+.hh-post-comment-text.is-deleted {
+    font-style: italic;
+    color: #6F819A;
+}
+.hh-post-comment-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 5px;
+}
+.hh-post-comment-act {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    min-height: 32px;
+    padding: 5px 9px;
+    border-radius: 9px;
+    color: #6F819A;
+    font-size: 11.5px;
+    font-weight: 600;
+}
+.hh-post-comment-act:hover { background: rgba(233, 240, 249, 0.06); }
+.hh-post-comment-act.is-on { color: #E7CE9A; }
+.hh-post-comment-act.is-danger { color: #E9A2A2; }
+
+/* ==========================================================
+   Criar publicacao
+   ========================================================== */
+
+.hh-compose {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 61;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 30rem;
+    height: 100dvh;
+    background: linear-gradient(180deg, #0C1C33 0%, #0A1729 100%);
+    color: #E9F0F9;
+    box-shadow: 0 0 60px rgba(0, 0, 0, .5);
+}
+.hh-compose.hidden { display: none !important; }
+
+.hh-compose-head {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: calc(10px + var(--hh-safe-top)) var(--hh-gutter) 10px;
+    border-bottom: 1px solid var(--hh-line);
+}
+.hh-compose-heading {
+    flex: 1;
+    margin: 0;
+    text-align: center;
+    font-size: 15px;
+    font-weight: 600;
+    color: #E9F0F9;
+}
+/* Mantem o titulo ao centro mesmo so havendo um botao a esquerda */
+.hh-compose-spacer { width: 40px; flex-shrink: 0; }
+
+.hh-compose-scroll {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 18px var(--hh-gutter) calc(28px + var(--hh-safe-bottom));
+}
+
+.hh-compose-lead {
+    margin: 0 0 16px;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-weight: 700;
+    font-size: 19px;
+    line-height: 1.3;
+    color: #F2E8D5;
+}
+
+.hh-compose-kinds {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
+.hh-compose-kind {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 13px 7px;
+    text-align: center;
+    border-radius: 16px;
+    border: 1px solid var(--hh-line);
+    background: rgba(233, 240, 249, 0.04);
+    color: #9DB0C8;
+}
+.hh-compose-kind > i { font-size: 17px; }
+.hh-compose-kind b {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #E9F0F9;
+}
+.hh-compose-kind small {
+    font-size: 10px;
+    line-height: 1.3;
+    color: #6F819A;
+}
+.hh-compose-kind.is-active {
+    border-color: rgba(214, 178, 116, 0.6);
+    background: rgba(214, 178, 116, 0.14);
+}
+.hh-compose-kind.is-active b { color: #F2E8D5; }
+
+.hh-compose-label {
+    display: block;
+    margin: 20px 0 7px;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #E9F0F9;
+}
+.hh-compose-input,
+.hh-compose-textarea {
+    display: block;
+    width: 100%;
+    padding: 13px 14px;
+    border-radius: 14px;
+    border: 1px solid var(--hh-line);
+    background: rgba(233, 240, 249, 0.05);
+    color: #E9F0F9;
+    /* 16px: abaixo disto o iOS amplia a pagina ao focar */
+    font-size: 16px;
+    font-family: inherit;
+}
+.hh-compose-textarea {
+    resize: vertical;
+    min-height: 118px;
+    line-height: 1.55;
+}
+.hh-compose-input:focus,
+.hh-compose-textarea:focus {
+    outline: none;
+    border-color: rgba(214, 178, 116, 0.5);
+}
+.hh-compose-input::placeholder,
+.hh-compose-textarea::placeholder { color: #6F819A; }
+
+.hh-compose-count {
+    display: block;
+    margin-top: 5px;
+    text-align: right;
+    font-size: 11px;
+    color: #9DB0C8;
+}
+.hh-compose-count.hidden { display: none; }
+
+.hh-compose-place {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    text-align: left;
+    min-height: 50px;
+}
+.hh-compose-place > i { color: #D6B274; font-size: 13px; }
+.hh-compose-place span {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 14px;
+}
+
+.hh-compose-photos {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    width: 100%;
+    margin-top: 20px;
+    padding: 15px 14px;
+    text-align: left;
+    border-radius: 16px;
+    border: 1px dashed rgba(214, 178, 116, 0.42);
+    background: rgba(214, 178, 116, 0.06);
+    color: #E7CE9A;
+}
+.hh-compose-photos > i { font-size: 17px; }
+.hh-compose-photos b {
+    display: block;
+    font-size: 13.5px;
+    color: #F2E8D5;
+}
+.hh-compose-photos small {
+    font-size: 11.5px;
+    color: #9DB0C8;
+}
+
+.hh-compose-strip {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+.hh-compose-strip::-webkit-scrollbar { display: none; }
+.hh-compose-strip.hidden { display: none; }
+.hh-compose-thumb {
+    position: relative;
+    flex: 0 0 auto;
+}
+.hh-compose-thumb img {
+    width: 84px;
+    height: 84px;
+    border-radius: 12px;
+    object-fit: cover;
+}
+.hh-compose-thumb .hh-chat-icon-btn {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    font-size: 11px;
+    background: #0A1729;
+}
+
+.hh-compose-publish {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    width: 100%;
+    min-height: 52px;
+    margin-top: 24px;
+    border-radius: 999px;
+    background: linear-gradient(180deg, #F2E1A6, #D6B274);
+    color: #0A1729;
+    font-size: 15px;
+    font-weight: 700;
+}
+.hh-compose-publish:disabled {
+    opacity: .42;
+    cursor: not-allowed;
+}
+
+/* ==========================================================
+   Tema claro
+   ========================================================== */
+
+html:not(.dark) .hh-fd-chip {
+    border-color: rgba(28, 43, 66, 0.14);
+    background: rgba(28, 43, 66, 0.04);
+    color: #5A6B84;
+}
+html:not(.dark) .hh-fd-chip.is-active { color: #3A2C10; }
+html:not(.dark) .hh-fd-card {
+    border-color: rgba(28, 43, 66, 0.12);
+    background: #FFFDF8;
+}
+html:not(.dark) .hh-fd-card-title,
+html:not(.dark) .hh-fd-empty-title { color: #1C2B42; }
+html:not(.dark) .hh-fd-card-text { color: #42536B; }
+html:not(.dark) .hh-fd-card-place,
+html:not(.dark) .hh-fd-empty-sub { color: #5A6B84; }
+html:not(.dark) .hh-fd-card-when { color: #8494AB; }
+html:not(.dark) .hh-fd-act { color: #5A6B84; }
+html:not(.dark) .hh-fd-act.is-on { color: #8A6A28; }
+html:not(.dark) .hh-fd-more button {
+    border-color: rgba(28, 43, 66, 0.14);
+    background: #FFFDF8;
+    color: #42536B;
+}
+html:not(.dark) .hh-fd-fab { color: #3A2C10; }
+html:not(.dark) .hh-fd-badge { color: #8A6A28; }
+
+html:not(.dark) .hh-post,
+html:not(.dark) .hh-compose {
+    background: linear-gradient(180deg, #FBF8F2 0%, #EFEBE1 100%);
+    color: #1C2B42;
+}
+html:not(.dark) .hh-post-title,
+html:not(.dark) .hh-post-comments-title,
+html:not(.dark) .hh-post-author-name,
+html:not(.dark) .hh-post-comment-name,
+html:not(.dark) .hh-compose-lead,
+html:not(.dark) .hh-compose-heading,
+html:not(.dark) .hh-compose-label { color: #1C2B42; }
+html:not(.dark) .hh-post-text,
+html:not(.dark) .hh-post-comment-text { color: #42536B; }
+html:not(.dark) .hh-post-place,
+html:not(.dark) .hh-post-author-meta { color: #5A6B84; }
+html:not(.dark) .hh-post-author-row,
+html:not(.dark) .hh-post-actions {
+    border-color: rgba(28, 43, 66, 0.12);
+    background: #FFFDF8;
+}
+html:not(.dark) .hh-compose-head { border-bottom-color: rgba(28, 43, 66, 0.1); }
+html:not(.dark) .hh-compose-kind {
+    border-color: rgba(28, 43, 66, 0.12);
+    background: #FFFDF8;
+}
+html:not(.dark) .hh-compose-kind b { color: #1C2B42; }
+html:not(.dark) .hh-compose-kind small { color: #8494AB; }
+html:not(.dark) .hh-compose-input,
+html:not(.dark) .hh-compose-textarea {
+    border-color: rgba(28, 43, 66, 0.12);
+    background: #FFFFFF;
+    color: #1C2B42;
+}
+html:not(.dark) .hh-compose-publish { color: #3A2C10; }
+html:not(.dark) .hh-compose-photos b { color: #3A2C10; }
+
+/* ==========================================================
+   Ecras estreitos
+   ========================================================== */
+
+@media (max-width: 360px) {
+    .hh-fd-hl { flex-basis: 88%; height: 172px; }
+    .hh-fd-card-title { font-size: 15.5px; }
+    .hh-compose-kind { padding: 11px 5px; }
+    .hh-compose-kind small { display: none; }
+}
+
+@media (max-width: 320px) {
+    /* Com tao pouca largura, a etiqueta das accoes sai e fica o
+       icone — que continua a ter 44px de alvo. */
+    .hh-fd-act span { display: none; }
+    .hh-fd-act { padding: 8px 10px; }
+    .hh-compose-kinds { grid-template-columns: repeat(2, 1fr); }
+    .hh-post-title { font-size: 20px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .hh-fd-rail { scroll-behavior: auto; }
+}
+
+/* ==========================================================
+   Heritage — Pistas
+
+   Uma pista nao se parece com uma publicacao nem com uma
+   mensagem, e e de proposito: nao tem titulo, nao tem
+   fotografia e nao tem partilha. Tem uma frase, quem a
+   escreveu, e quantas pessoas ela ja ajudou.
+
+   O selo "Descobriu" aparece SEMPRE aqui — so quem descobriu
+   escreve — e e esse o ponto: diz a quem le que a frase vem de
+   alguem que esteve mesmo la.
+   ========================================================== */
+
+.hh-cl-intro {
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+    margin-top: 16px;
+    padding: 13px 14px;
+    border-radius: 18px;
+    border: 1px solid rgba(214, 178, 116, 0.3);
+    background: rgba(214, 178, 116, 0.08);
+}
+.hh-cl-intro--tight { margin-top: 18px; }
+.hh-cl-intro-icon {
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    background: rgba(214, 178, 116, 0.18);
+    border: 1px solid rgba(214, 178, 116, 0.34);
+    color: #E7CE9A;
+    font-size: 14px;
+}
+.hh-cl-intro-title {
+    margin: 0;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #F2E8D5;
+}
+.hh-cl-intro-text {
+    margin: 4px 0 0;
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: #C8D6E8;
+}
+
+.hh-cl-index-lead {
+    margin: 18px 0 10px;
+    font-size: 11px;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: #D6B274;
+}
+
+.hh-cl-index {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.hh-cl-row {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    min-height: 68px;
+    padding: 12px 14px;
+    text-align: left;
+    border-radius: 18px;
+    border: 1px solid var(--hh-line);
+    background: rgba(233, 240, 249, 0.04);
+}
+.hh-cl-row:hover,
+.hh-cl-row:focus-visible {
+    background: rgba(233, 240, 249, 0.07);
+    border-color: rgba(214, 178, 116, 0.34);
+}
+/* Sem pistas nenhumas: mais discreto, mas nunca escondido — e
+   o convite para alguem deixar a primeira. */
+.hh-cl-row.is-empty { opacity: .72; }
+.hh-cl-row-seal { font-size: 10px; }
+
+/* O ponto dourado marca onde EU ainda posso deixar a minha. */
+.hh-cl-row-dot {
+    flex-shrink: 0;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: #D6B274;
+    box-shadow: 0 0 0 3px rgba(214, 178, 116, .18);
+}
+
+.hh-cl-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 22px;
+}
+.hh-cl-head .hh-post-comments-title { margin: 0; }
+
+.hh-cl-leave {
+    flex-shrink: 0;
+    min-height: 40px;
+    padding: 10px 16px;
+    border-radius: 999px;
+    background: linear-gradient(180deg, #F2E1A6, #D6B274);
+    color: #0A1729;
+    font-size: 12.5px;
+    font-weight: 700;
+}
+.hh-cl-leave.hidden { display: none; }
+
+.hh-cl-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.hh-cl-card {
+    padding: 13px 14px;
+    border-radius: 18px;
+    border: 1px solid var(--hh-line);
+    background: rgba(233, 240, 249, 0.04);
+}
+.hh-cl-card.is-mine {
+    border-color: rgba(214, 178, 116, 0.42);
+    background: rgba(214, 178, 116, 0.09);
+}
+.hh-cl-card-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.hh-cl-card-meta { flex: 1; min-width: 0; }
+.hh-cl-card-name {
+    margin: 0;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #E9F0F9;
+}
+.hh-cl-card-sub {
+    margin: 2px 0 0;
+    font-size: 11px;
+    color: #6F819A;
+}
+.hh-cl-card-text {
+    margin: 10px 0 0;
+    font-size: 14px;
+    line-height: 1.55;
+    color: #C8D6E8;
+    overflow-wrap: anywhere;
+}
+
+.hh-cl-helpful {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 36px;
+    margin-top: 10px;
+    padding: 7px 13px;
+    border-radius: 999px;
+    border: 1px solid var(--hh-line);
+    background: rgba(233, 240, 249, 0.04);
+    color: #9DB0C8;
+    font-size: 12px;
+    font-weight: 600;
+}
+.hh-cl-helpful.is-on {
+    border-color: rgba(214, 178, 116, 0.55);
+    background: rgba(214, 178, 116, 0.18);
+    color: #F2E8D5;
+}
+.hh-cl-helpful:disabled {
+    opacity: .45;
+    cursor: default;
+}
+
+/* Ponto 19: a linha fechada para quem ainda nao descobriu. */
+.hh-cl-locked {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 16px;
+    padding: 13px 14px;
+    border-radius: 16px;
+    border: 1px dashed rgba(157, 176, 200, 0.3);
+    background: rgba(233, 240, 249, 0.03);
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: #9DB0C8;
+}
+.hh-cl-locked.hidden { display: none; }
+.hh-cl-locked > i { flex-shrink: 0; color: #6F819A; }
+
+/* Ponto 16: a saida para a conversa quando as pistas nao
+   chegaram. */
+.hh-cl-ask {
+    margin-top: 24px;
+    padding: 16px 14px;
+    text-align: center;
+    border-radius: 18px;
+    border: 1px solid var(--hh-line);
+    background: rgba(233, 240, 249, 0.03);
+}
+.hh-cl-ask-lead {
+    margin: 0 0 11px;
+    font-size: 13.5px;
+    color: #C8D6E8;
+}
+.hh-cl-ask-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 46px;
+    padding: 12px 20px;
+    border-radius: 999px;
+    border: 1px solid rgba(214, 178, 116, 0.5);
+    background: rgba(214, 178, 116, 0.12);
+    color: #F2E8D5;
+    font-size: 13.5px;
+    font-weight: 700;
+}
+
+/* --- Escrever a minha pista -------------------------------- */
+.hh-cl-composer {
+    flex-shrink: 0;
+    padding: 12px var(--hh-gutter) calc(12px + var(--hh-safe-bottom));
+    border-top: 1px solid var(--hh-line);
+    background: #0C1C33;
+}
+.hh-cl-composer.hidden { display: none; }
+.hh-cl-composer textarea {
+    width: 100%;
+    min-height: 64px;
+    max-height: 140px;
+    padding: 12px 14px;
+    resize: none;
+    border-radius: 14px;
+    border: 1px solid var(--hh-line);
+    background: rgba(233, 240, 249, 0.05);
+    color: #E9F0F9;
+    /* 16px: abaixo disto o iOS amplia ao focar */
+    font-size: 16px;
+    line-height: 1.5;
+    font-family: inherit;
+}
+.hh-cl-composer textarea:focus {
+    outline: none;
+    border-color: rgba(214, 178, 116, 0.5);
+}
+
+/* O aviso de que a pista revela de mais. Nao bloqueia nada —
+   por isso e um aviso e nao um erro: ambar, nao vermelho. */
+.hh-cl-reveal {
+    margin: 9px 0 0;
+    padding: 9px 11px;
+    border-radius: 11px;
+    border: 1px solid rgba(214, 178, 116, 0.4);
+    background: rgba(214, 178, 116, 0.1);
+    font-size: 12px;
+    line-height: 1.45;
+    color: #F0DDAE;
+}
+.hh-cl-reveal.hidden { display: none; }
+
+.hh-cl-composer-foot {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+}
+.hh-cl-counter {
+    flex: 1;
+    font-size: 11px;
+    color: #9DB0C8;
+}
+.hh-cl-counter.hidden { visibility: hidden; }
+.hh-cl-cancel {
+    margin-left: auto;
+    min-height: 44px;
+    padding: 11px 16px;
+    border-radius: 999px;
+    color: #9DB0C8;
+    font-size: 13px;
+    font-weight: 600;
+}
+.hh-cl-publish {
+    min-height: 44px;
+    padding: 11px 18px;
+    border-radius: 999px;
+    background: linear-gradient(180deg, #F2E1A6, #D6B274);
+    color: #0A1729;
+    font-size: 13px;
+    font-weight: 700;
+}
+.hh-cl-publish:disabled { opacity: .42; cursor: not-allowed; }
+
+/* --- Tema claro -------------------------------------------- */
+html:not(.dark) .hh-cl-intro {
+    background: rgba(214, 178, 116, 0.14);
+    border-color: rgba(176, 142, 82, 0.4);
+}
+html:not(.dark) .hh-cl-intro-title { color: #3A2C10; }
+html:not(.dark) .hh-cl-intro-text { color: #5A4421; }
+html:not(.dark) .hh-cl-intro-icon { color: #8A6A28; }
+html:not(.dark) .hh-cl-index-lead { color: #8A6A28; }
+html:not(.dark) .hh-cl-row,
+html:not(.dark) .hh-cl-card {
+    border-color: rgba(28, 43, 66, 0.12);
+    background: #FFFDF8;
+}
+html:not(.dark) .hh-cl-card.is-mine {
+    border-color: rgba(176, 142, 82, 0.45);
+    background: rgba(214, 178, 116, 0.14);
+}
+html:not(.dark) .hh-cl-card-name { color: #1C2B42; }
+html:not(.dark) .hh-cl-card-sub { color: #8494AB; }
+html:not(.dark) .hh-cl-card-text,
+html:not(.dark) .hh-cl-ask-lead { color: #42536B; }
+html:not(.dark) .hh-cl-helpful {
+    border-color: rgba(28, 43, 66, 0.14);
+    background: #FFFFFF;
+    color: #5A6B84;
+}
+html:not(.dark) .hh-cl-helpful.is-on { color: #3A2C10; }
+html:not(.dark) .hh-cl-leave,
+html:not(.dark) .hh-cl-publish { color: #3A2C10; }
+html:not(.dark) .hh-cl-locked {
+    border-color: rgba(28, 43, 66, 0.2);
+    background: rgba(28, 43, 66, 0.03);
+    color: #5A6B84;
+}
+html:not(.dark) .hh-cl-ask {
+    border-color: rgba(28, 43, 66, 0.12);
+    background: #FFFDF8;
+}
+html:not(.dark) .hh-cl-ask-btn {
+    border-color: rgba(176, 142, 82, 0.5);
+    background: rgba(214, 178, 116, 0.16);
+    color: #3A2C10;
+}
+html:not(.dark) .hh-cl-composer { background: #FFFDF8; }
+html:not(.dark) .hh-cl-composer textarea {
+    border-color: rgba(28, 43, 66, 0.12);
+    background: #FFFFFF;
+    color: #1C2B42;
+}
+html:not(.dark) .hh-cl-reveal {
+    border-color: rgba(176, 142, 82, 0.5);
+    background: rgba(214, 178, 116, 0.16);
+    color: #5A4421;
+}
+
+/* --- Ecras estreitos --------------------------------------- */
+@media (max-width: 360px) {
+    .hh-cl-head { flex-direction: column; align-items: stretch; gap: 10px; }
+    .hh-cl-leave { width: 100%; }
+}
+@media (max-width: 320px) {
+    .hh-cl-intro { padding: 11px 12px; gap: 9px; }
+    .hh-cl-composer-foot { flex-wrap: wrap; }
+    .hh-cl-counter { flex-basis: 100%; }
+}
+
+
+/* ============================================================
+   SEGUIR EXPLORADORES
+
+   O botao e deliberadamente DISCRETO (ponto 46). Ao lado de um
+   nome, num cartao cuja materia e uma dica sobre um lugar, o
+   convite a seguir nao pode gritar mais alto do que a dica.
+
+   Por isso a variante normal e so contorno: ganha peso quando
+   esta por preencher ("Seguir") e PERDE-O quando ja esta feito
+   ("A seguir"), que e o contrario do que uma rede social faz.
+   Aqui o estado final nao e um trofeu.
+
+   44 px de alvo em todas as variantes (ponto 49), incluindo a
+   pequena — que tem 32 px visiveis e cresce com padding
+   transparente, para o toque nao falhar a 320 px.
+   ============================================================ */
+.hh-follow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    flex-shrink: 0;
+    border-radius: 999px;
+    font-weight: 600;
+    letter-spacing: .01em;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color .16s ease, border-color .16s ease, color .16s ease, opacity .16s ease;
+}
+
+/* O alvo de toque e maior do que o desenho: a area transparente
+   em volta conta para o dedo e nao para o olho. */
+.hh-follow--sm {
+    min-height: 32px;
+    padding: 6px 12px;
+    font-size: 12px;
+    position: relative;
+}
+.hh-follow--sm::after {
+    content: '';
+    position: absolute;
+    inset: -6px -4px;
+}
+
+.hh-follow--md {
+    min-height: 44px;
+    padding: 11px 20px;
+    font-size: 13.5px;
+}
+
+/* Por seguir: o contorno dourado convida sem encher. */
+.hh-follow--quiet {
+    border: 1px solid rgba(214, 178, 116, 0.5);
+    background: rgba(214, 178, 116, 0.1);
+    color: var(--hh-gold-soft);
+}
+.hh-follow--solid {
+    border: 1px solid rgba(214, 178, 116, 0.62);
+    background: linear-gradient(135deg, #E7CE9A 0%, #D6B274 100%);
+    color: #1A1206;
+}
+
+/* Ja a seguir: recua. O visto diz o estado sem depender da cor
+   (ponto 49) — quem nao distingue os dois tons continua a ler. */
+.hh-follow.is-following {
+    border-color: var(--hh-line);
+    background: rgba(233, 240, 249, 0.05);
+    color: #9DB0C8;
+}
+.hh-follow.is-following i {
+    font-size: .85em;
+    opacity: .9;
+}
+
+/* "Seguir de volta" nao e um terceiro visual: e o mesmo convite,
+   com o texto a dizer o que muda. Um terceiro tom so dividia a
+   atencao. */
+.hh-follow.is-back {
+    border-style: dashed;
+}
+
+.hh-follow:disabled,
+.hh-follow.is-busy {
+    opacity: .55;
+    cursor: default;
+}
+
+.hh-follow:focus-visible {
+    outline: 2px solid var(--hh-gold-soft);
+    outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .hh-follow { transition: none; }
+}
+
+
+/* ------------------------------------------------------------
+   Linha de explorador (listas e sugestoes)
+   ------------------------------------------------------------ */
+.hh-ex-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-top: 14px;
+}
+.hh-ex-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 2px;
+    border-bottom: 1px solid var(--hh-line);
+}
+.hh-ex-row:last-child { border-bottom: 0; }
+
+.hh-ex-open {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1 1 auto;
+    min-width: 0;          /* sem isto um nome longo empurra o botao para fora */
+    min-height: 44px;
+    text-align: left;
+    background: none;
+    border: 0;
+    cursor: pointer;
+}
+.hh-ex-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    line-height: 1.3;
+}
+.hh-ex-name {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #ECF2FA;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.hh-ex-level {
+    font-size: 11.5px;
+    color: #8699B2;
+}
+
+
+/* ------------------------------------------------------------
+   Numeros do perfil publico
+
+   A ORDEM E A MENSAGEM (ponto 7): a grelha de cima leva o que a
+   pessoa descobriu e com que ajudou. Seguidores e a seguir vem
+   DEPOIS, numa linha pequena — informacao social secundaria, nao
+   o placar do perfil.
+   ------------------------------------------------------------ */
+.hh-ex-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    margin-top: 16px;
+    padding: 12px 6px;
+    border-top: 1px solid var(--hh-line);
+    border-bottom: 1px solid var(--hh-line);
+}
+.hh-ex-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    text-align: center;
+    min-width: 0;
+}
+.hh-ex-stat-n {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 19px;
+    font-weight: 700;
+    color: var(--hh-gold-soft);
+}
+.hh-ex-stat-label {
+    font-size: 10px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: #8699B2;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+}
+
+/* A 320 px quatro colunas apertam de mais: passam a duas. */
+@media (max-width: 345px) {
+    .hh-ex-stats { grid-template-columns: repeat(2, 1fr); row-gap: 12px; }
+}
+
+.hh-ex-counts {
+    margin-top: 12px;
+    font-size: 12.5px;
+    color: #8699B2;
+}
+.hh-ex-count {
+    min-height: 32px;
+    padding: 4px 2px;
+    background: none;
+    border: 0;
+    color: #BACBE0;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: underline;
+    text-decoration-color: var(--hh-line);
+    text-underline-offset: 3px;
+}
+.hh-ex-count:focus-visible {
+    outline: 2px solid var(--hh-gold-soft);
+    outline-offset: 2px;
+    border-radius: 6px;
+}
+
+/* O perfil ganhou conteudo: a folha precisa de respirar e de
+   poder deslizar quando o ecra e baixo. */
+.hh-chat-prof-actions {
+    display: flex;
+    justify-content: center;
+    margin-top: 16px;
 }

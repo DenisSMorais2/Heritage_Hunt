@@ -2,7 +2,7 @@
 // Estrategia: network-first (a app depende de dados em tempo real), com o
 // app shell em cache apenas como recurso de recurso quando a rede falha.
 
-const CACHE = 'heritage-hunt-v2';
+const CACHE = 'heritage-hunt-v6';
 const SHELL = [
     './',
     './index.html',

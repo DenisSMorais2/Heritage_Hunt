@@ -210,6 +210,7 @@ const scannerView = document.getElementById('scannerView');
 const profileView = document.getElementById('profileView');
 const mapView = document.getElementById('mapView');
 const settingsView = document.getElementById('settingsView');
+const communityView = document.getElementById('communityView');
 const startScannerBtn = document.getElementById('startScannerBtn');
 const closeScannerBtn = document.getElementById('closeScannerBtn');
 const torchBtn = document.getElementById('torchBtn');
@@ -231,6 +232,7 @@ const monumentsList = document.getElementById('monumentsList');
 const navScanner = document.getElementById('navScanner');
 const navProfile = document.getElementById('navProfile');
 const navMap = document.getElementById('navMap');
+const navCommunity = document.getElementById('navCommunity');
 const settingsBtn = document.getElementById('settingsBtn');
 const userName = document.getElementById('userName');
 const profileUserName = document.getElementById('profileUserName');
@@ -2179,6 +2181,293 @@ function initRanking() {
             XPUI.toast(null, t('rankingJoinedToast'));
         }
     });
+
+    initCommunity();
+}
+
+// ============================================================
+// Conversas
+//
+// Tudo o que as Conversas sabem sobre monumentos, zonas, niveis e
+// datas chega por aqui. O modulo nao le `state` nem chama `t()`
+// directamente: recebe funcoes. E a mesma disciplina do mapa e do
+// album, e e o que permite testar o dominio sem browser.
+//
+// ATENCAO AOS IDS: no `state` um monumento tem id NUMERICO; na
+// base de dados e TEXTO ('1'..'12'). As conversas vem da base de
+// dados, por isso compara-se sempre em String.
+// ============================================================
+function initCommunity() {
+    if (typeof CommunityUI === 'undefined' || typeof ConversationsUI === 'undefined'
+        || typeof PostsUI === 'undefined' || typeof CluesUI === 'undefined') return;
+
+    ConversationsUI.init({
+        t: t,
+        cloud: HeritageCloud,
+
+        monumentName: function (id) {
+            const monument = state.monuments.find(m => String(m.id) === String(id));
+            return monument ? monument.name : '';
+        },
+        monumentImage: function (id) {
+            const monument = state.monuments.find(m => String(m.id) === String(id));
+            return monument ? monument.image : null;
+        },
+        monumentZone: function (id) {
+            const zone = state.zones.find(z => z.monumentIds.some(m => String(m) === String(id)));
+            return zone ? zone.id : null;
+        },
+        zoneName: function (id) { return zoneName(id); },
+        placeLabel: function () { return placeLabel('mindelo', RANKING_ISLAND); },
+
+        // So se partilha o que ja se descobriu: sugerir um monumento
+        // por descobrir seria entregar metade da descoberta.
+        discoveredMonuments: function () {
+            const discovered = (state.scannedMonuments || []).map(m => String(m.id));
+            return state.monuments.filter(m => discovered.indexOf(String(m.id)) !== -1);
+        },
+
+        // O nivel deriva do XP, como em todo o lado: os patamares
+        // vivem em `levels.js` e nao se repetem aqui nem no SQL.
+        levelFor: function (xpTotal) {
+            return Levels.getLevelFromXP(xpTotal || 0).level;
+        },
+        myAuthor: function () {
+            return {
+                userId: (state.user && state.user.id) || 'me',
+                name: (state.user && state.user.name) || '',
+                avatarPath: (state.user && state.user.avatarPath) || null,
+                xpTotal: (state.user && state.user.xp && state.user.xp.total) || 0,
+                discovered: null
+            };
+        },
+        avatarUrl: function (path) { return signedAvatarUrl(path); },
+
+        clockTime: function (value) { return formatClockTime(value); },
+        relativeTime: function (value) { return formatRelativeTime(value); },
+
+        compressImage: function (file) { return compressForChat(file); },
+        toast: function (text) { XPUI.toast(null, text); },
+
+        // As duas saidas para o mundo real: uma conversa tem sempre
+        // caminho de volta a exploracao (ponto 61).
+        onOpenMonument: function (id) {
+            const monument = state.monuments.find(m => String(m.id) === String(id));
+            if (monument) openMonumentPhotos(monument.id);
+        },
+        onViewOnMap: function (id) {
+            const monument = state.monuments.find(m => String(m.id) === String(id));
+            state.currentMonumentForMap = monument || null;
+            showMapView();
+        },
+
+        onUnreadChange: function (total) { CommunityUI.setUnread(total); }
+    });
+
+    // As Descobertas partilham quase todas as dependencias com as
+    // Conversas — sao a mesma Comunidade a olhar para os mesmos
+    // monumentos. O que muda e o que fazem com elas.
+    PostsUI.init({
+        t: t,
+        cloud: HeritageCloud,
+
+        monumentName: function (id) {
+            const monument = state.monuments.find(m => String(m.id) === String(id));
+            return monument ? monument.name : '';
+        },
+        zoneName: function (id) { return zoneName(id); },
+        cityName: function () { return cityName('mindelo'); },
+        placeLabel: function () { return placeLabel('mindelo', RANKING_ISLAND); },
+
+        // O selector de lugar oferece tudo, nao so o que ja foi
+        // descoberto: uma pergunta sobre um monumento por descobrir
+        // e precisamente o tipo de publicacao que esta aba quer.
+        monuments: function () { return state.monuments.slice(); },
+        zones: function () { return state.zones.slice(); },
+
+        // A capa do destaque cai para a fotografia do monumento
+        // quando a publicacao nao traz nenhuma (ver `coverFor`).
+        monumentImage: function (id) {
+            const monument = state.monuments.find(m => String(m.id) === String(id));
+            return monument ? monument.image : null;
+        },
+
+        levelFor: function (xpTotal) { return Levels.getLevelFromXP(xpTotal || 0).level; },
+        avatarUrl: function (path) { return signedAvatarUrl(path); },
+        relativeTime: function (value) { return formatRelativeTime(value); },
+
+        compressImage: function (file) { return compressForChat(file); },
+        toast: function (text) { XPUI.toast(null, text); }
+    });
+
+    CluesUI.init({
+        t: t,
+        cloud: HeritageCloud,
+
+        monumentName: function (id) {
+            const monument = state.monuments.find(m => String(m.id) === String(id));
+            return monument ? monument.name : '';
+        },
+        monumentImage: function (id) {
+            const monument = state.monuments.find(m => String(m.id) === String(id));
+            return monument ? monument.image : null;
+        },
+        placeFor: function (id) {
+            const zone = state.zones.find(z => z.monumentIds.some(m => String(m) === String(id)));
+            return zone ? zoneName(zone.id) + ' · ' + cityName('mindelo') : placeLabel('mindelo', RANKING_ISLAND);
+        },
+
+        avatarUrl: function (path) { return signedAvatarUrl(path); },
+        relativeTime: function (value) { return formatRelativeTime(value); },
+        toast: function (text) { XPUI.toast(null, text); },
+
+        // As Pistas reaproveitam a folha das Descobertas em vez de
+        // trazerem uma terceira igual.
+        openSheet: function (options, lead) { PostsUI.openSheet(options, lead); },
+
+        // PONTO 16 — o elo que fecha o ciclo do produto.
+        //
+        // As pistas nao chegaram: abre a conversa DAQUELE monumento
+        // com a pergunta ja escrita. Escrita, nao enviada: quem
+        // confirma e a pessoa.
+        onAskCommunity: function (monumentId) {
+            showCommunityView();
+            CommunityUI.setTab('conversations');
+            ConversationsUI.openForMonument(monumentId, 'chatAskCommunityDraft');
+        }
+    });
+
+    // ----------------------------------------------------------
+    // Seguir exploradores
+    //
+    // O FollowsUI arranca DEPOIS dos tres modulos da Comunidade
+    // porque lhes pede duas coisas emprestadas em vez de as
+    // duplicar: a folha de opcoes das Descobertas e o perfil que
+    // o chat ja sabe desenhar.
+    // ----------------------------------------------------------
+    FollowsUI.init({
+        t: t,
+        cloud: HeritageCloud,
+        toast: function (text) { XPUI.toast(null, text); },
+
+        levelFor: function (xpTotal) { return Levels.getLevelFromXP(xpTotal || 0).level; },
+        avatarFor: function (author) { return buildAvatar(author); },
+
+        openSheet: function (options, lead) { PostsUI.openSheet(options, lead); },
+        openExplorer: function (author) { ConversationsUI.openProfile(author); },
+        anySheetOpen: function () { return ConversationsUI.isOpen() || PostsUI.isPostOpen(); }
+    });
+
+    // PONTO 40 — a sincronizacao.
+    //
+    // Cada modulo guarda a sua propria copia dos autores. Seguir
+    // alguem no feed nao toca na copia que a conversa tem, e sem
+    // este aviso um redesenho trazia o estado antigo de volta.
+    FollowsUI.onChange(function (author) {
+        PostsUI.applyAuthorUpdate(author);
+        CluesUI.applyAuthorUpdate(author);
+        ConversationsUI.applyAuthorUpdate(author);
+    });
+
+    CommunityUI.init({
+        t: t
+    });
+}
+
+// O avatar do explorador, num sitio so.
+//
+// O `conversations-ui` e o `posts-ui` ja tinham cada um o seu
+// — nao os unifiquei agora para nao mexer no que esta testado,
+// mas o terceiro passa por aqui em vez de nascer um quarto.
+function buildAvatar(author) {
+    const wrap = document.createElement('span');
+    wrap.className = 'hh-chat-avatar';
+
+    const url = author && author.avatarPath ? signedAvatarUrl(author.avatarPath) : null;
+    if (url) {
+        const img = document.createElement('img');
+        img.src = url;
+        img.alt = '';
+        img.addEventListener('error', function () {
+            img.remove();
+            wrap.textContent = avatarInitial(author);
+        });
+        wrap.appendChild(img);
+    } else {
+        wrap.textContent = avatarInitial(author);
+    }
+
+    return wrap;
+}
+
+function avatarInitial(author) {
+    const nome = (author && author.name ? String(author.name) : '').trim();
+    return nome ? nome.charAt(0).toUpperCase() : '?';
+}
+
+// Uma fotografia de chat usa a MESMA compressao do album (ponto
+// 13): nunca sobe o original, e nunca ha Base64 em lado nenhum.
+async function compressForChat(file) {
+    let compressed;
+    try {
+        compressed = await ImageCompressor.compress(file, 'ALBUM');
+    } catch (error) {
+        console.warn('[conversas] nao foi possivel comprimir a fotografia', error);
+        return null;
+    }
+    if (!compressed || !compressed.blob) return null;
+
+    return {
+        blob: compressed.blob,
+        extension: ImageCompressor.extensionFor(compressed.blob.type || 'image/webp'),
+        contentType: compressed.blob.type || 'image/webp'
+    };
+}
+
+// Os avatares ja sao assinados em lote pelo ranking; aqui basta
+// aproveitar a mesma cache. Devolve null enquanto o link nao
+// existir — o avatar cai para a inicial e nada parte.
+const chatAvatarUrls = {};
+function signedAvatarUrl(path) {
+    if (!path) return null;
+    if (chatAvatarUrls[path]) return chatAvatarUrls[path];
+
+    HeritageCloud.signImageUrls([path]).then(function (urls) {
+        if (urls && urls[path]) {
+            chatAvatarUrls[path] = urls[path];
+            if (ConversationsUI.isOpen()) ConversationsUI.renderList();
+        }
+    });
+    return null;
+}
+
+// O idioma escolhido, como etiqueta de locale. `toLocaleTimeString`
+// quer 'pt'/'en'/'fr', que e exactamente o que `settings.lang` tem.
+function localeTag() {
+    return (state.settings && state.settings.lang) || 'pt';
+}
+
+// "10:42" — a hora de uma mensagem, no formato de quem le.
+function formatClockTime(value) {
+    if (!value) return '';
+    const date = value instanceof Date ? value : new Date(value);
+    if (isNaN(date.getTime())) return '';
+    return date.toLocaleTimeString(localeTag(), { hour: '2-digit', minute: '2-digit' });
+}
+
+// "12 min", "1 h", "3 d" — o tempo na lista de conversas. Passada
+// uma semana a data e mais util do que a distancia.
+function formatRelativeTime(value) {
+    if (!value) return '';
+    const date = value instanceof Date ? value : new Date(value);
+    if (isNaN(date.getTime())) return '';
+
+    const seconds = Math.max(0, Math.floor((Date.now() - date.getTime()) / 1000));
+    if (seconds < 60) return t('chatJustNow');
+    if (seconds < 3600) return Math.floor(seconds / 60) + ' min';
+    if (seconds < 86400) return Math.floor(seconds / 3600) + ' h';
+    if (seconds < 604800) return Math.floor(seconds / 86400) + ' d';
+    return formatShortDate(date);
 }
 
 function showRankingView() {
@@ -2187,6 +2476,7 @@ function showRankingView() {
     profileView.classList.add('hidden');
     mapView.classList.add('hidden');
     settingsView.classList.add('hidden');
+    CommunityUI.hide();
     rankingView.classList.remove('hidden');
     updateNavButtons('ranking');
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -2221,6 +2511,7 @@ function showScannerView() {
     mapView.classList.add('hidden');
     settingsView.classList.add('hidden');
     rankingView.classList.add('hidden');
+    CommunityUI.hide();
     updateNavButtons('scanner');
 }
 
@@ -2231,8 +2522,28 @@ function showProfileView() {
     mapView.classList.add('hidden');
     settingsView.classList.add('hidden');
     rankingView.classList.add('hidden');
+    CommunityUI.hide();
     updateProfileView();
     updateNavButtons('profile');
+}
+
+// ============================================================
+// Comunidade
+//
+// A seccao social. O Ranking continua a ser uma vista a parte e
+// abre-se daqui pelo trofeu — ver a nota em community-ui.js.
+// ============================================================
+function showCommunityView() {
+    document.body.classList.add('hh-dark-bg');
+    scannerView.classList.add('hidden');
+    profileView.classList.add('hidden');
+    mapView.classList.add('hidden');
+    settingsView.classList.add('hidden');
+    rankingView.classList.add('hidden');
+
+    CommunityUI.show();
+    updateNavButtons('community');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function showSettingsView() {
@@ -2256,6 +2567,7 @@ function showMapView() {
     profileView.classList.add('hidden');
     settingsView.classList.add('hidden');
     rankingView.classList.add('hidden');
+    CommunityUI.hide();
     mapView.classList.remove('hidden');
     renderZonesView();
     initMap();
@@ -2282,24 +2594,34 @@ function updateNavButtons(activeView) {
 
     // O ranking traz cabecalho proprio — a fotografia do porto vai ate
     // ao topo. Dois cabecalhos empilhados seriam dois titulos a discutir.
-    if (appHeader) appHeader.classList.toggle('hidden', activeView === 'ranking');
+    if (appHeader) appHeader.classList.toggle('hidden', activeView === 'ranking' || activeView === 'community');
 
     if (settingsBtn) settingsBtn.classList.toggle('is-active', activeView === 'settings');
 
     // Desliza o indicador do glass radio group para a aba activa
     const navBar = document.querySelector('nav.hh-nav');
     if (navBar) {
-        navBar.dataset.active = ['scanner', 'profile', 'map', 'ranking'].includes(activeView) ? activeView : 'none';
+        // O Ranking voltou a ter botao proprio, entre a Comunidade
+        // e o Perfil. Ja nao se disfarca de Comunidade.
+        navBar.dataset.active =
+            ['scanner', 'map', 'community', 'ranking', 'profile'].includes(activeView)
+                ? activeView
+                : 'none';
     }
 
+    // A ordem desta lista e a ordem da barra. Mantem-se igual a do
+    // HTML e a das posicoes do indicador no CSS: tres sitios que
+    // tem de contar a mesma historia.
     const buttons = [
         { element: navScanner, view: 'scanner' },
-        { element: navProfile, view: 'profile' },
         { element: navMap, view: 'map' },
-        { element: navRanking, view: 'ranking' }
+        { element: navCommunity, view: 'community' },
+        { element: navRanking, view: 'ranking' },
+        { element: navProfile, view: 'profile' }
     ];
     
     buttons.forEach(button => {
+        if (!button.element) return;
         if (button.view === activeView) {
             button.element.classList.remove('text-gray-400');
             button.element.classList.add('text-blue-600');
@@ -3236,7 +3558,19 @@ function initAlbum() {
             state.currentMonumentForMap = state.monuments.find(m => m.id === id) || null;
             showMapView();
         },
-        onRetrySync: () => flushPendingPhotos()
+        onRetrySync: () => flushPendingPhotos(),
+
+        // Ponto 15: a conversa daquele monumento, a partir do
+        // monumento. O album fecha-se porque a conversa e um ecra
+        // inteiro, nao uma folha por cima dele.
+        onOpenConversation: (id) => {
+            closeMonumentPhotos();
+            ConversationsUI.openForMonument(id);
+        },
+        onOpenClues: (id) => {
+            closeMonumentPhotos();
+            CluesUI.open(id);
+        }
     });
 }
 
@@ -3798,6 +4132,7 @@ if (camTipToggle) camTipToggle.addEventListener('click', toggleCamTip);
 navScanner.addEventListener('click', showScannerView);
 navProfile.addEventListener('click', showProfileView);
 navMap.addEventListener('click', showMapView);
+if (navCommunity) navCommunity.addEventListener('click', showCommunityView);
 if (navRanking) navRanking.addEventListener('click', showRankingView);
 settingsBtn.addEventListener('click', showSettingsView);
 closeBadgeModal.addEventListener('click', closeBadge);
