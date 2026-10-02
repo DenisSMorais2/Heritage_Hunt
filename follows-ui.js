@@ -89,6 +89,11 @@ const FollowsUI = (function () {
         // escondem — ficam visiveis e explicam-se quando tocados.
         window.addEventListener('online', refreshAll);
         window.addEventListener('offline', refreshAll);
+
+        // A folha muda de altura quando o ecra roda.
+        window.addEventListener('resize', function () {
+            if (isListOpen()) reserveSheetSpace();
+        });
     }
 
     // ==========================================================
@@ -360,6 +365,7 @@ const FollowsUI = (function () {
 
         dom.screen.classList.remove('hidden');
         document.body.classList.add('hh-chat-open');
+        reserveSheetSpace();
 
         const result = mode === 'followers'
             ? await deps.cloud.listFollowers(userId, { limit: Follows.CONFIG.PAGE_SIZE })
@@ -489,8 +495,29 @@ const FollowsUI = (function () {
         return row;
     }
 
+    // A folha do perfil fica POR CIMA desta lista — e tem de ficar:
+    // tocar numa linha abre o perfil dessa pessoa na mesma folha, e
+    // se ela passasse para tras da lista ninguem a via. O preco e
+    // que o painel, opaco, tapa o fundo do ecra. Sem reservar esse
+    // espaco, as ultimas linhas ficavam debaixo dele e nenhum
+    // scroll as trazia: a lista acaba onde o ecra acaba, nao onde a
+    // folha comeca.
+    function reserveSheetSpace() {
+        if (!dom || !dom.screen) return;
+
+        const body = dom.screen.querySelector('.hh-post-body');
+        if (!body) return;
+
+        const panel = document.querySelector('.hh-sheet:not(.hidden) .hh-sheet__panel');
+        const altura = panel ? Math.round(panel.getBoundingClientRect().height) : 0;
+        body.style.paddingBottom = altura ? altura + 'px' : '';
+    }
+
     function closeList() {
         if (!dom || !dom.screen) return;
+
+        const body = dom.screen.querySelector('.hh-post-body');
+        if (body) body.style.paddingBottom = '';
 
         listState.request++;
         listState.rows = [];

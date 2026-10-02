@@ -1286,6 +1286,43 @@
             </div>
         </div>
 
+        <!--
+          A fotografia de uma publicacao em ecra inteiro.
+
+          Mesmas classes do visor do album (`hh-viewer*`): o aspecto
+          e um so. Os ids e que sao proprios, porque cada modulo
+          trata do seu DOM — e porque aqui nao ha data nem "a
+          aguardar sincronizacao": uma publicacao ou esta publicada
+          ou ainda nao existe.
+
+          As legendas sao as mesmas do album de proposito: a frase
+          "Fotografia anterior" nao muda por estar noutro ecra, e
+          traduzi-la duas vezes era arranjar maneira de as duas
+          ficarem diferentes.
+        -->
+        <div id="postViewer" class="hh-viewer hidden" role="dialog" aria-modal="true"
+             aria-hidden="true" aria-labelledby="postViewerCount">
+            <div class="hh-viewer-bar">
+                <span id="postViewerCount" class="hh-viewer-count"></span>
+                <button id="postViewerClose" type="button" class="hh-viewer-round"
+                        data-i18n-title="close" title="Fechar"
+                        data-i18n-aria-label="close" aria-label="Fechar">
+                    <i class="fas fa-times" aria-hidden="true"></i>
+                </button>
+            </div>
+            <button id="postViewerPrev" type="button" class="hh-viewer-nav is-prev"
+                    data-i18n-title="album.prevPhoto" title="Fotografia anterior"
+                    data-i18n-aria-label="album.prevPhoto" aria-label="Fotografia anterior">
+                <i class="fas fa-chevron-left" aria-hidden="true"></i>
+            </button>
+            <img id="postViewerImg" class="hh-viewer-img" src="" alt="">
+            <button id="postViewerNext" type="button" class="hh-viewer-nav is-next"
+                    data-i18n-title="album.nextPhoto" title="Fotografia seguinte"
+                    data-i18n-aria-label="album.nextPhoto" aria-label="Fotografia seguinte">
+                <i class="fas fa-chevron-right" aria-hidden="true"></i>
+            </button>
+        </div>
+
         <!-- Criar publicacao -->
         <div id="composeScreen" class="hh-compose hidden" role="dialog" aria-modal="true" aria-labelledby="composeHeading">
             <header class="hh-compose-head">
@@ -1296,52 +1333,57 @@
                 <span class="hh-compose-spacer" aria-hidden="true"></span>
             </header>
 
+            <!--
+              DOIS PASSOS, UM ECRA.
+
+              Primeiro escolhe-se O QUE se quer partilhar; so
+              depois aparece o formulario. Antes havia um
+              formulario generico a espera por baixo dos seis
+              tipos, e escolher "Trilho" em vez de "Dica" nao
+              mudava um unico campo.
+
+              Os campos do passo 2 NAO ESTAO AQUI: cada tipo tem a
+              sua lista em `Posts.formFor(kind)` e o
+              `posts-ui.js` desenha-a. Escrever os seis
+              formularios a mao neste ficheiro era escrever seis
+              vezes o mesmo campo de fotografias.
+            -->
             <div class="hh-compose-scroll">
-                <p class="hh-compose-lead" data-i18n="composeLead">O que queres partilhar com a comunidade?</p>
-
-                <!-- A grelha dos seis tipos, desenhada a partir de
-                     Posts.CONFIG.KINDS -->
-                <div id="composeKinds" class="hh-compose-kinds" role="radiogroup" aria-labelledby="composeHeading"></div>
-
-                <label class="hh-compose-label" for="composeTitleInput" data-i18n="composeFieldTitle">Título da tua publicação</label>
-                <input id="composeTitleInput" class="hh-compose-input" type="text" maxlength="120"
-                       data-i18n-placeholder="composeTitlePlaceholder" placeholder="Escreve um título curto e apelativo...">
-                <span id="composeTitleCount" class="hh-compose-count hidden"></span>
-
-                <label class="hh-compose-label" for="composeBodyInput" data-i18n="composeFieldBody">Descrição</label>
-                <textarea id="composeBodyInput" class="hh-compose-textarea" rows="5" maxlength="2000"
-                          data-i18n-placeholder="composeBodyPlaceholder" placeholder="Partilha a tua dica, experiência ou curiosidade..."></textarea>
-                <span id="composeBodyCount" class="hh-compose-count hidden"></span>
-
-                <button id="composePhotosBtn" type="button" class="hh-compose-photos">
-                    <i class="far fa-images" aria-hidden="true"></i>
-                    <span>
-                        <b data-i18n="composePhotos">Adicionar fotografias</b>
-                        <small data-i18n="composeOptional">(opcional)</small>
-                    </span>
-                </button>
-                <div id="composePhotoStrip" class="hh-compose-strip hidden"></div>
-
-                <label class="hh-compose-label" for="composePlace" data-i18n="composeLocation">Localização</label>
-                <button id="composePlace" type="button" class="hh-compose-input hh-compose-place">
-                    <i class="fas fa-location-dot" aria-hidden="true"></i>
-                    <span id="composePlaceText" data-i18n="composeLocationPlaceholder">Associar a um monumento, zona ou lugar...</span>
-                </button>
-
-                <!-- Ponto 17 do lado de quem escreve: so aparece
-                     quando a publicacao fica amarrada a um monumento. -->
-                <div id="composeQrWarning" class="hh-chat-notice hidden" role="note">
-                    <i class="fas fa-shield-alt" aria-hidden="true"></i>
-                    <div>
-                        <p class="hh-chat-notice-sub" data-i18n="composeQrWarning">Lembra-te: não reveles exactamente onde está o QR code. Dá pistas que ajudem sem estragar a descoberta!</p>
-                    </div>
+                <!-- Passo 1 -->
+                <div id="composeStepType">
+                    <p class="hh-compose-lead" data-i18n="composeChooseType">O que queres partilhar com a comunidade?</p>
+                    <div id="composeKinds" class="hh-compose-kinds" role="radiogroup" aria-labelledby="composeHeading"></div>
                 </div>
+
+                <!-- Passo 2 -->
+                <div id="composeStepForm" class="hh-compose-step hidden">
+                    <div class="hh-compose-chosen">
+                        <span id="composeChosen" class="hh-compose-chosen-tag"></span>
+                        <button id="composeChangeType" type="button" class="hh-compose-change">
+                            <i class="fas fa-rotate" aria-hidden="true"></i>
+                            <span data-i18n="composeChangeType">Alterar tipo</span>
+                        </button>
+                    </div>
+
+                    <div id="composeFields" class="hh-compose-fields"></div>
+                </div>
+            </div>
+
+            <!-- O botao vive fora do scroll: com o teclado aberto,
+                 um CTA que desce com o conteudo e um CTA que nao
+                 se encontra. -->
+            <footer class="hh-compose-foot">
+                <!-- Ponto 42: dizer porque e que o botao esta
+                     cinzento. Sem isto, sem rede, o CTA ficava
+                     desligado sem explicacao. -->
+                <p id="composeOffline" class="hh-compose-offline hidden" role="status"
+                   data-i18n="composeOffline">Precisas de ligação para publicar.</p>
 
                 <button id="composePublish" type="button" class="hh-compose-publish" disabled>
                     <i class="fas fa-paper-plane" aria-hidden="true"></i>
                     <span data-i18n="composePublish">Publicar</span>
                 </button>
-            </div>
+            </footer>
 
             <input id="composePhotoInput" type="file" accept="image/*" multiple class="hidden">
         </div>
@@ -1690,29 +1732,29 @@
         </div>
 
         <!-- Visualizador de fotografias -->
-        <div id="albumViewer" class="hh-al-viewer hidden" role="dialog" aria-modal="true"
+        <div id="albumViewer" class="hh-viewer hidden" role="dialog" aria-modal="true"
              aria-hidden="true" aria-labelledby="albumViewerCount">
-            <div class="hh-al-viewer-bar">
-                <span id="albumViewerCount" class="hh-al-viewer-count"></span>
+            <div class="hh-viewer-bar">
+                <span id="albumViewerCount" class="hh-viewer-count"></span>
                 <button id="albumViewerClose" type="button" class="hh-al-round"
                         data-i18n-title="close" title="Fechar" aria-label="Fechar">
                     <i class="fas fa-times" aria-hidden="true"></i>
                 </button>
             </div>
-            <button id="albumViewerPrev" type="button" class="hh-al-viewer-nav is-prev"
+            <button id="albumViewerPrev" type="button" class="hh-viewer-nav is-prev"
                     data-i18n-title="album.prevPhoto" title="Fotografia anterior"
                     aria-label="Fotografia anterior">
                 <i class="fas fa-chevron-left" aria-hidden="true"></i>
             </button>
-            <img id="albumViewerImg" class="hh-al-viewer-img" src="" alt="">
-            <button id="albumViewerNext" type="button" class="hh-al-viewer-nav is-next"
+            <img id="albumViewerImg" class="hh-viewer-img" src="" alt="">
+            <button id="albumViewerNext" type="button" class="hh-viewer-nav is-next"
                     data-i18n-title="album.nextPhoto" title="Fotografia seguinte"
                     aria-label="Fotografia seguinte">
                 <i class="fas fa-chevron-right" aria-hidden="true"></i>
             </button>
-            <div class="hh-al-viewer-foot">
-                <p id="albumViewerDate" class="hh-al-viewer-date"></p>
-                <p id="albumViewerPending" class="hh-al-viewer-pending" hidden>
+            <div class="hh-viewer-foot">
+                <p id="albumViewerDate" class="hh-viewer-date"></p>
+                <p id="albumViewerPending" class="hh-viewer-pending" hidden>
                     <i class="fas fa-cloud-arrow-up" aria-hidden="true"></i>
                     <span data-i18n="album.pendingSync">A aguardar sincronização</span>
                 </p>

@@ -9890,7 +9890,8 @@ body.cam-fullscreen-open {
 .hh-al-topbar > * {
     pointer-events: auto;
 }
-.hh-al-round {
+.hh-al-round,
+.hh-viewer-round {
     flex: 0 0 auto;
     display: flex;
     align-items: center;
@@ -9906,10 +9907,12 @@ body.cam-fullscreen-open {
     backdrop-filter: blur(8px);
     transition: background 0.2s ease, color 0.2s ease;
 }
-.hh-al-round:hover {
+.hh-al-round:hover,
+.hh-viewer-round:hover {
     background: rgba(8, 16, 28, 0.9);
 }
-.hh-al-round:focus-visible {
+.hh-al-round:focus-visible,
+.hh-viewer-round:focus-visible {
     outline: 2px solid var(--hh-gold-soft);
     outline-offset: 2px;
 }
@@ -10770,8 +10773,13 @@ body.cam-fullscreen-open {
 
 /* ==========================================================
    VISUALIZADOR (ponto 18)
+
+   Serve o album E as publicacoes — por isso o prefixo e `hh-
+   viewer` e nao `hh-al-`. Sao duas folhas diferentes no HTML
+   (cada modulo trata dos seus ids), mas o aspecto e um so: uma
+   imagem ao centro, um contador, duas setas e um gesto.
    ========================================================== */
-.hh-al-viewer {
+.hh-viewer {
     position: fixed;
     inset: 0;
     z-index: 90;
@@ -10780,10 +10788,10 @@ body.cam-fullscreen-open {
     justify-content: center;
     background: rgba(4, 9, 17, 0.97);
 }
-.hh-al-viewer.hidden {
+.hh-viewer.hidden {
     display: none;
 }
-.hh-al-viewer-bar {
+.hh-viewer-bar {
     position: absolute;
     top: 0;
     left: 0;
@@ -10794,17 +10802,17 @@ body.cam-fullscreen-open {
     gap: 12px;
     padding: calc(12px + var(--hh-safe-top)) var(--hh-gutter) 12px;
 }
-.hh-al-viewer-count {
+.hh-viewer-count {
     font-size: 14px;
     font-variant-numeric: tabular-nums;
     color: var(--hh-cream);
 }
-.hh-al-viewer-img {
+.hh-viewer-img {
     max-width: 100%;
     max-height: 74vh;
     object-fit: contain;
 }
-.hh-al-viewer-nav {
+.hh-viewer-nav {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
@@ -10819,14 +10827,14 @@ body.cam-fullscreen-open {
     background: rgba(12, 24, 42, 0.7);
     border: 1px solid rgba(233, 240, 249, 0.16);
 }
-.hh-al-viewer-nav.is-prev { left: 10px; }
-.hh-al-viewer-nav.is-next { right: 10px; }
-.hh-al-viewer-nav[hidden] { display: none; }
-.hh-al-viewer-nav:focus-visible {
+.hh-viewer-nav.is-prev { left: 10px; }
+.hh-viewer-nav.is-next { right: 10px; }
+.hh-viewer-nav[hidden] { display: none; }
+.hh-viewer-nav:focus-visible {
     outline: 2px solid var(--hh-gold-soft);
     outline-offset: 2px;
 }
-.hh-al-viewer-foot {
+.hh-viewer-foot {
     position: absolute;
     left: 0;
     right: 0;
@@ -10834,12 +10842,12 @@ body.cam-fullscreen-open {
     padding: 14px var(--hh-gutter) calc(18px + var(--hh-safe-bottom));
     text-align: center;
 }
-.hh-al-viewer-date {
+.hh-viewer-date {
     font-size: 13.5px;
     color: rgba(233, 240, 249, 0.86);
 }
-.hh-al-viewer-date[hidden] { display: none; }
-.hh-al-viewer-pending {
+.hh-viewer-date[hidden] { display: none; }
+.hh-viewer-pending {
     display: inline-flex;
     align-items: center;
     gap: 7px;
@@ -10851,7 +10859,7 @@ body.cam-fullscreen-open {
     background: rgba(214, 178, 116, 0.12);
     border: 1px solid rgba(214, 178, 116, 0.38);
 }
-.hh-al-viewer-pending[hidden] { display: none; }
+.hh-viewer-pending[hidden] { display: none; }
 
 /* ==========================================================
    EDITOR DA MEMÓRIA e SELECTOR DA FOTOGRAFIA
@@ -12619,8 +12627,13 @@ nav.hh-nav[data-active="profile"] .glass-glider   { transform: translateX(400%);
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    /* 44px de alvo tactil mesmo com a etiqueta pequena */
+    /* 44px de alvo tactil nas DUAS direccoes. A altura sempre
+       chegou; a largura so passou a precisar de minimo quando a
+       palavra saiu do botao (ver `actInner`) e sobrou o icone, que
+       sozinho media 32px. */
     min-height: 44px;
+    min-width: 44px;
+    justify-content: center;
     padding: 8px 11px;
     border-radius: 12px;
     color: #9DB0C8;
@@ -12632,6 +12645,12 @@ nav.hh-nav[data-active="profile"] .glass-glider   { transform: translateX(400%);
 .hh-fd-act:focus-visible { background: rgba(233, 240, 249, 0.06); }
 .hh-fd-act.is-on { color: #E7CE9A; }
 .hh-fd-act > i { font-size: 13px; }
+
+/* O numero ao lado do icone — ver `actInner` em posts-ui.js, que
+   explica porque e que a palavra nao vem. Largura fixa por
+   algarismo para a barra nao saltar quando um contador passa de 9
+   para 10. */
+.hh-fd-act-n { font-variant-numeric: tabular-nums; }
 
 .hh-fd-more {
     display: flex;
@@ -12746,6 +12765,40 @@ nav.hh-nav[data-active="profile"] .glass-glider   { transform: translateX(400%);
     width: 100%;
     height: 100%;
     object-fit: cover;
+}
+/* A fotografia do cabecalho abre em ecra inteiro: e um botao do
+   tamanho da imagem, nao um alvo pequeno a um canto. */
+.hh-post-hero-open {
+    display: block;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+}
+.hh-post-hero-open:focus-visible {
+    outline: 2px solid var(--hh-gold-soft);
+    outline-offset: -4px;
+}
+/* Quantas fotografias ha. So aparece quando ha mais do que uma —
+   dizer "1" era ruido. */
+.hh-post-hero-count {
+    position: absolute;
+    right: var(--hh-gutter);
+    bottom: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 11px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: var(--hh-cream);
+    background: rgba(8, 16, 28, 0.72);
+    border: 1px solid rgba(233, 240, 249, 0.18);
+    backdrop-filter: blur(8px);
 }
 /* Sem fotografia o cabecalho precisa de espaco proprio, senao os
    botoes ficam por cima do titulo. */
@@ -13123,6 +13176,377 @@ nav.hh-nav[data-active="profile"] .glass-glider   { transform: translateX(400%);
 }
 
 /* ==========================================================
+   CADA TIPO E UM FORMULARIO
+
+   O passo 1 (escolher) ja existia. O que ha aqui e o passo 2:
+   o cabecalho compacto do tipo escolhido, os campos gerados a
+   partir de `Posts.formFor(kind)` e o rodape fixo.
+   ========================================================== */
+
+/* Entrada do formulario. Discreta: o conteudo muda, o ecra nao. */
+.hh-compose-step.is-in {
+    animation: hh-compose-in .22s ease-out;
+}
+@keyframes hh-compose-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: none; }
+}
+
+/* O tipo escolhido fica a vista, e com ele a saida para o trocar.
+   Recolher os seis cartoes e ficar so com este e o que da espaco
+   ao formulario sem esconder onde se esta. */
+.hh-compose-chosen {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 4px;
+}
+.hh-compose-chosen-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 13px;
+    border-radius: 999px;
+    font-size: 12.5px;
+    font-weight: 700;
+    letter-spacing: .02em;
+}
+.hh-compose-chosen-tag > i { font-size: 12px; }
+.hh-compose-change {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 44px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #9DB0C8;
+    background: rgba(233, 240, 249, 0.05);
+    border: 1px solid var(--hh-line);
+}
+.hh-compose-change:hover,
+.hh-compose-change:focus-visible { color: #E9F0F9; }
+.hh-compose-change > i { font-size: 11.5px; }
+
+/* Os campos. `is-half` poe dois lado a lado (distancia e duracao),
+   que e como eles se leem — um par, nao duas perguntas. */
+.hh-compose-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 10px;
+}
+.hh-compose-field { grid-column: 1 / -1; min-width: 0; }
+.hh-compose-field.is-half { grid-column: span 1; }
+.hh-compose-field .hh-compose-label { margin-top: 18px; }
+
+/* Apontar ao campo que falta vale mais do que dizer "invalido". */
+.hh-compose-field.is-missing .hh-compose-input,
+.hh-compose-field.is-missing .hh-compose-textarea,
+.hh-compose-field.is-missing .hh-compose-photos {
+    border-color: #E0A07A;
+    box-shadow: 0 0 0 3px rgba(224, 160, 122, 0.16);
+}
+
+.hh-compose-req {
+    margin-left: 7px;
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: #D6B274;
+}
+
+/* Etiquetas e escolha unica partilham o mesmo chip: a diferenca
+   esta no comportamento (varias contra uma), nao no aspecto. */
+.hh-compose-chips,
+.hh-compose-choice {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.hh-compose-chip {
+    min-height: 44px;
+    padding: 9px 15px;
+    border-radius: 999px;
+    border: 1px solid var(--hh-line);
+    background: rgba(233, 240, 249, 0.04);
+    color: #9DB0C8;
+    font-size: 12.5px;
+    font-weight: 600;
+}
+.hh-compose-chip.is-on {
+    border-color: rgba(214, 178, 116, 0.6);
+    background: rgba(214, 178, 116, 0.16);
+    color: #F2E8D5;
+}
+.hh-compose-chip:focus-visible {
+    outline: 2px solid var(--hh-gold-soft);
+    outline-offset: 2px;
+}
+
+/* Avisos. O dourado e para o QR — o unico que pede uma decisao a
+   quem escreve. O calado e para o resto. */
+.hh-compose-notice {
+    display: flex;
+    gap: 11px;
+    margin-top: 20px;
+    padding: 13px 14px;
+    border-radius: 14px;
+    border: 1px solid var(--hh-line);
+    background: rgba(233, 240, 249, 0.03);
+}
+.hh-compose-notice.is-gold {
+    border-color: rgba(214, 178, 116, 0.42);
+    background: rgba(214, 178, 116, 0.09);
+}
+.hh-compose-notice > i {
+    flex: 0 0 auto;
+    margin-top: 2px;
+    font-size: 14px;
+    color: #9DB0C8;
+}
+.hh-compose-notice.is-gold > i { color: #E7CE9A; }
+.hh-compose-notice-title {
+    margin: 0 0 3px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #F2E8D5;
+}
+.hh-compose-notice-text {
+    margin: 0;
+    font-size: 12.5px;
+    line-height: 1.45;
+    color: #9DB0C8;
+}
+
+/* Quando a imagem E o assunto (fotografia, lugar), o botao ocupa
+   o lugar que ela vai ocupar — nao uma linha fina no meio do
+   formulario. */
+.hh-compose-photos.is-hero {
+    margin-top: 4px;
+    min-height: 132px;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+    gap: 7px;
+}
+.hh-compose-photos.is-hero > i { font-size: 24px; }
+
+/* Ponto 27: ver antes de publicar, com o MESMO cartao do feed. */
+.hh-compose-preview { margin-top: 22px; }
+.hh-compose-preview-host .hh-fd-card { cursor: default; }
+.hh-compose-preview-host .hh-fd-card-open { pointer-events: none; }
+
+/* O rodape nao faz scroll: com o teclado aberto, um CTA que desce
+   com o conteudo e um CTA que nao se encontra. */
+.hh-compose-foot {
+    flex: 0 0 auto;
+    padding: 12px var(--hh-gutter) calc(14px + var(--hh-safe-bottom));
+    border-top: 1px solid var(--hh-line);
+    background: linear-gradient(180deg, rgba(10, 23, 41, 0.86), #0A1729);
+    backdrop-filter: blur(10px);
+}
+.hh-compose-foot .hh-compose-publish { margin-top: 0; }
+.hh-compose-publish.hidden { display: none; }
+
+.hh-compose-offline {
+    margin: 0 0 10px;
+    text-align: center;
+    font-size: 12.5px;
+    color: #E0A07A;
+}
+.hh-compose-offline.hidden { display: none; }
+
+
+/* ==========================================================
+   OS CARTOES, UM POR TIPO
+
+   A moldura e a mesma (cabecalho, barra). O que muda e o que
+   vai dentro — e isso e o que distingue uma fotografia de uma
+   pergunta no meio do feed.
+   ========================================================== */
+
+/* DICA e CURIOSIDADE: o texto e a materia, por isso e maior. */
+.hh-fd-card-lead {
+    margin: 0 0 4px;
+    font-size: 15px;
+    line-height: 1.5;
+    color: #E9F0F9;
+}
+
+/* FOTOGRAFIA: a legenda e secundaria — a imagem ja falou. */
+.hh-fd-card-caption {
+    margin: 8px 0 0;
+    font-size: 13px;
+    line-height: 1.45;
+    color: #9DB0C8;
+}
+
+/* CURIOSIDADE: "Sabias que..." a abrir, fonte a fechar. */
+.hh-fd-card-kicker {
+    margin: 0 0 6px;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 13px;
+    font-style: italic;
+    color: #E7CE9A;
+}
+.hh-fd-card-source {
+    margin: 9px 0 0;
+    font-size: 11.5px;
+    line-height: 1.4;
+    color: #6F819A;
+    word-break: break-word;
+}
+
+/* FOTOGRAFIA e capa de TRILHO/LUGAR: imagem em primeiro plano. */
+.hh-fd-card-photos.is-hero { height: 232px; }
+.hh-fd-card-photos.is-cover { height: 164px; }
+
+/* TRILHO: de onde a onde, e o que isso custa. */
+.hh-fd-card-route {
+    margin: 2px 0 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: #E7CE9A;
+}
+.hh-fd-card-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-top: 10px;
+}
+.hh-fd-card-stat {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 11px;
+    border-radius: 999px;
+    border: 1px solid var(--hh-line);
+    background: rgba(233, 240, 249, 0.04);
+    font-size: 11.5px;
+    font-weight: 600;
+    color: #9DB0C8;
+}
+.hh-fd-card-stat > i { font-size: 10.5px; color: #D6B274; }
+/* Ponto 12: estes numeros sao de quem publicou, nao medidos. */
+.hh-fd-card-byauthor {
+    margin: 7px 0 0;
+    font-size: 10.5px;
+    letter-spacing: .03em;
+    color: #6F819A;
+}
+
+/* LUGAR: para que serve o sitio. */
+.hh-fd-card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+}
+.hh-fd-card-tag {
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: rgba(214, 178, 116, 0.12);
+    color: #E7CE9A;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+/* PERGUNTA: a pergunta e o cartao. */
+.hh-fd-card-question {
+    margin: 0;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 17px;
+    line-height: 1.4;
+    color: #F2E8D5;
+}
+.hh-fd-card-answers {
+    margin: 9px 0 0;
+    font-size: 12px;
+    font-weight: 600;
+    color: #9DB0C8;
+}
+
+/* A ACCAO DE CADA TIPO.
+   Ou e um botao proprio (ver trilho, guardar, responder), ou e
+   uma das reaccoes a crescer dentro da barra. Nunca as duas
+   coisas — seriam dois sitios a dizer o mesmo. */
+.hh-fd-actions {
+    display: flex;
+    flex-direction: column;
+}
+.hh-fd-primary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: calc(100% - 18px);
+    min-height: 44px;
+    margin: 0 9px 2px;
+    border-radius: 12px;
+    border: 1px solid rgba(214, 178, 116, 0.42);
+    background: rgba(214, 178, 116, 0.12);
+    color: #F2E8D5;
+    font-size: 13px;
+    font-weight: 700;
+}
+.hh-fd-primary > i { font-size: 12.5px; color: #E7CE9A; }
+.hh-fd-primary.is-on {
+    background: rgba(214, 178, 116, 0.22);
+    border-color: rgba(214, 178, 116, 0.7);
+}
+.hh-fd-primary:focus-visible {
+    outline: 2px solid var(--hh-gold-soft);
+    outline-offset: 2px;
+}
+
+/* A reaccao principal do tipo e a unica escrita por extenso.
+   Cabe, porque e uma so (ver `actInner` em posts-ui.js). */
+.hh-fd-act.is-lead { color: #E7CE9A; }
+.hh-fd-act-lead {
+    font-size: 12px;
+    font-weight: 700;
+}
+
+html:not(.dark) .hh-compose-chip { color: #5A6B84; }
+html:not(.dark) .hh-compose-chip.is-on { color: #3A2C10; }
+html:not(.dark) .hh-compose-change { color: #5A6B84; }
+html:not(.dark) .hh-compose-notice-text { color: #5A6B84; }
+html:not(.dark) .hh-compose-notice-title { color: #1C2B42; }
+html:not(.dark) .hh-compose-foot {
+    background: linear-gradient(180deg, rgba(255, 253, 248, 0.86), #FFFDF8);
+    border-top-color: rgba(28, 43, 66, 0.12);
+}
+html:not(.dark) .hh-fd-card-lead,
+html:not(.dark) .hh-fd-card-question { color: #1C2B42; }
+html:not(.dark) .hh-fd-card-caption,
+html:not(.dark) .hh-fd-card-answers,
+html:not(.dark) .hh-fd-card-stat { color: #42536B; }
+html:not(.dark) .hh-fd-card-kicker,
+html:not(.dark) .hh-fd-card-route { color: #8A6A28; }
+html:not(.dark) .hh-fd-card-source,
+html:not(.dark) .hh-fd-card-byauthor { color: #8494AB; }
+html:not(.dark) .hh-fd-card-tag { color: #8A6A28; }
+html:not(.dark) .hh-fd-primary {
+    color: #3A2C10;
+    background: rgba(214, 178, 116, 0.2);
+    border-color: rgba(138, 106, 40, 0.38);
+}
+/* O dourado claro desaparece sobre creme: os icones escurecem no
+   tema claro, senao ficam la sem se verem. */
+html:not(.dark) .hh-fd-primary > i,
+html:not(.dark) .hh-fd-card-stat > i,
+html:not(.dark) .hh-compose-notice.is-gold > i,
+html:not(.dark) .hh-compose-req { color: #8A6A28; }
+html:not(.dark) .hh-fd-act.is-lead { color: #8A6A28; }
+
+@media (prefers-reduced-motion: reduce) {
+    .hh-compose-step.is-in { animation: none; }
+}
+
+/* ==========================================================
    Tema claro
    ========================================================== */
 
@@ -13201,10 +13625,6 @@ html:not(.dark) .hh-compose-photos b { color: #3A2C10; }
 }
 
 @media (max-width: 320px) {
-    /* Com tao pouca largura, a etiqueta das accoes sai e fica o
-       icone — que continua a ter 44px de alvo. */
-    .hh-fd-act span { display: none; }
-    .hh-fd-act { padding: 8px 10px; }
     .hh-compose-kinds { grid-template-columns: repeat(2, 1fr); }
     .hh-post-title { font-size: 20px; }
 }

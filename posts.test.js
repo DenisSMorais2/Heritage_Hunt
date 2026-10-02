@@ -194,38 +194,164 @@ test('guardar alterna', () => {
 
 console.log('\nDescobertas — escrever\n');
 
-test('uma publicacao precisa de tipo e de titulo', () => {
-    assertEqual(Posts.validateDraft({ title: 'x' }).reason, 'kind');
-    assertEqual(Posts.validateDraft({ kind: 'tip', title: '   ' }).reason, 'title');
-    assertEqual(Posts.validateDraft({ kind: 'tip', title: 'Boa dica' }).ok, true);
+test('uma publicacao precisa sempre de um tipo', () => {
+    assertEqual(Posts.validateDraft({ body: 'x' }).reason, 'kind');
+    assertEqual(Posts.validateDraft({ kind: 'inventado', body: 'x' }).reason, 'kind');
 });
 
 test('e isso distingue-a de uma mensagem de chat', () => {
-    // Uma mensagem de chat valida nao tem titulo nem tipo; aqui
-    // nenhuma das duas coisas pode faltar (ponto 33).
+    // Uma mensagem de chat valida nao tem tipo; aqui o tipo nunca
+    // pode faltar (ponto 33).
     assertEqual(Posts.validateDraft({ body: 'so corpo' }).ok, false);
+});
+
+test('cada tipo exige o que a sua intencao exige', () => {
+    // Dica: o texto e tudo. Sem titulo, sem foto, sem lugar.
+    assertEqual(Posts.validateDraft({ kind: 'tip', body: 'Olha para o lado do mar.' }).ok, true);
+    assertEqual(Posts.validateDraft({ kind: 'tip', body: '   ' }).reason, 'body');
+
+    // Fotografia: a imagem e que e obrigatoria, nao o texto.
+    assertEqual(Posts.validateDraft({ kind: 'photo', photos: [{}] }).ok, true);
+    assertEqual(Posts.validateDraft({ kind: 'photo', body: 'bonita' }).reason, 'photos');
+
+    // Pergunta: so a pergunta.
+    assertEqual(Posts.validateDraft({ kind: 'question', body: 'E bom para criancas?' }).ok, true);
+    assertEqual(Posts.validateDraft({ kind: 'question', photos: [{}] }).reason, 'body');
+});
+
+test('o trilho e o unico que pede varios campos', () => {
+    const base = { kind: 'trail', title: 'Subida ao Monte Verde', body: 'Caminho longo.' };
+    assertEqual(Posts.validateDraft(base).reason, 'meta:start');
+    assertEqual(Posts.validateDraft(Object.assign({}, base, {
+        metadata: { start: 'Praça Nova' }
+    })).reason, 'meta:end');
+    assertEqual(Posts.validateDraft(Object.assign({}, base, {
+        metadata: { start: 'Praça Nova', end: 'Monte Verde' }
+    })).ok, true, 'distancia, duracao e dificuldade sao opcionais');
+    assertEqual(Posts.validateDraft({
+        kind: 'trail', body: 'x', metadata: { start: 'a', end: 'b' }
+    }).reason, 'title');
+});
+
+test('o lugar precisa de nome e de razao para la ir', () => {
+    assertEqual(Posts.validateDraft({ kind: 'place', title: 'Salamansa' }).reason, 'body');
+    assertEqual(Posts.validateDraft({ kind: 'place', body: 'Praia calma' }).reason, 'title');
+    assertEqual(Posts.validateDraft({ kind: 'place', title: 'Salamansa', body: 'Praia calma' }).ok, true,
+        'a fotografia e recomendada, nao obrigatoria');
+});
+
+test('o titulo so sobrevive nos tipos que o tem', () => {
+    assertEqual(Posts.needsTitle('trail'), true);
+    assertEqual(Posts.needsTitle('place'), true);
+    assertEqual(Posts.needsTitle('tip'), false);
+    assertEqual(Posts.needsTitle('photo'), false);
+    assertEqual(Posts.needsTitle('curiosity'), false);
+    assertEqual(Posts.needsTitle('question'), false);
+
+    // Escrever um titulo, mudar para Dica e publicar nao leva o
+    // titulo velho atras.
+    assertEqual(Posts.validateDraft({ kind: 'tip', title: 'sobra', body: 'ok' }).title, '');
+    assertEqual(Posts.validateDraft({ kind: 'place', title: '  Salamansa  ', body: 'ok' }).title, 'Salamansa');
 });
 
 test('os limites sao os da base de dados', () => {
     assertEqual(POST_CONFIG.TITLE_MAX, 120);
     assertEqual(POST_CONFIG.BODY_MAX, 2000);
 
-    assertEqual(Posts.validateDraft({ kind: 'tip', title: 'a'.repeat(121) }).reason, 'title_long');
-    assertEqual(Posts.validateDraft({ kind: 'tip', title: 'ok', body: 'a'.repeat(2001) }).reason, 'body_long');
-});
-
-test('o titulo e limpo nas pontas', () => {
-    assertEqual(Posts.validateDraft({ kind: 'tip', title: '  Boa dica  ' }).title, 'Boa dica');
+    assertEqual(Posts.validateDraft({ kind: 'place', title: 'a'.repeat(121), body: 'x' }).reason, 'title_long');
+    assertEqual(Posts.validateDraft({ kind: 'tip', body: 'a'.repeat(2001) }).reason, 'body_long');
 });
 
 test('ha um tecto de fotografias', () => {
-    const muitas = { kind: 'photo', title: 'x', photos: [1, 2, 3, 4, 5] };
+    const muitas = { kind: 'photo', photos: [1, 2, 3, 4, 5] };
     assertEqual(Posts.validateDraft(muitas).reason, 'photos');
 });
 
-test('missingField aponta ao campo que falta', () => {
-    assertEqual(Posts.missingField({ kind: 'tip', title: '' }), 'title');
-    assertEqual(Posts.missingField({ kind: 'tip', title: 'ok' }), null);
+test('missingField aponta ao campo que falta, nao a "invalido"', () => {
+    assertEqual(Posts.missingField({ kind: 'tip' }), 'body');
+    assertEqual(Posts.missingField({ kind: 'photo' }), 'photos');
+    assertEqual(Posts.missingField({ kind: 'trail', title: 'x', body: 'y' }), 'meta:start');
+    assertEqual(Posts.missingField({ kind: 'tip', body: 'ok' }), null);
+});
+
+console.log('\nDescobertas — cada tipo e um formulario\n');
+
+test('os seis tipos tem formularios diferentes', () => {
+    const forma = (k) => Posts.formFor(k).map((f) => f.id).join(',');
+
+    assertEqual(forma('tip') === forma('photo'), false);
+    assertEqual(forma('photo') === forma('trail'), false);
+    assertEqual(forma('trail') === forma('question'), false);
+
+    // A fotografia comeca pela imagem; a pergunta acaba nela.
+    assertEqual(Posts.formFor('photo')[0].id, 'photos');
+    assertEqual(Posts.formFor('question')[0].id, 'place');
+    assertEqual(Posts.formFor('trail')[0].id, 'title');
+});
+
+test('todos os campos tem um tipo que a interface sabe desenhar', () => {
+    POST_CONFIG.KIND_IDS.forEach((kind) => {
+        Posts.formFor(kind).forEach((field) => {
+            assertEqual(POST_CONFIG.FIELD_TYPES.indexOf(field.type) !== -1, true,
+                kind + '/' + field.id + ' tem tipo "' + field.type + '"');
+            assertEqual(typeof field.id === 'string' && field.id.length > 0, true);
+        });
+    });
+});
+
+test('cada tipo tem a sua chamada a accao e a sua confirmacao', () => {
+    assertEqual(Posts.ctaKeyFor('tip'), 'composeCtaTip');
+    assertEqual(Posts.ctaKeyFor('trail'), 'composeCtaTrail');
+    assertEqual(Posts.successKeyFor('question'), 'composeDoneQuestion');
+
+    // Seis tipos, seis chamadas diferentes — nunca so "Publicar".
+    const ctas = POST_CONFIG.KIND_IDS.map(Posts.ctaKeyFor);
+    assertEqual(new Set(ctas).size, 6);
+});
+
+test('cada tipo tem a sua accao social (ponto 62)', () => {
+    assertEqual(Posts.primaryActionFor('tip').primary, 'helpful');
+    assertEqual(Posts.primaryActionFor('curiosity').primary, 'interesting');
+    assertEqual(Posts.primaryActionFor('trail').primary, 'open');
+    assertEqual(Posts.primaryActionFor('place').primary, 'save');
+    assertEqual(Posts.primaryActionFor('question').primary, 'comment');
+});
+
+console.log('\nDescobertas — metadados por tipo\n');
+
+test('so entram as chaves que o tipo declara', () => {
+    const meta = Posts.normalizeMetadata('curiosity', { source: 'Livro X', distance: '5 km', lixo: 1 });
+    assertEqual(JSON.stringify(meta), JSON.stringify({ source: 'Livro X' }),
+        'distance nao pertence a uma curiosidade');
+
+    assertEqual(JSON.stringify(Posts.normalizeMetadata('tip', { source: 'x' })), '{}',
+        'uma dica nao tem metadados nenhuns');
+});
+
+test('as etiquetas vem de uma lista fechada e sem repetidas', () => {
+    const meta = Posts.normalizeMetadata('photo', { tags: ['view', 'view', 'inventada', 'nature'] });
+    assertEqual(JSON.stringify(meta.tags), JSON.stringify(['view', 'nature']));
+
+    const demais = Posts.normalizeMetadata('place', { tags: POST_CONFIG.PLACE_TAGS });
+    assertEqual(demais.tags.length, POST_CONFIG.MAX_TAGS, 'ha um tecto de etiquetas');
+});
+
+test('a dificuldade e uma das tres, ou nenhuma', () => {
+    assertEqual(Posts.normalizeMetadata('trail', { difficulty: 'moderate' }).difficulty, 'moderate');
+    assertEqual(Posts.normalizeMetadata('trail', { difficulty: 'impossivel' }).difficulty, undefined);
+});
+
+test('os textos sao limpos e cortados ao tamanho do campo', () => {
+    const meta = Posts.normalizeMetadata('trail', { start: '  Praça Nova  ', end: 'b'.repeat(200) });
+    assertEqual(meta.start, 'Praça Nova');
+    assertEqual(meta.end.length, POST_CONFIG.META_TEXT_MAX);
+});
+
+test('metadados em falta ou corrompidos nao rebentam', () => {
+    assertEqual(JSON.stringify(Posts.normalizeMetadata('trail', null)), '{}');
+    assertEqual(JSON.stringify(Posts.normalizeMetadata('trail', 'nao e objecto')), '{}');
+    assertEqual(JSON.stringify(Posts.normalizeMetadata('inventado', { a: 1 })), '{}');
+    assertEqual(JSON.stringify(Posts.normalizeMetadata('photo', { tags: 'nao e lista' })), '{}');
 });
 
 test('os contadores de caracteres contam', () => {
@@ -293,6 +419,53 @@ test('as razoes de denuncia sao as da base de dados', () => {
     assertEqual(Posts.isValidReportReason('qr_location'), true);
     assertEqual(Posts.isValidReportReason('outra_coisa'), false);
     assertEqual(POST_CONFIG.REPORT_REASONS.length, 5);
+});
+
+console.log('\nDescobertas — procurar por lugar\n');
+
+const LUGARES = [
+    { id: 1,  name: 'Palácio do Povo' },
+    { id: 2,  name: 'Farol de D. Amélia' },
+    { id: 5,  name: 'Torre de Belém (Réplica)' },
+    { id: 'centro_historico', name: 'Centro Histórico' },
+    { id: 'frente_mar',       name: 'Frente de Mar' },
+    { id: 'sao_vicente',      name: 'Mindelo' },
+    { id: 'sao_vicente',      name: 'São Vicente' }
+];
+
+test('o nome escrito traduz-se nos ids que o servidor percebe', () => {
+    assertEqual(Posts.placeIdsFor('Palácio', LUGARES).join(','), '1');
+    assertEqual(Posts.placeIdsFor('Centro', LUGARES).join(','), 'centro_historico');
+});
+
+test('procurar nao depende de acentos nem de maiusculas', () => {
+    assertEqual(Posts.placeIdsFor('palacio', LUGARES).join(','), '1',
+        'quem escreve a correr no telemovel nao poe acentos');
+    assertEqual(Posts.placeIdsFor('AMELIA', LUGARES).join(','), '2');
+    assertEqual(Posts.placeIdsFor('belem', LUGARES).join(','), '5');
+});
+
+test('a cidade e a ilha chegam ao mesmo id, e ele nao se repete', () => {
+    assertEqual(Posts.placeIdsFor('Mindelo', LUGARES).join(','), 'sao_vicente');
+    assertEqual(Posts.placeIdsFor('vicente', LUGARES).join(','), 'sao_vicente',
+        'dois nomes para a mesma ilha dao um id so');
+});
+
+test('sem termo nao ha filtro de lugar', () => {
+    assertEqual(Posts.placeIdsFor('', LUGARES).length, 0);
+    assertEqual(Posts.placeIdsFor('   ', LUGARES).length, 0);
+    assertEqual(Posts.placeIdsFor(null, LUGARES).length, 0);
+});
+
+test('nada corresponde devolve lista vazia, nunca tudo', () => {
+    assertEqual(Posts.placeIdsFor('xyzzy', LUGARES).length, 0,
+        'uma lista vazia tem de significar "sem lugares", nao "todos"');
+});
+
+test('lugares em falta ou corrompidos nao rebentam', () => {
+    assertEqual(Posts.placeIdsFor('palacio', null).length, 0);
+    assertEqual(Posts.placeIdsFor('palacio', [null, {}, { id: 1 }]).length, 0,
+        'um lugar sem nome nao corresponde a nada');
 });
 
 console.log('\n' + '-'.repeat(52));

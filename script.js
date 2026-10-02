@@ -2040,6 +2040,13 @@ function applyTranslations() {
     document.querySelectorAll('[data-i18n-title]').forEach(el => {
         el.title = t(el.dataset.i18nTitle);
     });
+    // O nome que um leitor de ecrã anuncia também é texto visível
+    // para quem depende dele. O HTML já marcava estes botões com
+    // `data-i18n-aria-label`; faltava alguém aplicá-lo, e por isso
+    // ficavam em português em qualquer língua.
+    document.querySelectorAll('[data-i18n-aria-label]').forEach(el => {
+        el.setAttribute('aria-label', t(el.dataset.i18nAriaLabel));
+    });
 }
 
 // Traduz os conteúdos dos dados (descrições de monumentos e textos das medalhas)
@@ -2278,6 +2285,11 @@ function initCommunity() {
         zoneName: function (id) { return zoneName(id); },
         cityName: function () { return cityName('mindelo'); },
         placeLabel: function () { return placeLabel('mindelo', RANKING_ISLAND); },
+
+        // Para a pesquisa poder traduzir "Mindelo" na ilha que as
+        // publicacoes guardam.
+        islandId: function () { return RANKING_ISLAND; },
+        islandName: function () { return islandName(RANKING_ISLAND); },
 
         // O selector de lugar oferece tudo, nao so o que ja foi
         // descoberto: uma pergunta sobre um monumento por descobrir

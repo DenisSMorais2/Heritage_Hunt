@@ -1095,6 +1095,10 @@ const HeritageCloud = (function () {
             p_kind: o.kind || null,
             p_query: o.query || null,
             p_monument_id: o.monumentId || null,
+            // Os nomes dos lugares vivem no cliente (a tabela
+            // `monuments` so tem ids), por isso a procura por lugar
+            // chega aqui ja resolvida em ids.
+            p_place_ids: (o.placeIds && o.placeIds.length) ? o.placeIds : null,
             p_before: o.before || null,
             p_limit: o.limit || 20
         });
@@ -1112,11 +1116,16 @@ const HeritageCloud = (function () {
         const d = draft || {};
         return callRpc('create_post', {
             p_kind: d.kind,
-            p_title: d.title,
+            p_title: d.title || '',
             p_body: d.body || '',
             p_monument_id: d.monumentId || null,
             p_zone_id: d.zoneId || null,
-            p_photos: d.photos || []
+            p_photos: d.photos || [],
+            // Os dados proprios do tipo. O servidor volta a limpa-los
+            // (`private.clean_post_metadata`): isto aqui e so para a
+            // rede nao levar o que ja se sabe que vai ser deitado
+            // fora.
+            p_metadata: d.metadata || {}
         });
     }
 

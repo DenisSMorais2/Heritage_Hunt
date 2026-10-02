@@ -34,9 +34,14 @@ const PostsUI = (function () {
     let comments = [];
     let commentsHasMore = false;
     let replyTo = null;
+    let viewerIndex = null;     // null = visor fechado
 
     // --- Rascunho -----------------------------------------------
     let draft = null;
+    let fieldNodes = {};        // id do campo -> no desenhado
+    let photoStrip = null;      // a tira de miniaturas do campo de fotos
+    let previewHost = null;     // onde vive a pre-visualizacao
+    let offlineNote = null;     // o aviso "precisas de ligacao"
 
     function t(key, vars) {
         return deps && typeof deps.t === 'function' ? deps.t(key, vars) : key;
@@ -82,25 +87,31 @@ const PostsUI = (function () {
             replyCancel: document.getElementById('postReplyCancel'),
 
             compose:     document.getElementById('composeScreen'),
+            cpHeading:   document.getElementById('composeHeading'),
             cpBack:      document.getElementById('composeBackBtn'),
+            cpStepType:  document.getElementById('composeStepType'),
+            cpStepForm:  document.getElementById('composeStepForm'),
             cpKinds:     document.getElementById('composeKinds'),
-            cpTitle:     document.getElementById('composeTitleInput'),
-            cpTitleCount: document.getElementById('composeTitleCount'),
-            cpBody:      document.getElementById('composeBodyInput'),
-            cpBodyCount: document.getElementById('composeBodyCount'),
-            cpPhotosBtn: document.getElementById('composePhotosBtn'),
-            cpStrip:     document.getElementById('composePhotoStrip'),
-            cpPlace:     document.getElementById('composePlace'),
-            cpPlaceText: document.getElementById('composePlaceText'),
-            cpWarning:   document.getElementById('composeQrWarning'),
+            cpChosen:    document.getElementById('composeChosen'),
+            cpChange:    document.getElementById('composeChangeType'),
+            cpFields:    document.getElementById('composeFields'),
             cpPublish:   document.getElementById('composePublish'),
             cpInput:     document.getElementById('composePhotoInput'),
+
+            viewer:      document.getElementById('postViewer'),
+            viewerImg:   document.getElementById('postViewerImg'),
+            viewerCount: document.getElementById('postViewerCount'),
+            viewerClose: document.getElementById('postViewerClose'),
+            viewerPrev:  document.getElementById('postViewerPrev'),
+            viewerNext:  document.getElementById('postViewerNext'),
 
             sheet:       document.getElementById('postSheet'),
             sheetBody:   document.getElementById('postSheetBody')
         };
 
         if (!dom.list) return;
+
+        offlineNote = document.getElementById('composeOffline');
 
         renderChips();
         renderComposeKinds();
@@ -145,11 +156,8 @@ const PostsUI = (function () {
         window.addEventListener('offline', onConnectivityChange);
 
         dom.cpBack.addEventListener('click', closeComposer);
-        dom.cpTitle.addEventListener('input', onDraftChange);
-        dom.cpBody.addEventListener('input', onDraftChange);
-        dom.cpPhotosBtn.addEventListener('click', function () { dom.cpInput.click(); });
+        dom.cpChange.addEventListener('click', askToChangeKind);
         dom.cpInput.addEventListener('change', function (e) { onPhotosChosen(e.target.files); });
-        dom.cpPlace.addEventListener('click', openPlacePicker);
         dom.cpPublish.addEventListener('click', publish);
 
         // Tocar fora fecha. Isto ja ca estava, mas nunca chegava a
@@ -163,7 +171,39 @@ const PostsUI = (function () {
         // E arrastar para baixo, que e o gesto que a pega promete.
         Sheets.enableDrag(dom.sheet, closeSheet);
 
+        // --- Visualizador da fotografia -------------------------
+        dom.viewerClose.addEventListener('click', closeViewer);
+        dom.viewerPrev.addEventListener('click', function () { stepViewer(-1); });
+        dom.viewerNext.addEventListener('click', function () { stepViewer(1); });
+        dom.viewer.addEventListener('click', function (event) {
+            if (event.target === dom.viewer) closeViewer();
+        });
+
+        // Deslizar, como no album: dois pontos e uma subtraccao.
+        let touchX = null;
+        dom.viewer.addEventListener('touchstart', function (event) {
+            touchX = event.changedTouches[0].clientX;
+        }, { passive: true });
+
+        dom.viewer.addEventListener('touchend', function (event) {
+            if (touchX === null) return;
+            const delta = event.changedTouches[0].clientX - touchX;
+            touchX = null;
+            if (Math.abs(delta) < 48) return;
+            stepViewer(delta < 0 ? 1 : -1);
+        }, { passive: true });
+
         document.addEventListener('keydown', function (event) {
+            // O visor esta por cima de tudo o resto, por isso e o
+            // primeiro a responder ao Escape e o unico a querer as
+            // setas.
+            if (isViewerOpen()) {
+                if (event.key === 'Escape') closeViewer();
+                else if (event.key === 'ArrowLeft') stepViewer(-1);
+                else if (event.key === 'ArrowRight') stepViewer(1);
+                return;
+            }
+
             if (event.key !== 'Escape') return;
             if (!dom.sheet.classList.contains('hidden')) closeSheet();
             else if (isComposerOpen()) closeComposer();
@@ -214,6 +254,41 @@ const PostsUI = (function () {
     // O feed
     // ==========================================================
 
+    // A pesquisa promete "publicacoes, lugares, pessoas". As
+    // pessoas o servidor sabe procurar sozinho — os nomes estao em
+    // `profiles`. Os lugares nao: a tabela `monuments` so guarda
+    // ids, porque os nomes sao conteudo traduzido e vivem aqui.
+    // Entao e aqui que o termo escrito se resolve em ids, e a
+    // consulta recebe-os ja prontos.
+    function placeIdsForQuery() {
+        const term = query.trim();
+        if (!term) return [];
+
+        const places = [];
+
+        (deps.monuments() || []).forEach(function (monument) {
+            places.push({ id: monument.id, name: deps.monumentName(monument.id) });
+        });
+
+        (deps.zones() || []).forEach(function (zone) {
+            places.push({ id: zone.id, name: deps.zoneName(zone.id) });
+        });
+
+        // A cidade e a ilha respondem pela MESMA coluna
+        // (`island_id`): procurar "Mindelo" tem de trazer tudo o
+        // que se passa na ilha, incluindo as publicacoes que nao
+        // marcaram lugar nenhum.
+        if (typeof deps.islandId === 'function') {
+            const island = deps.islandId();
+            places.push({ id: island, name: deps.cityName() });
+            if (typeof deps.islandName === 'function') {
+                places.push({ id: island, name: deps.islandName() });
+            }
+        }
+
+        return Posts.placeIdsFor(term, places);
+    }
+
     async function load() {
         if (!dom.list) return;
 
@@ -227,6 +302,7 @@ const PostsUI = (function () {
         const result = await deps.cloud.listPosts({
             kind: activeKind,
             query: query.trim() || null,
+            placeIds: placeIdsForQuery(),
             limit: Posts.CONFIG.PAGE_SIZE
         });
         loading = false;
@@ -274,6 +350,7 @@ const PostsUI = (function () {
             const result = await deps.cloud.listPosts({
                 kind: activeKind,
                 query: query.trim() || null,
+                placeIds: placeIdsForQuery(),
                 before: Posts.oldestAt(posts),
                 limit: Posts.CONFIG.PAGE_SIZE
             });
@@ -447,9 +524,217 @@ const PostsUI = (function () {
         return card;
     }
 
+    // ==========================================================
+    // OS CARTOES — UM POR TIPO
+    //
+    // O cabecalho (autor, tipo, lugar, quando, seguir, menu) e o
+    // mesmo em todos: e a moldura. O que muda e o que vai dentro
+    // dela e qual e a accao que fica a frente.
+    // ==========================================================
+
+    // Uma fotografia pode vir do servidor (caminho assinado) ou
+    // do rascunho que ainda nao subiu (blob local, na pre-
+    // visualizacao). O cartao nao tem de saber a diferenca.
+    function photoUrl(ref) {
+        if (!ref) return null;
+        if (signedPhotos[ref]) return signedPhotos[ref];
+        return /^(blob:|data:|https?:)/.test(ref) ? ref : null;
+    }
+
+    function cardPhotos(post) {
+        return (post.photos || []).map(photoUrl).filter(Boolean);
+    }
+
+    function photoGrid(urls, className) {
+        const grid = document.createElement('div');
+        grid.className = className || ('hh-fd-card-photos n' + Math.min(urls.length, 4));
+        urls.slice(0, 4).forEach(function (url) {
+            const img = document.createElement('img');
+            img.src = url;
+            img.alt = '';
+            img.loading = 'lazy';
+            grid.appendChild(img);
+        });
+        return grid;
+    }
+
+    function cardText(post, className) {
+        const text = document.createElement('p');
+        text.className = className || 'hh-fd-card-text';
+        text.textContent = (post.body || '') + (post.truncated ? '…' : '');
+        return text;
+    }
+
+    function cardTitle(post) {
+        const title = document.createElement('p');
+        title.className = 'hh-fd-card-title';
+        title.textContent = post.title || '';
+        return title;
+    }
+
+    // As publicacoes escritas ANTES desta mudanca tem todas
+    // titulo — era obrigatorio para os seis tipos. Os tipos que
+    // agora nao tem titulo nao o pedem a quem escreve, mas
+    // tambem nao podem deixar de mostrar o que ja la esta: seria
+    // esconder conteudo que alguem escreveu.
+    function legacyTitle(open, post) {
+        if (post.title) open.insertBefore(cardTitle(post), open.firstChild);
+    }
+
+    // DICA — o texto e a materia. Sem titulo (nao tem), com a
+    // dica em destaque e a fotografia, se houver, pequena.
+    function cardBodyTip(open, post) {
+        open.appendChild(cardText(post, 'hh-fd-card-lead'));
+        legacyTitle(open, post);
+        const urls = cardPhotos(post);
+        if (urls.length) open.appendChild(photoGrid(urls));
+    }
+
+    // FOTOGRAFIA — a imagem manda. Vem primeiro, grande, e a
+    // legenda vem depois, pequena.
+    function cardBodyPhoto(open, post) {
+        const urls = cardPhotos(post);
+        if (urls.length) open.appendChild(photoGrid(urls, 'hh-fd-card-photos is-hero n' + Math.min(urls.length, 4)));
+        if (post.body) open.appendChild(cardText(post, 'hh-fd-card-caption'));
+        legacyTitle(open, post);
+    }
+
+    // CURIOSIDADE — editorial. "Sabias que..." a abrir, e a fonte
+    // a fechar, se quem escreveu a deu.
+    function cardBodyCuriosity(open, post) {
+        const lead = document.createElement('p');
+        lead.className = 'hh-fd-card-kicker';
+        lead.textContent = t('cardCuriosityLead');
+        open.appendChild(lead);
+        legacyTitle(open, post);
+
+        open.appendChild(cardText(post, 'hh-fd-card-lead'));
+
+        const urls = cardPhotos(post);
+        if (urls.length) open.appendChild(photoGrid(urls));
+
+        const source = (post.metadata || {}).source;
+        if (source) {
+            const cite = document.createElement('p');
+            cite.className = 'hh-fd-card-source';
+            cite.textContent = t('cardCuriositySource', { source: source });
+            open.appendChild(cite);
+        }
+    }
+
+    // TRILHO — quem le quer saber se consegue fazer: de onde a
+    // onde, quanto tempo, que dificuldade. Tudo isso antes de
+    // abrir.
+    function cardBodyTrail(open, post) {
+        const meta = post.metadata || {};
+        const urls = cardPhotos(post);
+        if (urls.length) open.appendChild(photoGrid(urls.slice(0, 1), 'hh-fd-card-photos is-cover n1'));
+
+        open.appendChild(cardTitle(post));
+
+        if (meta.start && meta.end) {
+            const route = document.createElement('p');
+            route.className = 'hh-fd-card-route';
+            route.textContent = t('cardTrailRoute', { start: meta.start, end: meta.end });
+            open.appendChild(route);
+        }
+
+        const stats = [];
+        if (meta.distance) stats.push({ icon: 'fa-route', text: meta.distance });
+        if (meta.duration) stats.push({ icon: 'fa-clock', text: meta.duration });
+        if (meta.difficulty) {
+            stats.push({
+                icon: 'fa-mountain',
+                text: t('trailLevel' + meta.difficulty.charAt(0).toUpperCase() + meta.difficulty.slice(1))
+            });
+        }
+
+        if (stats.length) {
+            const row = document.createElement('div');
+            row.className = 'hh-fd-card-stats';
+            stats.forEach(function (stat) {
+                const item = document.createElement('span');
+                item.className = 'hh-fd-card-stat';
+                item.innerHTML = '<i class="fas ' + stat.icon + '" aria-hidden="true"></i>';
+                item.appendChild(document.createTextNode(stat.text));
+                row.appendChild(item);
+            });
+            open.appendChild(row);
+
+            // Ponto 12: estes numeros nao sao medidos por ninguem.
+            // Dizer de quem sao e a diferenca entre informar e
+            // inventar.
+            const by = document.createElement('p');
+            by.className = 'hh-fd-card-byauthor';
+            by.textContent = t('cardTrailByAuthor');
+            open.appendChild(by);
+        }
+
+        if (post.body) open.appendChild(cardText(post));
+    }
+
+    // LUGAR — a fotografia convida, o nome identifica, o texto
+    // justifica e as etiquetas dizem para quem e.
+    function cardBodyPlace(open, post) {
+        const urls = cardPhotos(post);
+        if (urls.length) open.appendChild(photoGrid(urls.slice(0, 1), 'hh-fd-card-photos is-cover n1'));
+
+        open.appendChild(cardTitle(post));
+        if (post.body) open.appendChild(cardText(post));
+
+        const tags = (post.metadata || {}).tags || [];
+        if (tags.length) {
+            const row = document.createElement('div');
+            row.className = 'hh-fd-card-tags';
+            tags.forEach(function (tag) {
+                const chip = document.createElement('span');
+                chip.className = 'hh-fd-card-tag';
+                chip.textContent = t('tagPlace' + tag.charAt(0).toUpperCase() + tag.slice(1));
+                row.appendChild(chip);
+            });
+            open.appendChild(row);
+        }
+    }
+
+    // PERGUNTA — a pergunta e tudo, e o que interessa a seguir e
+    // se ja foi respondida.
+    function cardBodyQuestion(open, post) {
+        const ask = document.createElement('p');
+        ask.className = 'hh-fd-card-question';
+        ask.textContent = (post.body || '') + (post.truncated ? '…' : '');
+        open.appendChild(ask);
+        legacyTitle(open, post);
+
+        const urls = cardPhotos(post);
+        if (urls.length) open.appendChild(photoGrid(urls));
+
+        const n = post.comments || 0;
+        const count = document.createElement('p');
+        count.className = 'hh-fd-card-answers';
+        count.textContent = n === 0 ? t('cardQuestionNone')
+            : (n === 1 ? t('cardQuestionAnswerOne') : t('cardQuestionAnswers', { n: n }));
+        open.appendChild(count);
+    }
+
+    function cardBodyDefault(open, post) {
+        if (post.title) open.appendChild(cardTitle(post));
+        if (post.body) open.appendChild(cardText(post));
+        const urls = cardPhotos(post);
+        if (urls.length) open.appendChild(photoGrid(urls));
+    }
+
+    const CARD_BODIES = {
+        tip: cardBodyTip,
+        photo: cardBodyPhoto,
+        curiosity: cardBodyCuriosity,
+        trail: cardBodyTrail,
+        place: cardBodyPlace,
+        question: cardBodyQuestion
+    };
+
     function postCard(post) {
         const card = document.createElement('article');
-        card.className = 'hh-fd-card';
+        card.className = 'hh-fd-card is-' + post.kind;
 
         // --- cabecalho: autor, tipo, lugar, quando ---
         const head = document.createElement('div');
@@ -479,71 +764,150 @@ const PostsUI = (function () {
         const menu = document.createElement('button');
         menu.type = 'button';
         menu.className = 'hh-fd-card-menu';
-        menu.setAttribute('aria-label', t('postReport'));
+        // Neutro de proposito: o que este botao abre depende de quem
+        // escreveu a publicacao — "Denunciar" nas dos outros,
+        // "Apagar" nas nossas (ver `openPostMenu`). Prometer uma
+        // delas no rotulo enganava metade das vezes.
+        menu.setAttribute('aria-label', t('postOptions'));
         menu.innerHTML = '<i class="fas fa-ellipsis-h" aria-hidden="true"></i>';
         menu.addEventListener('click', function (e) { e.stopPropagation(); openPostMenu(null, post); });
 
         // Ponto 5: um botao por cartao, antes do menu, pequeno.
         // Nao vai nos comentarios do cartao nem na barra de
         // reaccoes — ali a materia e a publicacao, nao a pessoa.
-        const follow = FollowsUI.button(post.author, { size: 'sm', variant: 'quiet' });
-        if (follow) head.appendChild(follow);
-
-        head.appendChild(menu);
+        //
+        // Na pre-visualizacao nao entra nenhum dos dois: ninguem
+        // se segue a si proprio nem denuncia o que ainda nao
+        // publicou.
+        if (!post.preview) {
+            const follow = FollowsUI.button(post.author, { size: 'sm', variant: 'quiet' });
+            if (follow) head.appendChild(follow);
+            head.appendChild(menu);
+        }
 
         card.appendChild(head);
 
-        // --- corpo ---
+        // --- corpo: cada tipo mostra o que importa nele ---
+        //
+        // Nao basta mudar o formulario (ponto 28). Uma fotografia
+        // com a imagem pequena debaixo de um titulo nao e uma
+        // fotografia; um trilho sem partida, destino e duracao
+        // obriga a abrir para saber se vale a pena.
         const open = document.createElement('button');
         open.type = 'button';
         open.className = 'hh-fd-card-open';
 
-        const title = document.createElement('p');
-        title.className = 'hh-fd-card-title';
-        title.textContent = post.title;
-        open.appendChild(title);
+        (CARD_BODIES[post.kind] || cardBodyDefault)(open, post);
 
-        if (post.body) {
-            const text = document.createElement('p');
-            text.className = 'hh-fd-card-text';
-            text.textContent = post.body + (post.truncated ? '…' : '');
-            open.appendChild(text);
+        if (!post.preview) {
+            open.addEventListener('click', function () { openPost(post.id); });
         }
-
-        const photos = (post.photos || []).filter(function (p) { return signedPhotos[p]; });
-        if (photos.length) {
-            const grid = document.createElement('div');
-            grid.className = 'hh-fd-card-photos n' + Math.min(photos.length, 4);
-            photos.slice(0, 4).forEach(function (path) {
-                const img = document.createElement('img');
-                img.src = signedPhotos[path];
-                img.alt = '';
-                img.loading = 'lazy';
-                grid.appendChild(img);
-            });
-            open.appendChild(grid);
-        }
-
-        open.addEventListener('click', function () { openPost(post.id); });
         card.appendChild(open);
 
-        card.appendChild(reactionBar(post, false));
+        if (!post.preview) card.appendChild(cardActions(post));
         return card;
     }
 
+    // O interior de um botao da barra: o icone e o numero.
+    //
+    // A PALAVRA NAO VEM, E NAO E POR SER UM ECRA PEQUENO — E
+    // ARITMETICA. A app inteira vive num contentor travado em 448px
+    // (`max-w-md`), por isso esta barra nunca passa de 414px. Com
+    // os quatro nomes por extenso mais os contadores, o conteudo
+    // pede 441px: nao cabe na largura maxima da app, quanto mais
+    // num telemovel de 390. Escrever os nomes era garantir que o
+    // "Guardar" aparecia cortado em todos os aparelhos.
+    //
+    // Fica o que muda — o numero. O nome vai no `aria-label` do
+    // botao (ver `actLabel`), que e o que um leitor de ecra
+    // anuncia, e o icone mantem os 44px de alvo tactil.
+    function actInner(icon, count) {
+        return '<i class="' + icon + '" aria-hidden="true"></i>' +
+            (count ? '<span class="hh-fd-act-n">' + count + '</span>' : '');
+    }
+
+    // O nome por extenso para quem nao ve o botao.
+    function actLabel(label, count) {
+        return count ? label + ' ' + count : label;
+    }
+
+    // ----------------------------------------------------------
+    // A ACCAO DE CADA TIPO (ponto 62)
+    //
+    // Uma dica pergunta "ajudou?". Um lugar pede para ser
+    // guardado. Uma pergunta pede resposta. Um trilho pede para
+    // ser visto inteiro.
+    //
+    // As reaccoes guardadas continuam a ser duas — o que muda e
+    // qual delas fica a frente, com rotulo e peso, e quais ficam
+    // na barra discreta por baixo.
+    // ----------------------------------------------------------
+    function cardActions(post) {
+        const wrap = document.createElement('div');
+        wrap.className = 'hh-fd-actions';
+
+        const action = Posts.primaryActionFor(post.kind);
+        const primary = primaryButton(post, action);
+        if (primary) wrap.appendChild(primary);
+
+        wrap.appendChild(reactionBar(post, false, action.primary));
+        return wrap;
+    }
+
+    function primaryButton(post, action) {
+        // Nas reaccoes o destaque e dado DENTRO da barra (o botao
+        // cresce e ganha rotulo), para nao haver dois sitios a
+        // dizer a mesma coisa.
+        if (action.primary === 'helpful' || action.primary === 'interesting') return null;
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'hh-fd-primary';
+
+        const icons = { open: 'fa-person-walking', save: 'fa-bookmark', comment: 'fa-reply' };
+        const saved = action.primary === 'save' && post.saved;
+
+        btn.innerHTML = '<i class="fas ' + icons[action.primary] + '" aria-hidden="true"></i>';
+        btn.appendChild(document.createTextNode(
+            t(saved ? 'cardPlaceSaved' : action.cta)
+        ));
+        if (saved) btn.classList.add('is-on');
+
+        btn.addEventListener('click', async function (event) {
+            event.stopPropagation();
+
+            if (action.primary === 'open') { openPost(post.id); return; }
+            if (action.primary === 'comment') { openPost(post.id); return; }
+
+            // Guardar: resposta imediata, servidor a confirmar.
+            const next = Posts.toggleSaved(post);
+            applyPostUpdate(next, false);
+
+            const result = await deps.cloud.setPostSaved(post.id, next.saved);
+            if (!result.ok) applyPostUpdate(post, false);
+        });
+
+        return btn;
+    }
+
     // As duas reaccoes do desenho, mais comentar e guardar.
-    function reactionBar(post, full) {
+    // `emphasis` diz qual delas e a accao principal DESTE tipo:
+    // essa fica com o nome escrito, as outras ficam so com o
+    // icone.
+    function reactionBar(post, full, emphasis) {
         const bar = document.createElement('div');
         bar.className = 'hh-fd-bar';
 
-        bar.appendChild(reactionButton(post, 'helpful', 'fa-thumbs-up', t('postHelpful')));
-        bar.appendChild(reactionButton(post, 'interesting', 'fa-lightbulb', t('postInteresting')));
+        bar.appendChild(reactionButton(post, 'helpful', 'fa-thumbs-up', t('postHelpful'),
+            emphasis === 'helpful'));
+        bar.appendChild(reactionButton(post, 'interesting', 'fa-lightbulb', t('postInteresting'),
+            emphasis === 'interesting'));
 
         const comment = document.createElement('button');
         comment.type = 'button';
         comment.className = 'hh-fd-act';
-        comment.innerHTML = '<i class="far fa-comment" aria-hidden="true"></i><span>' +
-            t('postComment') + (post.comments ? ' ' + post.comments : '') + '</span>';
+        comment.setAttribute('aria-label', actLabel(t('postComment'), post.comments));
+        comment.innerHTML = actInner('far fa-comment', post.comments);
         comment.addEventListener('click', function () {
             if (full) dom.cmInput.focus();
             else openPost(post.id);
@@ -554,8 +918,8 @@ const PostsUI = (function () {
         save.type = 'button';
         save.className = 'hh-fd-act' + (post.saved ? ' is-on' : '');
         save.setAttribute('aria-pressed', post.saved ? 'true' : 'false');
-        save.innerHTML = '<i class="' + (post.saved ? 'fas' : 'far') + ' fa-bookmark" aria-hidden="true"></i><span>' +
-            t(post.saved ? 'postSaved' : 'postSave') + '</span>';
+        save.setAttribute('aria-label', t(post.saved ? 'postSaved' : 'postSave'));
+        save.innerHTML = actInner((post.saved ? 'fas' : 'far') + ' fa-bookmark', 0);
         save.addEventListener('click', async function () {
             const next = Posts.toggleSaved(post);
             applyPostUpdate(next, full);
@@ -568,16 +932,26 @@ const PostsUI = (function () {
         return bar;
     }
 
-    function reactionButton(post, reaction, icon, label) {
+    function reactionButton(post, reaction, icon, label, emphasised) {
         const mineKey = reaction === 'helpful' ? 'myHelpful' : 'myInteresting';
         const countKey = reaction === 'helpful' ? 'helpful' : 'interesting';
 
         const btn = document.createElement('button');
         btn.type = 'button';
-        btn.className = 'hh-fd-act' + (post[mineKey] ? ' is-on' : '');
+        btn.className = 'hh-fd-act' + (post[mineKey] ? ' is-on' : '') +
+            (emphasised ? ' is-lead' : '');
         btn.setAttribute('aria-pressed', post[mineKey] ? 'true' : 'false');
-        btn.innerHTML = '<i class="' + (post[mineKey] ? 'fas' : 'far') + ' ' + icon + '" aria-hidden="true"></i><span>' +
-            label + (post[countKey] ? ' ' + post[countKey] : '') + '</span>';
+        btn.setAttribute('aria-label', actLabel(label, post[countKey]));
+        btn.innerHTML = actInner((post[mineKey] ? 'fas' : 'far') + ' ' + icon, post[countKey]);
+
+        // A accao principal deste tipo e a unica que se escreve
+        // por extenso. Cabe, porque e uma so.
+        if (emphasised) {
+            const word = document.createElement('span');
+            word.className = 'hh-fd-act-lead';
+            word.textContent = label;
+            btn.insertBefore(word, btn.querySelector('.hh-fd-act-n'));
+        }
 
         btn.addEventListener('click', async function () {
             // Resposta imediata; o servidor confirma a seguir e, se
@@ -733,16 +1107,40 @@ const PostsUI = (function () {
 
         // Hero: a primeira fotografia, quando ha. Sem fotografia o
         // cabecalho encolhe em vez de deixar um rectangulo vazio.
-        const photo = (post.photos || [])[0];
-        const url = photo ? signedPhotos[photo] : null;
+        const photos = (post.photos || []).filter(function (p) { return signedPhotos[p]; });
+        const url = photos.length ? signedPhotos[photos[0]] : null;
         dom.postHero.classList.toggle('hidden', !url);
         dom.postHero.innerHTML = '';
+
         if (url) {
+            // Um botao, nao uma imagem solta: abrir em ecra inteiro
+            // e uma accao, e quem navega por teclado ou leitor de
+            // ecra tem de lhe chegar como a qualquer outra.
+            const open = document.createElement('button');
+            open.type = 'button';
+            open.className = 'hh-post-hero-open';
+            open.setAttribute('aria-label', t('postPhotoOpen'));
+
             const img = document.createElement('img');
             img.src = url;
             img.alt = '';
-            dom.postHero.appendChild(img);
+            open.appendChild(img);
+
+            // Com mais do que uma, o cabecalho tem de DIZER que ha
+            // mais — senao as outras continuam a existir sem que
+            // ninguem saiba.
+            if (photos.length > 1) {
+                const badge = document.createElement('span');
+                badge.className = 'hh-post-hero-count';
+                badge.setAttribute('aria-hidden', 'true');
+                badge.innerHTML = '<i class="fas fa-images"></i>' + photos.length;
+                open.appendChild(badge);
+            }
+
+            open.addEventListener('click', function () { openViewer(0); });
+            dom.postHero.appendChild(open);
         }
+
         dom.post.classList.toggle('has-hero', !!url);
 
         dom.postKind.replaceWith(kindBadgeInto(dom.postKind, post.kind));
@@ -805,10 +1203,13 @@ const PostsUI = (function () {
 
     function renderPostActions() {
         dom.postActions.innerHTML = '';
-        dom.postActions.appendChild(reactionBar(current, true));
+        dom.postActions.appendChild(
+            reactionBar(current, true, Posts.primaryActionFor(current.kind).primary)
+        );
     }
 
     function closePost() {
+        closeViewer();
         dom.post.classList.add('hidden');
         document.body.classList.remove('hh-chat-open');
         current = null;
@@ -818,6 +1219,79 @@ const PostsUI = (function () {
 
     function isPostOpen() {
         return !!dom && !dom.post.classList.contains('hidden');
+    }
+
+    // ==========================================================
+    // A fotografia em ecra inteiro
+    //
+    // O cabecalho da publicacao mostra a PRIMEIRA fotografia e mais
+    // nenhuma — e um cabecalho, nao uma galeria. Mas as outras
+    // existem, e ate aqui nao havia maneira nenhuma de lhes chegar.
+    // E aqui que elas aparecem.
+    //
+    // Sem biblioteca, como no album: uma imagem, um contador, duas
+    // setas e um gesto.
+    // ==========================================================
+
+    // So entram as que ja tem URL assinado. Uma fotografia por
+    // assinar nao e um quadrado vazio no meio da sequencia — e
+    // simplesmente ainda nao esta la.
+    function viewerPhotos() {
+        if (!current) return [];
+        return (current.photos || []).filter(function (path) { return signedPhotos[path]; });
+    }
+
+    function openViewer(index) {
+        const photos = viewerPhotos();
+        if (!photos.length) return;
+
+        viewerIndex = Math.max(0, Math.min(index || 0, photos.length - 1));
+        dom.viewer.classList.remove('hidden');
+        dom.viewer.setAttribute('aria-hidden', 'false');
+        renderViewer();
+        dom.viewerClose.focus();
+    }
+
+    function closeViewer() {
+        if (!dom || !dom.viewer) return;
+
+        viewerIndex = null;
+        dom.viewer.classList.add('hidden');
+        dom.viewer.setAttribute('aria-hidden', 'true');
+        // A publicacao continua aberta por tras e e ela que manda no
+        // scroll do corpo: nao se desbloqueia nada aqui.
+    }
+
+    function isViewerOpen() {
+        return !!dom && !!dom.viewer && !dom.viewer.classList.contains('hidden');
+    }
+
+    function renderViewer() {
+        const photos = viewerPhotos();
+        if (viewerIndex === null) return;
+
+        const path = photos[viewerIndex];
+        if (!path) { closeViewer(); return; }
+
+        dom.viewerImg.src = signedPhotos[path];
+        dom.viewerImg.alt = current ? current.title : '';
+
+        dom.viewerCount.textContent = t('album.photoOf', {
+            n: viewerIndex + 1,
+            total: photos.length
+        });
+
+        const many = photos.length > 1;
+        dom.viewerPrev.hidden = !many;
+        dom.viewerNext.hidden = !many;
+    }
+
+    function stepViewer(delta) {
+        const photos = viewerPhotos();
+        if (viewerIndex === null || !photos.length) return;
+
+        viewerIndex = (viewerIndex + delta + photos.length) % photos.length;
+        renderViewer();
     }
 
     function openPostMenu(event, post) {
@@ -1065,37 +1539,111 @@ const PostsUI = (function () {
                 '<b>' + escapeHtml(labelForKind(kind.id)) + '</b>' +
                 '<small>' + escapeHtml(hintForKind(kind.id)) + '</small>';
 
-            btn.addEventListener('click', function () {
-                draft.kind = kind.id;
-                syncKindSelection();
-                onDraftChange();
-            });
+            btn.addEventListener('click', function () { chooseKind(kind.id); });
 
             dom.cpKinds.appendChild(btn);
         });
     }
 
-    function syncKindSelection() {
+    // ==========================================================
+    // O COMPOSITOR, EM DOIS PASSOS
+    //
+    // 1. escolher o que se quer partilhar;
+    // 2. o formulario DESSE tipo — e so dele.
+    //
+    // O passo 2 e desenhado a partir de `Posts.formFor(kind)`.
+    // Nao ha aqui nenhum `if (kind === 'trail')`: ha um
+    // desenhador por TIPO DE CAMPO, e os campos vem da lista.
+    // ==========================================================
+
+    function chooseKind(kind) {
+        draft.kind = kind;
+        draft.metadata = draft.metadata || {};
+
         Array.prototype.forEach.call(dom.cpKinds.children, function (btn) {
-            const on = btn.dataset.kind === draft.kind;
+            const on = btn.dataset.kind === kind;
             btn.classList.toggle('is-active', on);
             btn.setAttribute('aria-checked', on ? 'true' : 'false');
+        });
+
+        showFormStep();
+    }
+
+    function showFormStep() {
+        const info = Posts.CONFIG.KINDS.find(function (k) { return k.id === draft.kind; });
+
+        dom.cpStepType.classList.add('hidden');
+        dom.cpStepForm.classList.remove('hidden');
+        dom.cpHeading.textContent = t('composeHeadingKind', { kind: labelForKind(draft.kind) });
+
+        dom.cpChosen.className = 'hh-compose-chosen-tag hh-fd-badge--' + (info ? info.accent : 'gold');
+        dom.cpChosen.innerHTML = '<i class="fas ' + (info ? info.icon : '') + '" aria-hidden="true"></i>';
+        dom.cpChosen.appendChild(document.createTextNode(labelForKind(draft.kind)));
+
+        renderFields();
+
+        // Entrada suave — e nenhuma para quem pediu menos
+        // movimento (o CSS trata do `prefers-reduced-motion`).
+        dom.cpStepForm.classList.remove('is-in');
+        void dom.cpStepForm.offsetWidth;
+        dom.cpStepForm.classList.add('is-in');
+    }
+
+    function showTypeStep() {
+        // Voltar ao passo 1 e voltar a nao ter escolhido nada: o
+        // botao de publicar desaparece com o formulario. O que ja
+        // foi escrito FICA no rascunho — escolher outra vez o
+        // mesmo tipo devolve tudo onde estava.
+        draft.kind = null;
+        Array.prototype.forEach.call(dom.cpKinds.children, function (btn) {
+            btn.classList.remove('is-active');
+            btn.setAttribute('aria-checked', 'false');
+        });
+
+        dom.cpStepForm.classList.add('hidden');
+        dom.cpStepType.classList.remove('hidden');
+        dom.cpHeading.textContent = t('composeTitle');
+        onDraftChange();
+    }
+
+    // Ponto 37: trocar de tipo depois de escrever nao pode deitar
+    // fora o que se escreveu sem avisar. Se o rascunho esta vazio
+    // nao ha nada a perder e nao se pergunta nada.
+    function askToChangeKind() {
+        if (!draftHasContent()) { showTypeStep(); return; }
+
+        openSheet([
+            { icon: 'fa-rotate', label: t('composeChangeTypeGo'), action: showTypeStep },
+            { icon: 'fa-pen', label: t('composeChangeTypeStay'), action: function () {} }
+        ], t('composeChangeTypeWarn'));
+    }
+
+    function draftHasContent() {
+        if (!draft) return false;
+        if (String(draft.title || '').trim()) return true;
+        if (String(draft.body || '').trim()) return true;
+        if ((draft.photos || []).length) return true;
+        if (draft.monumentId || draft.zoneId) return true;
+        return Object.keys(draft.metadata || {}).some(function (k) {
+            const v = draft.metadata[k];
+            return Array.isArray(v) ? v.length > 0 : !!v;
         });
     }
 
     function openComposer(prefill) {
         draft = Object.assign({
             kind: null, title: '', body: '',
-            monumentId: null, zoneId: null, photos: []
+            monumentId: null, zoneId: null, photos: [], metadata: {}
         }, prefill || {});
 
-        dom.cpTitle.value = draft.title;
-        dom.cpBody.value = draft.body;
-        dom.cpStrip.innerHTML = '';
-        dom.cpStrip.classList.add('hidden');
-        syncKindSelection();
-        syncPlaceLabel();
-        onDraftChange();
+        dom.cpFields.innerHTML = '';
+        Array.prototype.forEach.call(dom.cpKinds.children, function (btn) {
+            btn.classList.remove('is-active');
+            btn.setAttribute('aria-checked', 'false');
+        });
+
+        if (draft.kind) chooseKind(draft.kind);
+        else showTypeStep();
 
         dom.compose.classList.remove('hidden');
         document.body.classList.add('hh-chat-open');
@@ -1125,24 +1673,382 @@ const PostsUI = (function () {
         }
     }
 
+    // ----------------------------------------------------------
+    // Desenhar o formulario do tipo escolhido
+    //
+    // Um desenhador por TIPO DE CAMPO (sete), nao um por tipo de
+    // publicacao (seis). Um setimo tipo de publicacao nao traz
+    // codigo novo nenhum — traz uma entrada em `KIND_FORMS`.
+    // ----------------------------------------------------------
+
+    const FIELD_RENDERERS = {
+        place:    renderPlaceField,
+        text:     renderTextField,
+        textarea: renderTextareaField,
+        photos:   renderPhotosField,
+        chips:    renderChipsField,
+        choice:   renderChoiceField,
+        notice:   renderNoticeField
+    };
+
+    // Onde um campo le e escreve no rascunho.
+    function readField(id) {
+        if (id === 'title') return draft.title || '';
+        if (id === 'body') return draft.body || '';
+        if (id.indexOf('meta:') === 0) return (draft.metadata || {})[id.slice(5)] || '';
+        return null;
+    }
+
+    function writeField(id, value) {
+        if (id === 'title') draft.title = value;
+        else if (id === 'body') draft.body = value;
+        else if (id.indexOf('meta:') === 0) {
+            draft.metadata = draft.metadata || {};
+            draft.metadata[id.slice(5)] = value;
+        }
+        onDraftChange();
+    }
+
+    function fieldId(field) {
+        return 'cpField_' + field.id.replace(':', '_');
+    }
+
+    function maxFor(field) {
+        if (field.max === 'TITLE') return Posts.CONFIG.TITLE_MAX;
+        if (field.max === 'BODY') return Posts.CONFIG.BODY_MAX;
+        return field.max || null;
+    }
+
+    // O rotulo, com "obrigatório" so onde e mesmo obrigatorio.
+    function labelFor(field) {
+        const label = document.createElement('label');
+        label.className = 'hh-compose-label';
+        label.setAttribute('for', fieldId(field));
+        label.textContent = t(field.label);
+
+        if (field.required) {
+            const req = document.createElement('span');
+            req.className = 'hh-compose-req';
+            req.textContent = t('composeRequired');
+            label.appendChild(req);
+        }
+        return label;
+    }
+
+    function renderFields() {
+        dom.cpFields.innerHTML = '';
+        fieldNodes = {};
+
+        Posts.formFor(draft.kind).forEach(function (field) {
+            const render = FIELD_RENDERERS[field.type];
+            if (!render) return;
+
+            // Ponto 17: o aviso do QR so existe quando ha um QR
+            // para estragar — ou seja, quando a dica ficou
+            // amarrada a um monumento. Numa dica sobre a ilha era
+            // ruido, e ruido repetido deixa de se ler.
+            if (field.when === 'monument' && !draft.monumentId) return;
+
+            const node = render(field);
+            if (!node) return;
+
+            node.classList.add('hh-compose-field');
+            if (field.half) node.classList.add('is-half');
+            fieldNodes[field.id] = node;
+            dom.cpFields.appendChild(node);
+        });
+
+        renderPreview();
+        onDraftChange();
+    }
+
+    function renderTextField(field) {
+        const wrap = document.createElement('div');
+        wrap.appendChild(labelFor(field));
+
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.id = fieldId(field);
+        input.className = 'hh-compose-input';
+        input.value = readField(field.id);
+        if (field.placeholder) input.placeholder = t(field.placeholder);
+        const max = maxFor(field);
+        if (max) input.maxLength = max;
+
+        input.addEventListener('input', function () { writeField(field.id, input.value); });
+        wrap.appendChild(input);
+        return wrap;
+    }
+
+    function renderTextareaField(field) {
+        const wrap = document.createElement('div');
+        wrap.appendChild(labelFor(field));
+
+        const area = document.createElement('textarea');
+        area.id = fieldId(field);
+        area.className = 'hh-compose-textarea';
+        area.rows = field.rows || 4;
+        area.value = readField(field.id);
+        if (field.placeholder) area.placeholder = t(field.placeholder);
+        const max = maxFor(field);
+        if (max) area.maxLength = max;
+
+        const count = document.createElement('span');
+        count.className = 'hh-compose-count hidden';
+
+        area.addEventListener('input', function () {
+            writeField(field.id, area.value);
+
+            // O contador so aparece quando ja interessa: mostra-lo
+            // desde o primeiro caracter e meter pressa a quem
+            // escreve.
+            const left = max - area.value.length;
+            count.classList.toggle('hidden', left > 200);
+            count.textContent = t('chatCharsLeft', { n: left });
+        });
+
+        wrap.appendChild(area);
+        wrap.appendChild(count);
+        return wrap;
+    }
+
+    function renderPlaceField(field) {
+        const wrap = document.createElement('div');
+        wrap.appendChild(labelFor(field));
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.id = fieldId(field);
+        btn.className = 'hh-compose-input hh-compose-place';
+        btn.innerHTML = '<i class="fas fa-location-dot" aria-hidden="true"></i>';
+
+        const text = document.createElement('span');
+        text.textContent = placeFieldLabel();
+        btn.appendChild(text);
+
+        btn.addEventListener('click', function () {
+            openPlacePicker(function () {
+                text.textContent = placeFieldLabel();
+                onDraftChange();
+            });
+        });
+
+        wrap.appendChild(btn);
+        return wrap;
+    }
+
+    function placeFieldLabel() {
+        if (draft.monumentId) return deps.monumentName(draft.monumentId);
+        if (draft.zoneId) return deps.zoneName(draft.zoneId);
+        return t('composeLocationPlaceholder');
+    }
+
+    function renderPhotosField(field) {
+        const wrap = document.createElement('div');
+        if (!field.hero) wrap.appendChild(labelFor(field));
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.id = fieldId(field);
+        // Na fotografia e no lugar a imagem e o assunto: o botao
+        // ocupa o lugar que ela vai ocupar.
+        btn.className = 'hh-compose-photos' + (field.hero ? ' is-hero' : '');
+
+        // Sem rotulo por cima (`hero`), o botao diz o nome do campo
+        // — "Fotografia", "Foto de capa". Com rotulo por cima, diz
+        // so a accao, senao a mesma palavra aparecia duas vezes
+        // seguidas.
+        const word = draft.photos.length ? 'composePhotoMore'
+            : (field.hero ? field.label : 'composePhotoAdd');
+
+        btn.innerHTML =
+            '<i class="far fa-images" aria-hidden="true"></i>' +
+            '<span><b>' + escapeHtml(t(word)) + '</b></span>';
+        btn.addEventListener('click', function () { dom.cpInput.click(); });
+        wrap.appendChild(btn);
+
+        const strip = document.createElement('div');
+        strip.className = 'hh-compose-strip';
+        strip.classList.toggle('hidden', !draft.photos.length);
+        wrap.appendChild(strip);
+        photoStrip = strip;
+        renderPhotoStrip();
+
+        return wrap;
+    }
+
+    function renderChipsField(field) {
+        const wrap = document.createElement('div');
+        wrap.appendChild(labelFor(field));
+
+        const row = document.createElement('div');
+        row.className = 'hh-compose-chips';
+        row.setAttribute('role', 'group');
+        row.setAttribute('aria-label', t(field.label));
+
+        field.options.forEach(function (option) {
+            const chip = document.createElement('button');
+            chip.type = 'button';
+            chip.className = 'hh-compose-chip';
+            chip.textContent = t(field.optionPrefix + option.charAt(0).toUpperCase() + option.slice(1));
+
+            const sync = function () {
+                const on = (readField(field.id) || []).indexOf(option) !== -1;
+                chip.classList.toggle('is-on', on);
+                chip.setAttribute('aria-pressed', on ? 'true' : 'false');
+            };
+
+            chip.addEventListener('click', function () {
+                const current = (readField(field.id) || []).slice();
+                const at = current.indexOf(option);
+
+                if (at !== -1) current.splice(at, 1);
+                else if (current.length < (field.max || 4)) current.push(option);
+                else return;   // o tecto e silencioso: o chip so nao liga
+
+                writeField(field.id, current);
+                Array.prototype.forEach.call(row.children, function (c) { c.__sync && c.__sync(); });
+            });
+
+            chip.__sync = sync;
+            sync();
+            row.appendChild(chip);
+        });
+
+        wrap.appendChild(row);
+        return wrap;
+    }
+
+    function renderChoiceField(field) {
+        const wrap = document.createElement('div');
+        wrap.appendChild(labelFor(field));
+
+        const row = document.createElement('div');
+        row.className = 'hh-compose-choice';
+        row.setAttribute('role', 'radiogroup');
+        row.setAttribute('aria-label', t(field.label));
+
+        field.options.forEach(function (option) {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'hh-compose-chip';
+            btn.setAttribute('role', 'radio');
+            btn.textContent = t(field.optionPrefix + option.charAt(0).toUpperCase() + option.slice(1));
+
+            const sync = function () {
+                const on = readField(field.id) === option;
+                btn.classList.toggle('is-on', on);
+                btn.setAttribute('aria-checked', on ? 'true' : 'false');
+            };
+
+            btn.addEventListener('click', function () {
+                // Voltar a tocar na escolha feita desmarca-a: a
+                // dificuldade e opcional, e nao havia outra forma
+                // de voltar atras.
+                writeField(field.id, readField(field.id) === option ? '' : option);
+                Array.prototype.forEach.call(row.children, function (c) { c.__sync && c.__sync(); });
+            });
+
+            btn.__sync = sync;
+            sync();
+            row.appendChild(btn);
+        });
+
+        wrap.appendChild(row);
+        return wrap;
+    }
+
+    function renderNoticeField(field) {
+        const wrap = document.createElement('div');
+        wrap.className = 'hh-compose-notice is-' + (field.tone || 'quiet');
+        wrap.setAttribute('role', 'note');
+
+        wrap.innerHTML = '<i class="fas ' +
+            (field.tone === 'gold' ? 'fa-shield-halved' : 'fa-circle-info') +
+            '" aria-hidden="true"></i>';
+
+        const body = document.createElement('div');
+        if (field.title) {
+            const strong = document.createElement('p');
+            strong.className = 'hh-compose-notice-title';
+            strong.textContent = t(field.title);
+            body.appendChild(strong);
+        }
+        const text = document.createElement('p');
+        text.className = 'hh-compose-notice-text';
+        text.textContent = t(field.text);
+        body.appendChild(text);
+        wrap.appendChild(body);
+
+        return wrap;
+    }
+
+    // Ponto 27: ver antes de publicar, onde faz diferenca — uma
+    // fotografia, um lugar ou um trilho sao conteudo visual, e o
+    // que se vai ver nao e obvio a partir dos campos.
+    function renderPreview() {
+        const kind = draft.kind;
+        if (['photo', 'place', 'trail'].indexOf(kind) === -1) return;
+
+        const wrap = document.createElement('div');
+        wrap.className = 'hh-compose-field hh-compose-preview';
+
+        const label = document.createElement('p');
+        label.className = 'hh-compose-label';
+        label.textContent = t('composePreview');
+        wrap.appendChild(label);
+
+        const host = document.createElement('div');
+        host.className = 'hh-compose-preview-host';
+        wrap.appendChild(host);
+
+        previewHost = host;
+        dom.cpFields.appendChild(wrap);
+        syncPreview();
+    }
+
+    function syncPreview() {
+        if (!previewHost || !draft) return;
+
+        // O MESMO cartao do feed, com o rascunho a fazer de
+        // publicacao. Um preview desenhado a parte seria um
+        // segundo desenho para manter — e o que se veria aqui
+        // deixaria de ser o que aparece la.
+        previewHost.innerHTML = '';
+        previewHost.appendChild(postCard({
+            id: '__preview__',
+            kind: draft.kind,
+            title: draft.title,
+            body: draft.body,
+            metadata: Posts.normalizeMetadata(draft.kind, draft.metadata),
+            monumentId: draft.monumentId,
+            zoneId: draft.zoneId,
+            photos: draft.photos.map(function (p) { return p.previewUrl; }),
+            author: deps.me ? deps.me() : null,
+            helpful: 0, interesting: 0, comments: 0,
+            createdAt: new Date().toISOString(),
+            preview: true
+        }));
+    }
+
     function onDraftChange() {
         if (!draft) return;
 
-        draft.title = dom.cpTitle.value;
-        draft.body = dom.cpBody.value;
+        const checked = Posts.validateDraft(draft);
 
-        const titleLeft = Posts.remainingTitle(draft.title);
-        dom.cpTitleCount.classList.toggle('hidden', titleLeft > 20);
-        dom.cpTitleCount.textContent = t('chatCharsLeft', { n: titleLeft });
+        // O botao diz o que vai fazer: "Partilhar dica", "Publicar
+        // trilho", "Perguntar à comunidade" (ponto 19).
+        dom.cpPublish.querySelector('span').textContent =
+            t(draft.kind ? Posts.ctaKeyFor(draft.kind) : 'composePublish');
 
-        const bodyLeft = Posts.remainingBody(draft.body);
-        dom.cpBodyCount.classList.toggle('hidden', bodyLeft > 200);
-        dom.cpBodyCount.textContent = t('chatCharsLeft', { n: bodyLeft });
+        dom.cpPublish.disabled = !checked.ok || !navigator.onLine;
+        dom.cpPublish.classList.toggle('hidden', !draft.kind);
 
-        // Ponto 17 do lado de quem escreve.
-        dom.cpWarning.classList.toggle('hidden', !Posts.shouldWarnAboutQr(draft));
+        // Ponto 42: dizer porque e que o botao esta desligado.
+        const offline = !navigator.onLine;
+        if (offlineNote) offlineNote.classList.toggle('hidden', !offline);
 
-        dom.cpPublish.disabled = !Posts.validateDraft(draft).ok || !navigator.onLine;
+        syncPreview();
     }
 
     async function onPhotosChosen(files) {
@@ -1168,13 +2074,15 @@ const PostsUI = (function () {
         }
 
         dom.cpInput.value = '';
-        renderPhotoStrip();
-        onDraftChange();
+        // Redesenha o formulario: o botao passa a dizer "Adicionar
+        // outra" e a pre-visualizacao ganha a imagem.
+        renderFields();
     }
 
     function renderPhotoStrip() {
-        dom.cpStrip.innerHTML = '';
-        dom.cpStrip.classList.toggle('hidden', !draft.photos.length);
+        if (!photoStrip) return;
+        photoStrip.innerHTML = '';
+        photoStrip.classList.toggle('hidden', !draft.photos.length);
 
         draft.photos.forEach(function (photo, index) {
             const cell = document.createElement('div');
@@ -1193,39 +2101,42 @@ const PostsUI = (function () {
             remove.addEventListener('click', function () {
                 URL.revokeObjectURL(photo.previewUrl);
                 draft.photos.splice(index, 1);
-                renderPhotoStrip();
-                onDraftChange();
+                renderFields();
             });
             cell.appendChild(remove);
 
-            dom.cpStrip.appendChild(cell);
+            photoStrip.appendChild(cell);
         });
     }
 
     // Associar a publicacao a um lugar que a app ja conhece — e o
     // que permite "Ver no mapa" levar a algum lado.
-    function openPlacePicker() {
+    // "Geral" (sem lugar) e a primeira opcao e nao a ultima: numa
+    // pergunta e a escolha mais comum, e numa dica e uma escolha
+    // legitima. Nada e associado sozinho — o lugar so entra na
+    // publicacao quando a pessoa o escolhe (pontos 15 e 43).
+    function openPlacePicker(onPicked) {
+        const pick = function (monumentId, zoneId) {
+            return function () {
+                draft.monumentId = monumentId;
+                draft.zoneId = zoneId;
+                if (onPicked) onPicked();
+                // O aviso do QR aparece e desaparece com o lugar.
+                renderFields();
+            };
+        };
+
         const options = [{
             icon: 'fa-ban',
             label: t('composeLocationNone'),
-            action: function () {
-                draft.monumentId = null;
-                draft.zoneId = null;
-                syncPlaceLabel();
-                onDraftChange();
-            }
+            action: pick(null, null)
         }];
 
         deps.zones().forEach(function (zone) {
             options.push({
                 icon: 'fa-location-dot',
                 label: deps.zoneName(zone.id),
-                action: function () {
-                    draft.zoneId = zone.id;
-                    draft.monumentId = null;
-                    syncPlaceLabel();
-                    onDraftChange();
-                }
+                action: pick(null, zone.id)
             });
         });
 
@@ -1233,50 +2144,47 @@ const PostsUI = (function () {
             options.push({
                 icon: 'fa-landmark',
                 label: monument.name,
-                action: function () {
-                    draft.monumentId = String(monument.id);
-                    draft.zoneId = null;
-                    syncPlaceLabel();
-                    onDraftChange();
-                }
+                action: pick(String(monument.id), null)
             });
         });
 
         openSheet(options, t('composeLocation'));
     }
 
-    function syncPlaceLabel() {
-        if (draft.monumentId) dom.cpPlaceText.textContent = deps.monumentName(draft.monumentId);
-        else if (draft.zoneId) dom.cpPlaceText.textContent = deps.zoneName(draft.zoneId);
-        else dom.cpPlaceText.textContent = t('composeLocationPlaceholder');
-    }
-
+    // Ponto 39: validar, desligar o botao, subir as imagens,
+    // persistir, confirmar — e so depois voltar a Comunidade. Em
+    // nenhum momento a publicacao aparece como feita antes de
+    // existir no servidor.
+    //
+    // Ponto 41: se falhar, O FORMULARIO FICA. Perder o que se
+    // escreveu por causa de uma rede fraca e a pior maneira de
+    // perder um contributo.
     async function publish() {
         const checked = Posts.validateDraft(draft);
         if (!checked.ok) {
-            deps.toast(t(checked.reason === 'kind' ? 'composeNeedKind' : 'composeNeedTitle'));
+            pointAtMissingField(checked.reason);
             return;
         }
 
         dom.cpPublish.disabled = true;
-        dom.cpPublish.querySelector('span').textContent = t('composePublishing');
+        const label = dom.cpPublish.querySelector('span');
 
         // As fotografias sobem primeiro. Se alguma falhar, nada e
         // publicado — melhor do que uma publicacao a que falta
         // metade do que a pessoa escolheu.
         const uploaded = [];
         for (let i = 0; i < draft.photos.length; i++) {
+            label.textContent = t('composeUploading', { n: i + 1, total: draft.photos.length });
+
             const photo = draft.photos[i];
             const path = deps.cloud.postPhotoPath(photo.extension);
             const result = await deps.cloud.uploadPostImage(path, photo.blob, photo.contentType);
 
-            if (!result.ok) {
-                deps.toast(t('composeFailed'));
-                resetPublishButton();
-                return;
-            }
+            if (!result.ok) { failPublish(); return; }
             uploaded.push({ path: path });
         }
+
+        label.textContent = t('composePublishing');
 
         const result = await deps.cloud.createPost({
             kind: checked.kind,
@@ -1284,14 +2192,16 @@ const PostsUI = (function () {
             body: checked.body,
             monumentId: checked.monumentId,
             zoneId: checked.zoneId,
-            photos: uploaded
+            photos: uploaded,
+            metadata: checked.metadata
         });
 
         if (!result.ok) {
-            deps.toast(result.reason === 'rate_limited' ? t('composeRateLimited') : t('composeFailed'));
-            resetPublishButton();
+            failPublish(result.reason === 'rate_limited' ? t('composeRateLimited') : null);
             return;
         }
+
+        const kind = checked.kind;
 
         // Antes de fechar: o composer e reaproveitado, e sem isto
         // o botao ficava a dizer "A publicar..." em todas as
@@ -1300,12 +2210,43 @@ const PostsUI = (function () {
 
         closeComposer();
         await load();
+
+        // "Dica partilhada.", "Trilho publicado." — curto, e do
+        // tipo certo (ponto 40).
+        deps.toast(t(Posts.successKeyFor(kind)));
         openPost(result.post.id);
     }
 
+    function failPublish(message) {
+        deps.toast(message || t('composeFailed'));
+        resetPublishButton();
+        // O botao passa a dizer "Tentar novamente" ate se mexer
+        // outra vez no formulario.
+        dom.cpPublish.querySelector('span').textContent = t('composeRetry');
+        dom.cpPublish.disabled = !navigator.onLine;
+    }
+
+    // Em vez de "invalido": leva ao campo que falta e poe-lhe o
+    // foco. `validateDraft` devolve o id do campo precisamente
+    // para isto ser possivel.
+    function pointAtMissingField(reason) {
+        if (reason === 'kind') { deps.toast(t('composeNeedKind')); return; }
+
+        const node = fieldNodes[reason];
+        if (!node) { deps.toast(t('composeFailed')); return; }
+
+        node.classList.add('is-missing');
+        node.scrollIntoView({ block: 'center', behavior: 'smooth' });
+
+        const input = node.querySelector('input, textarea, button');
+        if (input) input.focus({ preventScroll: true });
+
+        setTimeout(function () { node.classList.remove('is-missing'); }, 1600);
+    }
+
     function resetPublishButton() {
-        dom.cpPublish.querySelector('span').textContent = t('composePublish');
-        onDraftChange();
+        if (draft) onDraftChange();
+        else dom.cpPublish.querySelector('span').textContent = t('composePublish');
     }
 
     // ==========================================================
